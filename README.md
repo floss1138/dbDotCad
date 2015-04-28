@@ -1,15 +1,14 @@
 # dbDotCad
 An experiment with mongodb using CAD attributes as the data set
 
-X-Clacks-Overhead: GNU Terry Pratchett
-use humour;
+\# X-Clacks-Overhead: GNU Terry Pratchett  
+\# use humour;
 
-## dbDotCad - the readme ##
-
-our $VERSION = 0.0002; 
-COPYRIGHT AND LICENSE
-Copyright (C) 2015, floss1138. 
-floss1138 ta liamg tod moc
+## dbDotCad - the readme  
+\# our $VERSION = 0.0002    
+| COPYRIGHT AND LICENSE    
+| Copyright (C) 2015, floss1138  
+| floss1138 ta liamg tod moc  
 
 This project and documentation is free 
 You can redistribute it and/or modify it 
