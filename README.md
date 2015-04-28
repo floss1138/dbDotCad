@@ -23,7 +23,7 @@ If you run this software you are also using it at your own risk.
 
 FAQ:
 
-What is dbDotCad?
+What is dbDotCad? 
 An experiment with mongodb using CAD attributes as the data set.
 Initially using Ubuntu as the OS, with perl and js for scripting.
 mongo will be used to store CAD data and (drawing) file history/version tracking.
@@ -34,7 +34,7 @@ Google for 'DXF Reference'.
 Shared storage between the client (running CAD) and server (running mongod)
 will use CIFS/SAMBA. Web service will use Apache. 
 
-Why the name?
+Why the name? 
 And I shall name it also unto you: db-dot-cad (pronounced deebee, dot cad).  
 Oh, what a dull name - at the time of writing dbdotcad had no match in Google.
 
@@ -43,27 +43,27 @@ Well matched for document orientated data storage.
 Easy to deploy/develop.  
 Makes the developer learn a bit of JavaScript.
 
-Why not use couch?
+Why not use couch? 
 No need for massive world wide deployment but couch would also fit nicely.
 N1QL certainly helps if familiar with sql.  
 
-Why perl?
+Why perl? 
 Well matched for regex and file based operations.  
 Thanks to Damian Conway, a fantastic regex debug module (rxrx/Regexp::Debugger).
 Note that the author of dbDotCad is not a programmer
 and needs all the help he can find.
 Python 3 rocks and would also fit the use case.  As would other scriting solutions.
 
-Why Ubuntu?
+Why Ubuntu? 
 The author has been using the LTS versions for several years.
 The build script should run on both server and desktop.
 It is possible to produce build scripts for REL/Cent etc. if required.
 
-Will it run on a Rasberry Pi?
+Will it run on a Rasberry Pi? 
 It might but running an enterprise level database on a pi is never going to be speedy.
 For testing, the average laptop will be fine.
 
-What is the expected deployment/scale/size?
+What is the expected deployment/scale/size? 
 Users < 50 making infrequent queries 
 Documents in database < 50 Million
 Storage < 6TB 
@@ -76,9 +76,9 @@ GETTING STARTED
 On Unbuntu desktop or server ...
 
 1.  Download the build script ddc_builder.pl.
-If required, edit the header for the user name
+If required, edit the header for the user name 
 $user 
-(used for the first dbDotCad user).
+(used for the first dbDotCad user). 
 This creates both a user account with SAMBA share.
 Define the latest appropriate mongodb version in
 $mongodb_latest
