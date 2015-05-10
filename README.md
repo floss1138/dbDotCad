@@ -1,5 +1,5 @@
 ## dbDotCad
-An experiment with mongodb using CAD attributes as the data set
+An experiment with MongoDB using CAD attributes as the data set
 
 \# X-Clacks-Overhead: GNU Terry Pratchett  
 \# use humour;
@@ -10,7 +10,7 @@ $VERSION = 0.0003
 > Copyright (C) 2015, floss1138  
 > floss1138 ta liamg tod moc  
 
-This project and documentation is free 
+This project and documentation is free. 
 You can redistribute it and/or modify it 
 under the same terms as Perl 5.14.0.
 It is distributed in the hope that it will be useful,
@@ -22,9 +22,9 @@ If you run this software you are also using it at your own risk.
 #### FAQ:
 **What is dbDotCad?**
 
-An experiment with mongodb using CAD attributes as the data set.
-Initially using Ubuntu as the OS, perl & js for scripting.
-mongodb will be used to store CAD metadata and (drawing) file history/version tracking.
+An experiment with MongoDB using CAD attributes as the data set.
+Initially using Ubuntu as the OS, Perl & JavaScript for scripting.
+MongodB will be used to store CAD metadata and (drawing) file history/version tracking.
 Data needs to be manipulated in spread sheets using xlxs format.
 CAD attributes (metadata) will be use the DXF standard.
 For more on DXF search for 'DXF Reference' or read the [reference manual](http://images.autodesk.com/adsk/files/autocad_2012_pdf_dxf-reference_enu.pdf)   
@@ -33,28 +33,28 @@ will use CIFS/SAMBA.   Web service will use Apache.
 
 **Why the name?** 
 
-And I shall name it also unto you: db-dot-cad (pronounced deebee, dot cad).  
+And I shall name it also unto you: db-dot-cad (pronounced deebee, dot, cad).  
+Can be abbreviated to ddc.  
 Oh, what a dull name - at the time of writing dbdotcad had no match in Google.
 
-**Why mongodb?** 
+**Why MongoDB?** 
 
 Well matched for document orientated data storage.  
 Easy to deploy/develop.  
 Makes the developer learn a bit of JavaScript.
 
-**Why not use couch?**
+**Why not use CouchDB?**
 
-No need for massive world wide deployment but couch would also fit nicely.
+No need for massive world wide deployment but Couch would also fit nicely.
 N1QL certainly helps if familiar with sql.  
 
-**Why perl?**
+**Why Perl?**
 
-Well matched for regex and file based operations.  
-Thanks to Damian Conway, a fantastic regex debug module (rxrx/Regexp::Debugger).
-The author of dbDotCad is not a programmer
-and needs all the help he can find.
-Python 3 rocks and would also fit the use case.
-As would many other scriting solutions.
+Well matched for regex and file based operations and has nice debug tools.  
+Thanks to Damian Conway, the fantastic regex debug module Regexp::Debugger (rxrx).
+The author of dbDotCad needs all the debug help he can find & Data::Dumper also comes in handy.
+Python 3 rocks and would also fit the use cases as would many other scriting solutions.
+The scriting solution should be cross platform - it may need to run on Mac or Windows.
 
 **Why Ubuntu?**
 
@@ -99,20 +99,26 @@ check the [mongodb download page](https://www.mongodb.org/downloads) for the lat
 mongodb is not installed from the Ubuntu repository as the 
 purpose of this project is to experiment with mongodb &
 to use the latest release in a way that can be easily removed or replaced.
-Currently this is run a root - obviously not for production.  
+Currently this is run as root - obviously not for production.  
 
 ddcbuild will:
 
-1.  Check if $user exists
-if true offer to abort (as the script should only be run once)
-2.  Update Ubuntu
-3.  Add .dircolors and .vimrc to /root
-4.  Add Perl Tidy, Perl Cirtic, cpanm, Regexp::Debugger, Excel::Wirter, Spreadsheet::XLSX, Spreadsheet::Read
-5.  Add samba
-6.  Make a safety copy of the clean smb.conf
-7.  Set the smb passwd
-8.  Edit the smb.conf to allow follwing of symlinks and create a samba user
-9.  Restart smbd
+1.  Check if $user exists, if true offer to abort (as the script should only be run once)
+1.  Update & upgrade Ubuntu
+1.  Add useful commands not in the standard distribution such as 'tree'
+1.  Create the $user and directories under /home/$user
+1.  Add .dircolors and .vimrc to /root
+1.  Add Perl Tidy, Perl Cirtic, App:cpanminus (cpanm), Regexp::Debugger (rxrx), Excel::Wirter, Spreadsheet::XLSX, Spreadsheet::Read
+1.  Add 'samba' & create a safety copy of the clean smb.conf
+1.  Set a smb and user passwd (these can be the same)
+1.  Edit the smb.conf to allow follwing of symlinks and create a samba user & restart smbd
+2.  Download, extract and install mongodb also creating the required /data/db directory
+3.  Put the mongodb/bin into $PATH 
+4.  Start mongod with the config opton providing the http interface
+5.  Make a test connection to localhost 27017 
+6.  Check smbstatus
+7.  Create a start up script (as this installation of mongodb will not run at boot)
+  
 
 
 
