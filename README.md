@@ -5,7 +5,7 @@ An experiment with MongoDB using CAD attributes as the data set
 \# use humour;
 
 ### dbDotCad - the readme  
-$VERSION = 0.0003    
+$VERSION = 0.0004    
 > COPYRIGHT AND LICENSE    
 > Copyright (C) 2015, floss1138  
 > floss1138 ta liamg tod moc  
@@ -80,12 +80,13 @@ dbDotCad can be run on a single server; in production this may not be wise.
 
 On Unbuntu desktop or server (ideally a clean install - running in a VM) ...
 
-1.  Download the build script ddc_builder.pl  
+1.  Download the build script ddc_builderv#.pl  
 2.  Edit the scrip header (or accept the defaults)
-The scripts creates a new named user (currently only one) held in the variable:  
+The scripts creates the new user 'alice' (currently only one) held in the variable:  
 `$user`   
 A password protected user account and SAMBA share is created.
-The passwords are prompted for when the script runs.
+The passwords are prompted for when the script runs.  
+User & SAMBA passwords can be identical.  
 3.  Define the latest appropriate mongodb version as a link 
 or accept the default in the header variable:
 `$mongodb_latest`   
@@ -93,7 +94,7 @@ check the [mongodb download page](https://www.mongodb.org/downloads) for the lat
 4.  Save the revised script.
 5.  Before running the build, consider capturing the build output to a file   
 `script ddcbuild_capture.txt`   
-6.  As root run ddc_builder_vx.pl   
+6.  As root run ddc_builderv#.pl   
 `sudo perl ddc_builder_vx.pl`   
 
 mongodb is not installed from the Ubuntu repository as the 
@@ -101,23 +102,25 @@ purpose of this project is to experiment with mongodb &
 to use the latest release in a way that can be easily removed or replaced.
 Currently this is run as root - obviously not for production.  
 
-ddcbuild will:
+ddc_builder will:
 
 1.  Check if $user exists, if true offer to abort (as the script should only be run once)
 1.  Update & upgrade Ubuntu
-1.  Add useful commands not in the standard distribution such as 'tree'
+1.  Add useful commands not in the standard distribution such as 'tree' and 'git'
 1.  Create the $user and directories under /home/$user
 1.  Add .dircolors and .vimrc to /root
-1.  Add Perl Tidy, Perl Cirtic, App:cpanminus (cpanm), Regexp::Debugger (rxrx), Excel::Wirter, Spreadsheet::XLSX, Spreadsheet::Read
+1.  Add Perl Tidy, Perl Cirtic, App:cpanminus (cpanm), Regexp::Debugger (rxrx), Excel::Wirter, Spreadsheet::XLSX, Spreadsheet::Read.  Excel::Writer takes a while to compile, be patient
 1.  Add 'samba' & create a safety copy of the clean smb.conf
 1.  Set a smb and user passwd (these can be the same)
 1.  Edit the smb.conf to allow follwing of symlinks and create a samba user & restart smbd
 2.  Download, extract and install mongodb also creating the required /data/db directory
 3.  Put the mongodb/bin into $PATH 
 4.  Start mongod with the config opton providing the http interface
-5.  Make a test connection to localhost 27017 
-6.  Check smbstatus
-7.  Create a start up script (as this installation of mongodb will not run at boot)
+5.  Make a test connection to localhost 27017 to prove MongoDB installed OK
+6.  Check smbstatus to prove samba installed OK
+7.  Create a start up script (defined in $startup) startup.sh 
+8.  Note that this installation of mongodb will not run at boot time unless startup.sh is excuted, the script will suggest adding this to crontab as an @reboot line
+
   
 
 
