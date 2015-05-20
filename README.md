@@ -125,6 +125,19 @@ ddc_builder will:
 7.  Create a start up script (defined in $startup) startup.sh 
 8.  Note that this installation of mongodb will not run at boot time unless startup.sh is excuted, the script will suggest adding this to crontab as an @reboot line
 
+### dbDotCad Part1
+
+write a ddc_upload.pl script to do the following:
+
+1.  Read and verify parameters from a conf file.
+Include path to attribute file, growing file check delay, enforce title, document count limit, error/status log names, database name.
+2.  Scan watch folder (the SAMBA share) and check attribute file is present not growing.
+3.  Process file creating unique id from handle and title.
+4.  Parse attribute file to create a js file.
+5.  Bulk import to MongoDB.
+6.  Optinally delete original files on success.
+7.  Wirte status and log files
+
 ### NAMING CONVENTION FOR DRAWINGS
 Based on some real world naming, ddc will adopt the following document naming convention for the CAD drawings.  
 
@@ -137,19 +150,22 @@ A = Upper case alpha up to 4 letters, no spaces.  Must contain at least one alph
 The hyphens and underscore must be present and are used as part of a file/title name integrity check.
 
 NUMERIC_AREA_CODE-  
-NUMERIC DOCUMENT TYPE GENERAL-  
-NUMERIC DOCUMENT TYPE SPECIFIC-  
-ALPHABETICAL REVISION IDENTIFIER  
+NUMERIC_DOCUMENT_TYPE_GENERAL-  
+NUMERIC_DOCUMENT_TYPE_SPECIFIC-  
+ALPHABETICAL_REVISION_IDENTIFIER  
 
 The file name will contain this Title and add then descriptive name which may contain spaces.
-The descriptive part of the name will not be used by the database for identification. 
+The descriptive part of the name will not be used by the database for identification.
+Link the Alphabetical part to the name via and underscore.
 
 N-N-N-A_Descriptive name spaces allowed.extension
 
-For example 123-23-1234_C My Ace Design.dwg
+For example:
+`123-23-1234_C My Ace Design.dwg` or
+`456-78-4567-AD_new_office_fist_floor.dwg`
 
-CAD drawings must only have one unique master.  
-The N-N-N part MUST be unique.  
+CAD drawings must have a unique master name.  
+i.e. the N-N-N part MUST be unique.  
 This format will be checked and enforced (using a regex that can be easily modified for other requirements)
 For AutoKAD the .dwg extension is necessary.
 Spaces in file names are common even if undesirable and must be accepted.
@@ -177,6 +193,7 @@ The first two columns are labelled HANDLE and BLOCKNAME.
 
 The remaining columns in the file are labeled with attribute tags as they appear in the drawing. 
 Numbers are added to duplicate attribute tags to ensure that they are unique. 
+It is useful (best practice) to make one of attributes the drawing identifier and to create a block name including a version number - it is usual to modify the blocks over time and this needs to be correclty identified by the program/database
 
 The header row in a file created by ATTOUT would look like this if a badly designed block used the DCC_TITLE tag twice:
 
@@ -199,7 +216,7 @@ name: 7ef5dd18>) (5 . "12BFE") (100 . "AcDbEntity") (67 . 0) (410 . "Model") (8
 . 0) (71 . 0) (44 . 0.0) (45 . 0.0) (210 0.0 0.0 1.0))  
 To find the handle associated with an ename, use the DXF 5 group of the ename's association list:  
 '(setq handle-circle (cdr (assoc 5 (entget ename-circle))))'  
-Note that the AutoKAD attout command adds a single quote to the handle value.  
+Note that the AutoKAD `attout` command adds a single quote to the handle value.  
 When exported, the block above would have the key HANDLE, value '12BFE  
 Obviously, a single drawing has no way of knowing the handles used for other drawings.  
 For migration into a database, some additional data identifying the (uniquely named) drawing file is necessary.  
