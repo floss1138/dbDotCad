@@ -5,7 +5,7 @@ An experiment with MongoDB using CAD attributes as the data set
 \# use humour;
 
 ### dbDotCad - the readme  
-$VERSION = 0.0004    
+$VERSION = 0.0005    
 > COPYRIGHT AND LICENSE    
 > Copyright (C) 2015, floss1138  
 > floss1138 ta liamg tod moc  
@@ -124,6 +124,7 @@ ddc_builder will:
 6.  Check smbstatus to prove samba installed OK
 7.  Create a start up script (defined in $startup) startup.sh 
 8.  Note that this installation of mongodb will not run at boot time unless startup.sh is excuted, the script will suggest adding this to crontab as an @reboot line
+9.  V32 to write a js script and use this to create the ddc database with some dummy data, based on ddc_create.js 
 
 ### dbDotCad Part1
 
@@ -154,9 +155,9 @@ NUMERIC_DOCUMENT_TYPE_GENERAL-
 NUMERIC_DOCUMENT_TYPE_SPECIFIC-  
 ALPHABETICAL_REVISION_IDENTIFIER  
 
-The file name will contain this Title and add then descriptive name which may contain spaces.
+The file name will contain this Title and add a descriptive name which may contain spaces.
 The descriptive part of the name will not be used by the database for identification.
-Link the Alphabetical part to the name via and underscore.
+Link the Alphabetical part to the name via a mandatory underscore.
 
 N-N-N-A_Descriptive name spaces allowed.extension
 
