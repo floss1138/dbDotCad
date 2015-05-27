@@ -78,7 +78,7 @@ dbDotCad can be run on a single server; in production this may not be wise.
 
 **Why the odd spellings?**
 
-AutoKAD is produced by AUTODESC - if spelt correctly these are trademarks of a well known (and fantastic) product from a well known company.  The alternative spellings avoid copyright issues and avoids search engines picking up this document.  Some AutoKAD commands will be explained but this is not CAD tutorial. dbDotCad is not about CAD, its about databases, programming and interfacing to MongoDB with CAD as the data source.  There are lots of good tutorials for AutoKAD.  This not one of them.
+Tha author cannot spell and his work is full of typos... however there are a couple of intentional variations.  AutoKAD is produced by AUTODESC - if spelt correctly these are trademarks of a well known (and fantastic) product from a well known company.  The alternative spellings avoid copyright issues and avoids search engines picking up this document.  Some AutoKAD commands will be explained but this is not CAD tutorial. dbDotCad is not about CAD, its about databases, programming and interfacing to MongoDB with CAD as the data source.  There are lots of good tutorials for AutoKAD.  This not one of them.
 
 ### GETTING STARTED
 
@@ -94,7 +94,7 @@ User & SAMBA passwords can be identical.
 3.  Define the latest appropriate mongodb version as a link 
 or accept the default in the header variable:
 `$mongodb_latest`   
-check the [mongodb download page](https://www.mongodb.org/downloads) for the latest version)
+Check the [mongodb download page](https://www.mongodb.org/downloads) for the latest version
 4.  Save the revised script.
 5.  Before running the build, consider capturing the build output to a file   
 `script ddcbuild_capture.txt`   
