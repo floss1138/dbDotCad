@@ -5,7 +5,7 @@ An experiment with MongoDB using CAD attributes as the data set
 \# use humour;
 
 ### dbDotCad - the readme  
-$VERSION = 0.0005    
+$VERSION = 0.0006    
 > COPYRIGHT AND LICENSE    
 > Copyright (C) 2015, floss1138  
 > floss1138 ta liamg tod moc  
@@ -123,8 +123,9 @@ ddc_builder will:
 5.  Make a test connection to localhost 27017 to prove MongoDB installed OK
 6.  Check smbstatus to prove samba installed OK
 7.  Create a start up script (defined in $startup) startup.sh 
-8.  Note that this installation of mongodb will not run at boot time unless startup.sh is excuted, the script will suggest adding this to crontab as an @reboot line
-9.  V32 to write a js script and use this to create the ddc database with some dummy data, based on ddc_create.js 
+7.  Create a simple index page for the web service
+8.  This installation of mongodb will not run at boot time unless startup.sh is excuted, the script will suggest adding this to crontab as an @reboot line
+9.  Write a javascript file to create and test the database ddc_create.js 
 
 ### dbDotCad Part1
 
