@@ -71,14 +71,14 @@ For testing, the average laptop will be fine.
 
 Users: < 50 making infrequent queries   
 Documents in database: < 5 Million   
-Storage: < 6TB   
+Storage: < 2TB   
 This storage is intended for the CAD files and blocks,
 the database is not expected to take significant part of this. 
 dbDotCad can be run on a single server; in production this may not be wise.
 
 **Why the odd spellings?**
 
-Tha author cannot spell and his work is full of typos... however there are a couple of intentional variations.  AutoKAD is produced by AUTODESC - if spelt correctly these are trademarks of a well known (and fantastic) product from a well known company.  The alternative spellings avoid copyright issues and avoids search engines picking up this document.  Some AutoKAD commands will be explained but this is not CAD tutorial. dbDotCad is not about CAD, its about databases, programming and interfacing to MongoDB with CAD as the data source.  There are lots of good tutorials for AutoKAD.  This not one of them.
+Tha author cannot spell and his work is full of typos... however there are a couple of intentional variations.  AutoKAD is produced by AUTODESC - if spelt correctly these are trademarks of a well known (and fantastic) product from a well known company.  The alternative spellings avoid copyright issues and avoids search engines picking up this document.  Some AutoKAD commands will be explained but this is not a CAD tutorial. dbDotCad is not about CAD, its about databases, programming and interfacing to MongoDB with CAD as the data source.  There are lots of good tutorials for AutoKAD.  This not one of them.
 
 ### GETTING STARTED
 
