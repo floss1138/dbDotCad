@@ -111,12 +111,13 @@ ddc_builder will:
 1.  Check if $user exists, if true offer to abort (as the script should only be run once)
 1.  Update & upgrade Ubuntu
 1.  Add useful commands not in the standard distribution such as 'tree' and 'git'
-1.  Create the $user and directories under /home/$user
+1.  Create the $user and various directories under /home/$user
 1.  Add .dircolors and .vimrc to /root
 1.  Add Perl Tidy, Perl Cirtic, App:cpanminus (cpanm), Regexp::Debugger (rxrx), Excel::Wirter, Spreadsheet::XLSX, Spreadsheet::Read.  Excel::Writer takes a while to compile, be patient
 1.  Add 'samba' & create a safety copy of the clean smb.conf
 1.  Set a smb and user passwd (these can be the same)
 1.  Edit the smb.conf to allow follwing of symlinks and create a samba user & restart smbd
+1.  Installs Apache with an Alias to the users log directory
 2.  Download, extract and install mongodb also creating the required /data/db directory
 3.  Put the mongodb/bin into $PATH 
 4.  Start mongod with the config opton providing the http interface
