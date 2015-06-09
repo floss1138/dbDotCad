@@ -92,24 +92,24 @@ sub create_conf {
     # This is the folder searched for files to be processed
     # Must be defined ending in a slash to signify a folder and not a file
     # watch_folder="/home/user/"
-    watch_folder="/home/user/attout_to_db/"
+    watch_folder="/home/user/dbdotcad/attout_to_db/"
     
     # DONE DIRECTORY
     # The folder used to hold local files after transfer if not deleted
     # Must be defined ending in a slash to signify a folder and not a file
-    #done_dir="/home/user/done/"
-    done_dir="/home/user/done/"
+    # done_dir="/home/user/done/"
+    done_dir="/home/user/dbdotcad/done/"
     
     # FAILED DIRECTORY
     # Folder used to hold attribute files if these have failed during processing
     # error_dir="/home/user/failed/"
-    error_dir="/home/user/failed/"
+    error_dir="/home/user/dbdotcad/failed/"
     
     # LOG DIRECTORY
     # Folder used to hold log files
     # Must be defined ending in a slash to signify a folder and not a file
     # log_dir="/home/user/log/"
-    log_dir="/home/user/log/"
+    log_dir="/var/www/ddclog/"
     
     
     ## BEHAVIOURS ##
@@ -246,13 +246,43 @@ my $option = shift @ARGV || '1';
 if ( ( $option eq '-c' ) ) { &create_conf;}
 
 
+## CHEKC VALIDITY OF FILES AND PATHS
 
+sub check_file_params {
 
+# Check expected values in conf file are defined or die with helpful message
+    if ( !defined $config{user_name} ) {
+        die
+"user_name=\"username\") not defined in conf file\n$conf_file is invalid\n";
+    }
+    if ( !defined $config{ddc_dbname} ) {
+        die
+"ddc_dbname=\"database_name\") not defined in conf file\n$conf_file is invalid\n";
+    }
+return;
+}
 
+## CHECK VALIDITY OF WATCH FOLDER
+sub check_dirs {
+
+    # check watch_folder
+
+    my $trailing_check = substr $config{watch_folder}, '-1', 1
+      ; # -1 (the substr offset to go back one char) is not an allowed literal value (for critic) so needs to be quoted
+    if ( $trailing_check ne q{\\} && $trailing_check ne q{/} ) {
+        die
+"watch folder directory paths not defined correctly with trailing slash\n";
+    }
+
+## THE PROGRAM
 
 # Read $conf_file as key=value pairs, check expected parameters present
 get_conf();
 
 print Dumper( \%config );        # Dump the config hash for debug
+
+check_file_params;
+check_dirs;
+
 
 

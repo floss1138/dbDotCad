@@ -6,7 +6,7 @@ use humour;
 \# And don't ride in anything with a Capissen 38 engine  
 
 ### dbDotCad - the readme  
-$VERSION = 0.0006    
+$VERSION = 0.007    
 > COPYRIGHT AND LICENSE    
 > Copyright (C) 2015, floss1138  
 > floss1138 ta liamg tod moc  
@@ -128,12 +128,14 @@ ddc_builder will:
 7.  Create a simple index page for the web service
 8.  This installation of mongodb will not run at boot time unless startup.sh is executed, the script will suggest adding this to crontab as an @reboot line
 9.  Write a javascript file to create and test the database ddc_create.js 
+10. wget other scripts a needed from Github
 
 ### dbDotCad Part1
 
 write a ddc_upload.pl script to do the following:
 
 1.  Read and verify parameters from a conf file.
+1.  Implement a -c switch to create a default conf (to be used by the builder script)
 Include path to attribute file, growing file check delay, enforce title, document count limit, error/status log names, database name.
 2.  Scan watch folder (the SAMBA share) and check attribute file is present not growing.
 3.  Process file creating unique id from handle and title.
@@ -199,16 +201,16 @@ Ideally every block definition should contain the title (and possibly file name)
 
 ### ATTRIBUTE DATA FORMAT
 
-The file written by ATTOUT is tab-delimited ASCII
+The file written by ATTOUT is tab-delimited ASCII.    
 The ATTOUT filename is the drawing file name with a .txt extension (but can be changed before saving).
-If the file naming standard in your company requires the document title to be in the file name, this can be used as cross check.
+Some file naming standards require the document title to be in the file name, this can be a useful cross check.
 
 The first row in the file contains column headers that identify the data to ATTIN. 
 The first two columns are labelled HANDLE and BLOCKNAME. 
 
 The remaining columns in the file are labelled with attribute tags as they appear in the drawing. 
 Numbers are added to duplicate attribute tags to ensure that they are unique. 
-It is useful (best practice) to make one of attributes the drawing identifier and to create a block name including a version number - it is usual to modify the blocks over time and this needs to be correctly identified by the program/database
+It is useful (best practice) to make one of attributes the drawing identifier and to create a block name including a version number - it is usual to modify the blocks over time and this needs to be correctly identified by the program/database.
 
 The header row in a file created by ATTOUT would look like this if a badly designed block used the DCC_TITLE tag twice:
 
@@ -217,24 +219,25 @@ HANDLE  BLOCKNAME  DDC_TITLE  DDC_FILENAME DDC_TITLE(1)
 There is a column for each attribute from all selected blocks, 
 attribute labels that do not apply to a specific block are indicated with 
 `<>`
-in the cells that do not apply
+in the cells that do not apply.
 
 The handle is an id automatically generated and unique to each block, ONLY FOR THE ORIGINATING DRAWING.  
 The `attout` command adds a preceding apostrophe/single quote character to the HANDLE data which can be a useful validity check.
-Within AutoKAD it is possible to view the HANDLE data using LISP to show entity values for a selected object.
- `(entget (car (entsel)))`
+Within AutoKAD it is possible to view the HANDLE data using LISP to show entity values for a selected object.  
+Command:  `(entget (car (entsel)))`
 car returns first item in the list, group 5 is the handle.  
-For example
-`Command: (entget(car(entsel)))`
+For example  
+Command: `(entget(car(entsel)))`  
 Select object: ((-1 . <Entity name: 7ef65b30>) (0 . "INSERT") (330 . <Entity
 name: 7ef5dd18>) (5 . "12BFE") (100 . "AcDbEntity") (67 . 0) (410 . "Model") (8
 . "TEXT_CON") (6 . "ACAD_ISO03W100") (100 . "AcDbBlockReference") (66 . 1) (2 .
 "CONTYPE_F_V1") (10 400.0 384.5 0.0) (41 . 1.0) (42 . 1.0) (43 . 1.0) (50 . 0.0) (70
 . 0) (71 . 0) (44 . 0.0) (45 . 0.0) (210 0.0 0.0 1.0))  
 To find the handle associated with an ename, use the DXF 5 group of the ename's association list:  
-'(setq handle-circle (cdr (assoc 5 (entget ename-circle))))'  
+Command: `(setq handle-circle (cdr (assoc 5 (entget ename-circle))))`  
 
-When exported from AutoKAD, the block above would have the key HANDLE, value '12BFE  
+When exported from AutoKAD, the block above would have   
+key HANDLE, value '12BFE  
 Obviously, a single drawing has no way of knowing the handles used for other drawings.  
 For migration into a database, some additional data identifying the (uniquely named) drawing file is necessary.  
 This can be the file name (or part thereof) and/or the drawing title.  In our examples the N-N-N part of the title and/or file name will be used.
@@ -254,7 +257,7 @@ In the block to create or edit field, give the block a name 'ddc_docprops'
 Draw something and maybe add some text and create an attribute definition  
 `att`
 The attribute definition window should appear.  
-In the Tag field name the attribute key for example 'DDC_TITLE'
+In the Tag field, name the attribute key, for example 'DDC_TITLE'
 (DDC_TITLE will be the key, the value will be the Title)  
 In the Default drop down select Title (format none or define as desired).  
 In the Mode area, it's possible to not see this on the drawing by ticking Invisible.  
@@ -273,8 +276,8 @@ In the Name drop down find the block just created 'ddc_tblock'
 The existing Title data will appear as default.  Press enter (or right click) to accept each item as displayed or edit if required.
 
 #### Selecting all blocks
-Selection is for which ever space you are in (Model or Paper).
-Most 'real' work is done in Model and this is where the block attributes to be exported to the database will normally reside.
+Selection is for which ever drawing space (Model or Paper) currently active.
+Most 'real' work is done in Model. This is where block attributes to be exported into the database will normally reside.
 `Ctrl + A`, selects All and the command, `attout` performs an attribute export of all selected blocks.
 From model space, (if not in model space the command is `ms`) it is also possible to filter specific blocks our use the quick select command, `qselect`
 From the Object type, select Block Reference. Leave 'Apply to:' as Entire drawing. Click OK.
@@ -285,9 +288,18 @@ Select the required blocks
 Edit the file name and location as desired.
 Click Save.
 
-ATTOUT is a LISP express tool installed by default with AutoKAD 2008 upwards
+ATTOUT is a LISP express tool installed by default with AutoKAD 2008 upwards.
+ATTIN performs the opposit function.
 
 For repeated use of a block, create a drawing with just the blocks (known as a block library drawing).
-Open drawings or block library drawings can be used to add blocks to new drawings via the AutoKAD DesignCentre
-`adcenter`
+Open drawings or block library drawings can be used to add blocks to new drawings via the AutoKAD DesignCentre   
+`adcenter`   
 Select from the Folder or Open Drawings tab.
+
+#### Final thoughts 
+I am not discouraged, because every wrong attempt discarded is another step forwards.   
+Thomas Edison.   
+
+There ain't no such thing as plain text.  Sense and reason from Joel:   
+[Unicode explained](http://www.joelonsoftware.com/articles/Unicode.html)
+
