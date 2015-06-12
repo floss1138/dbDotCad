@@ -6,7 +6,7 @@ use humour;
 \# And don't ride in anything with a Capissen 38 engine  
 
 ### dbDotCad - the readme  
-$VERSION = 0.007    
+$VERSION = 0.008    
 > COPYRIGHT AND LICENSE    
 > Copyright (C) 2015, floss1138  
 > floss1138 ta liamg tod moc  
@@ -80,6 +80,26 @@ dbDotCad can be run on a single server; in production this may not be wise.
 **Why the odd spellings?**
 
 Tha authir cannot spell and his werk is full of typos... however there are a couple of intentional variations.  AutoKAD is produced by AUTODESC - if spelt correctly these are trademarks of a well known (and fantastic) product from a well known company.  The alternative spellings avoid copyright issues and may prevent search engines picking up this document.  Some AutoKAD commands will be explained but this is not a CAD tutorial. dbDotCad is not about CAD, its about databases, programming and interfacing to MongoDB with CAD as the data source.  There are lots of good tutorials for AutoKAD.  This not one of them. 
+
+### THE CONCEPT OF CONNECTIVITY
+
+A connection exists between a start point and an end point.  It could be a pipe, or a cable or a fiber.  It could carry one service, or many.  
+In complex installations involving many interconnections, the cable/pipe/fiber will have an identifying number/name.  It will be physically labelled at each end and possibly several places along its length.  There are many connecting topologies, some involving loops; however, the physical implementation uses multiple cables/fibers/pipes the ends of which need to be identified in addition to defining their place in a circuit/system.   Many name and numbering conventions exist and the database implementation should be flexible and accommodating.  
+Depending on the application there are several ways of describing connectivity relationships.  
+Client Server, Master Slave, Peer to Peer, Host to Controller...  
+The adopted standard for this implementation is Source to Destination.  Where a connection branches from one to  many, that branching point is the Source.  On the end of the branch is the end point, Destination.  The Destination may branch onwards, so for the next connection it's output can become the Source to the next Destination.  
+A network switch connecting to several servers and workstations is the Source.  
+A header tank feeding several irrigation channels is the Source.  
+A distribution amplifier sending RF to several recievers is the Source.  
+A microphone is the Source to the pre amp.   
+The pre-amp output is the Source to a power amp.  
+The power amp is the Source to the speaker.  
+As a convention to defining connectivity **the Source will always be defined first** & matched to the Destination.
+
+The Database can be used to provide next in sequence numbers/names by keeping track of the next in sequence running number.  
+It should also be possible to 'seed' the provided sequence (at the expanse of redundant number space).
+Further development could allow 'subnetting' of number space.  
+Humanly readable and memorable conventions are preferable.
 
 ### GETTING STARTED
 
@@ -222,7 +242,7 @@ attribute labels that do not apply to a specific block are indicated with
 in the cells that do not apply.
 
 The handle is an id automatically generated and unique to each block, ONLY FOR THE ORIGINATING DRAWING.  
-The `attout` command adds a preceding apostrophe/single quote character to the HANDLE data which can be a useful validity check.
+The `ATTOUT` command adds a preceding apostrophe/single quote character to the HANDLE data which can be a useful validity check.
 Within AutoKAD it is possible to view the HANDLE data using LISP to show entity values for a selected object.  
 Command:  `(entget (car (entsel)))`
 car returns first item in the list, group 5 is the handle.  
@@ -244,18 +264,20 @@ This can be the file name (or part thereof) and/or the drawing title.  In our ex
 
 ### RELEVANT AUTOKAD COMMANDS 
 
+AutoKAD commands can be in upper or lower case.  They can also be found as an icon/ribbon/menu but these notes will simply use the command line.  The help pages are excellent so use them.
+
 #### Define the Document Title
 Open a drawing or drawing template, then define the Document Title in
-`dwgprops`
+`DWGPROPS`
 or File -> Drawing Properties... Summary tab
 
 #### Creating a block
-By creating an identification block with a Title, and optionally Subject and Filename attributes, this can be picked up during an export in cases where the existing blocks have not included this information (as is best practice).
+By creating an identification block with a Title, and optionally Subject and Filename attributes, this can be picked up during an export in cases where the existing blocks have not included this information (as is best practice).  The HANDLE is automatically created and populated.  The block name is also mandatory with the reserved name of BLOCKNAME.  The value is a user choice but another best practice is to incude a version number after the name.
 
-`bedit`
-In the block to create or edit field, give the block a name 'ddc_docprops'
+`BEDIT`
+In the block to create or edit field, give the block a name 'DDC_ID_V1'
 Draw something and maybe add some text and create an attribute definition  
-`att`
+`ATT`
 The attribute definition window should appear.  
 In the Tag field, name the attribute key, for example 'DDC_TITLE'
 (DDC_TITLE will be the key, the value will be the Title)  
@@ -263,37 +285,39 @@ In the Default drop down select Title (format none or define as desired).
 In the Mode area, it's possible to not see this on the drawing by ticking Invisible.  
 Position the text within the block as necessary (even if its invisible)  
 Click OK  
-Repeat to add attributes for Subject and Filename.  
+Repeat to add attributes for Filename if required Subject.  
 Click on Close Block Editor and save the change.  
 To edit an existing block, repeat the bedit command and select the block.  
-To change the order of the attributes, use battman (requires full version of AutoCAD if below 2010)  
+To change the order of the attributes, use `BATTMAN` (requires full version of AutoCAD if below 2010).  This block attribute manager is also useful for editing/synchronising and checking all blocks within the current drawings.  
 
-It is also possible to convert existing parts of a drawing to a block with the `block` command
+It is also possible to convert existing parts of a drawing to a block with the `BLOCK` command
+
+Variables that display in the drawing are 'Field Text'.  To distinguish this from drawing text (which is part of the drawing and not metadata about the block it belongs to), AutoKAD places this text within a grey (none printing) mask.  This grey mask can be turned off with the `FIELDDISPLAY` by setting the value to `<0>`  
 
 #### To insert the block
-`insert`
-In the Name drop down find the block just created 'ddc_tblock'
+`INSERT`
+In the Name drop down find the block just created 'DDC_ID_V1'
 The existing Title data will appear as default.  Press enter (or right click) to accept each item as displayed or edit if required.
 
 #### Selecting all blocks
 Selection is for which ever drawing space (Model or Paper) currently active.
 Most 'real' work is done in Model. This is where block attributes to be exported into the database will normally reside.
-`Ctrl + A`, selects All and the command, `attout` performs an attribute export of all selected blocks.
-From model space, (if not in model space the command is `ms`) it is also possible to filter specific blocks our use the quick select command, `qselect`
+`Ctrl + A`, selects All and the command, `ATTOUT` performs an attribute export of all selected blocks.
+From model space, (if not in model space the command is `MS`) it is also possible to filter specific blocks our use the quick select command, `QSELECT`
 From the Object type, select Block Reference. Leave 'Apply to:' as Entire drawing. Click OK.
 
 #### Extracting Block Attributes
-Select the required blocks 
-`attout`
+Select the required blocks (Ctrl + A selects all)
+`ATTOUT`
 Edit the file name and location as desired.
 Click Save.
 
-ATTOUT is a LISP express tool installed by default with AutoKAD 2008 upwards.
-ATTIN performs the opposit function.
+`ATTOUT` is a LISP express tool installed by default with AutoKAD 2008 upwards to export the attributes of selected blocks.
+`ATTIN` performs the opposit function.
 
 For repeated use of a block, create a drawing with just the blocks (known as a block library drawing).
 Open drawings or block library drawings can be used to add blocks to new drawings via the AutoKAD DesignCentre   
-`adcenter`   
+`ADCENTER`   
 Select from the Folder or Open Drawings tab.
 
 #### Final thoughts 
