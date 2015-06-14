@@ -79,7 +79,7 @@ dbDotCad can be run on a single server; in production this may not be wise.
 
 **Why the odd spellings?**
 
-Tha authir cannot spell and his werk is full of typos... however there are a couple of intentional variations.  AutoKAD is produced by AUTODESC - if spelt correctly these are trademarks of a well known (and fantastic) product from a well known company.  The alternative spellings avoid copyright issues and may prevent search engines picking up this document.  Some AutoKAD commands will be explained but this is not a CAD tutorial. dbDotCad is not about CAD, its about databases, programming and interfacing to MongoDB with CAD as the data source.  There are lots of good tutorials for AutoKAD.  This not one of them. 
+Tha authir cannot spell and his werk is full of typos... however there are a couple of intentional variations.  AutoKAD is produced by AUTODESC - if spelt correctly these are trademarks of a well known (and fantastic) product from a well known company.  The alternative spellings avoid copyright issues and may prevent search engines picking up this document.  Some AutoKAD commands will be explained but this is not a CAD tutorial. dbDotCad is not about CAD, its about databases, programming and interfacing to MongoDB with CAD as the data source.  There are lots of good tutorials for AutoKAD.  This is not one of them. 
 
 ### THE CONCEPT OF CONNECTIVITY
 
@@ -171,13 +171,13 @@ The Title will contain will contain a unique document reference:
 
 N-N-N
 
-N = Numeric up to 4 numbers, no spaces.  N must contain at least one number and separated by hyphens.
+N = Numeric, one or more numbers, no spaces.  N must contain at least one number and separated by hyphens.
 
 The File name will contain the Document Title with an alphabetical revision identifier and a friendly name:
 
 N-N-N-A_friendlyname.dwg
 
-A = Upper case alpha up to 4 letters, no spaces.  Must contain at least one alphabetical character.
+A = Upper case alpha, one or more letters, no spaces.  Must contain at least one alphabetical character.
 The hyphens and underscore must be present and are used as part of a file/title name integrity check.
 
 NUMERIC_AREA_CODE-  
@@ -185,6 +185,8 @@ NUMERIC_DOCUMENT_TYPE_GENERAL-
 NUMERIC_DOCUMENT_TYPE_SPECIFIC-  
 ALPHABETICAL_REVISION_IDENTIFIER  
 
+This will be checked with the regex ^[0-9]+-[0-9]+-[0-9]+-[A-Z]+_.*
+The configuration file will allow 3 different regex matches to be used in cases where multiple naming conventions may exist.  
 
 This Title information and  a descriptive name which may contain spaces.
 The descriptive part of the name will not be used by the database for identification.
