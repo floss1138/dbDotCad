@@ -1,0 +1,2 @@
+HANDLE	BLOCKNAME	TITLE	FNAME
+'378	DDC_IDSTAMP_V1	0-0-0-0	0-0-0-0_A_ddc_title_and_filename_blocks.dwg
