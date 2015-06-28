@@ -6,7 +6,7 @@ use humour;
 \# And don't ride in anything with a Capissen 38 engine  
 
 ### dbDotCad - the readme  
-$VERSION = 0.008    
+$VERSION = 0.009    
 > COPYRIGHT AND LICENSE    
 > Copyright (C) 2015, floss1138  
 > floss1138 ta liamg tod moc  
@@ -81,6 +81,10 @@ dbDotCad can be run on a single server; in production this may not be wise.
 
 Tha authir cannot spell and his werk is full of typos... however there are a couple of intentional variations.  AutoKAD is produced by AUTODESC - if spelt correctly these are trademarks of a well known (and fantastic) product from a well known company.  The alternative spellings avoid copyright issues and may prevent search engines picking up this document.  Some AutoKAD commands will be explained but this is not a CAD tutorial. dbDotCad is not about CAD, its about databases, programming and interfacing to MongoDB with CAD as the data source.  There are lots of good tutorials for AutoKAD.  This is not one of them. 
 
+**Why use familiar acronyms in a different context?**
+
+It makes them easier to remember.  CPD, CSI - see what they usually mean via the [acronym finder] (http://www.acronymfinder.com).
+
 ### THE CONCEPT OF CONNECTIVITY
 
 A connection exists between a start point and an end point.  It could be a pipe, or a cable or a fiber.  It could carry one service, or many.  
@@ -100,6 +104,27 @@ The Database can be used to provide next in sequence numbers/names by keeping tr
 It should also be possible to 'seed' the provided sequence (at the expanse of redundant number space).
 Further development could allow 'subnetting' of number space.  
 Humanly readable and memorable conventions are preferable.
+
+#### DbDotCad CONNECTION DEFINITIONS AND HOUSE RULES
+
+CS = Connection segment.  A line on the drawing between two connection points.  
+CSI = Connection Segment Identifier.  A visible drawing attribute representing the cable/pipe number etc.
+NI = Node Identifier.  A visible drawing attribute representing an item of equipment the CSI is connecting to.
+CPS = Connection Point Source.  Usually a connector/plug/socket/terminal. A drawing block (BLOCKNAME, CPS_<CPNAME>) and associated attributes including the CSI.
+CPD = Connection Point Destination.  Usually a connector/plug/socket/terminal. A drawing block (BLOCKNAME, CPD_<CPNAME>) and associated attributes including the CSI.
+ND = Node.  Usually an item of equipment (but could be a simple T-Piece).  A nested block (BLOCKNAME, ND_<NODENAME>) containing Connection Point blocks and associated attributes
+
+OTHER ATTRUBUTES
+UDC = User Defined Comment.  
+STATUS = Status.   Normally this is an empty field but will contain X for not connected, ! for faulty or out of service.
+   
+Node is from the Latin nodus, meaning 'knot'.
+When a drawing is created, the Connection Point Source/Destination (CPS or CPD) will be a block with a unique database name and associated attributes as meta data.  Connections may have a mass of configuration information (Configuration Items) that would not normally be visible on a drawing and will be handled independantly within the database.  Drawing block attributes are limited to only those which may need to be visible or used to identify the block to the database.  The connection point will use arrows to represent the signal direction or flow.  Simplex connecitons will have a single arrow.  Duplex connections will be represented by two way arrows.  Connecitons forming part of a loop will have double arrows in the appropriate direction.  In the case of simplex connecitons, these typically 'enter' on the left and 'exit' on the right of a node.  Jackfields traditionally have outputs (sources) above inputs (destinations).
+Each Connection Point will have the Connection Segment Identifier (CSI), typically a cable number, as an attribute. This would normally be visible on the drawing.
+Items of equipment form nodes. Each node requires a unique database name, the Node Identifer (NI) and will be a nested block with BLOCKNAME = ND_<NODENAME> containing the connections.  CPS/CPD blocks are used as part of the Node block.
+All blocks will contain keys for HANDLE, BLOCKNAME (both automaticly added by AutoKAD), then TITLE and FNAME followed by attrubutes specific to the block.  
+
+IP information may be needed on a drawing.  In this case CIDR house rules apply (Classless Inter-Domain Routing notation).  [CIDR Explained] (https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
 
 ### GETTING STARTED
 
@@ -146,7 +171,7 @@ ddc_builder will:
 6.  Check smbstatus to prove samba installed OK
 7.  Create a start up script (defined in $startup) startup.sh 
 7.  Create a simple index page for the web service
-8.  This installation of mongodb will not run at boot time unless startup.sh is executed, the script will suggest adding this to crontab as an @reboot line
+8.  This installation of mongodb will not run at boot time unless startup.sh is executed and will add an @reboot line to the crontab
 9.  Write a javascript file to create and test the database ddc_create.js 
 10. wget other scripts a needed from Github
 
@@ -165,32 +190,33 @@ Include path to attribute file, growing file check delay, enforce title, documen
 7.  Write status and log files
 
 ### NAMING CONVENTION FOR DRAWINGS
+It is best practice is to create naming and numbering systems which follow a logical hierarchy. 
 Based on some real world naming, ddc will adopt the following document naming convention for the CAD drawings.  
 
 The Title will contain will contain a unique document reference:
 
 N-N-N
 
-N = Numeric, one or more numbers, no spaces.  N must contain at least one number and separated by hyphens.
+Where N is Numeric, one or more numbers, no spaces.  N must contain at least one number and each number is separated by hyphens.
 
 The File name will contain the Document Title with an alphabetical revision identifier and a friendly name:
 
 N-N-N-A_friendlyname.dwg
 
-A = Upper case alpha, one or more letters, no spaces.  Must contain at least one alphabetical character.
+Where A is an upper case alpha, one or more letters, no spaces.  This must contain at least one alphabetical character.
 The hyphens and underscore must be present and are used as part of a file/title name integrity check.
 
-NUMERIC_AREA_CODE-  
-NUMERIC_DOCUMENT_TYPE_GENERAL-  
-NUMERIC_DOCUMENT_TYPE_SPECIFIC-  
+NUMERIC_AREA_CODE**-**  
+NUMERIC_DOCUMENT_TYPE_GENERAL**-**  
+NUMERIC_DOCUMENT_TYPE_SPECIFIC**-**  
 ALPHABETICAL_REVISION_IDENTIFIER  
 
 This will be checked with the regex ^[0-9]+-[0-9]+-[0-9]+-[A-Z]+_.*
 The configuration file will allow 3 different regex matches to be used in cases where multiple naming conventions may exist.  
 
-This Title information and  a descriptive name which may contain spaces.
-The descriptive part of the name will not be used by the database for identification.
-Link the Alphabetical part to the name via a mandatory underscore.
+The Title is included as the beginning of the file name which may also include a descriptive name which may contain spaces.
+The descriptive part of the name will not be used by the database for identification.  This is only for by humans who sometimes use white space in file names.
+It is mandatroy to link the Alphabetical revision part to the name via an underscore to the description.
 
 N-N-N-A_Descriptive name spaces allowed.extension
 
@@ -208,7 +234,7 @@ The database ID for each Block will be created by appending the Handle to the N-
 This creates a totally unique reference for each block within the database.
 
 Block identifying information will be unique so file revision data is not needed for block attributes.
-Block attribute data (metadata) is independent of the drawing.  
+Block attribute data (meta data) is independent of the drawing.  
 Block definitions/revisions and tracking drawing changes are handled separately.
 
 #### FILE NAME V TITLE NAME
@@ -234,9 +260,9 @@ The remaining columns in the file are labelled with attribute tags as they appea
 Numbers are added to duplicate attribute tags to ensure that they are unique. 
 It is useful (best practice) to make one of attributes the drawing identifier and to create a block name including a version number - it is usual to modify the blocks over time and this needs to be correctly identified by the program/database.
 
-The header row in a file created by ATTOUT would look like this if a badly designed block used the DCC_TITLE tag twice:
+The header row in a file created by ATTOUT would look like this if a badly designed block used the TITLE tag twice:
 
-HANDLE  BLOCKNAME  DDC_TITLE  DDC_FILENAME DDC_TITLE(1)
+HANDLE &nbsp &nbsp BLOCKNAME &nbsp &nbsp TITLE &nbsp &nbsp FNAME TITLE(1)
 
 There is a column for each attribute from all selected blocks, 
 attribute labels that do not apply to a specific block are indicated with 
@@ -326,6 +352,5 @@ Select from the Folder or Open Drawings tab.
 I am not discouraged, because every wrong attempt discarded is another step forwards.   
 Thomas Edison.   
 
-There ain't no such thing as plain text.  Sense and reason from Joel:   
-[Unicode explained](http://www.joelonsoftware.com/articles/Unicode.html)
+There ain't no such thing as plain text.  Sense and reason from Joel: [Unicode explained](http://www.joelonsoftware.com/articles/Unicode.html)
 
