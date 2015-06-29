@@ -35,7 +35,7 @@ my $user = 'alice';
 # (check https://www.mongodb.org/downloads for the latest)
 # For legacy Linux (that old laptop) https://fastdl.mongodb.org/linux/mongodb-linux-i686-3.0.2.tgz
 my $mongodb_latest =
-  'http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1204-3.0.3.tgz';
+  'http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1204-3.0.4.tgz';
 
 # Specify the names of ddc scripts to be downloaded
 # $ddc_read is the script used to read attributes into the database
@@ -587,9 +587,9 @@ print "\nFetching dbdotcad read script $ddc_read from Git Hub\n";
 my $fetch = $git_path . $ddc_read;
 system("wget $fetch");
 
-print "\nDownloading CAD files to /home/$user/dbdotcad/cad ...\n";
+print "\nDownloading CAD files to /home/$user/dbdotcad/cad/ ...\n";
 system(
-"wget -p /home/$user/dbdotcad/cad https://github.com/floss1138/dbDotCad/blob/master/cad/0-0-0-0_A_ddc_title_and_filename_blocks.dwg"
+"wget -P /home/$user/dbdotcad/cad/ https://github.com/floss1138/dbDotCad/blob/master/cad/0-0-0-0_A_ddc_title_and_filename_blocks.dwg"
 );
 
 print "\nRunning dbdotcad read script with the -c create conf option\n";
@@ -598,8 +598,17 @@ system("perl $ddc_read -c");
 # Add the readme to the web page:
 # system ("wget -P /var/www/  https://github.com/floss1138/dbDotCad/blob/master/README.md");
 
-print
-"\n *** The End *** \n \n If capturing the script output, you may want to cancel that now ...\n and reload the shell to take advantage of the new path  source ~/.bashrc\n\n     Live long and prosper\n\n";
+print  << "GOODBYE";
+
+*** THE END *** 
+
+If capturing the script output, you may want to cancel that now ...
+Reload the shell to take advantage of the new path  source ~/.bashrc 
+Check out at http://$ipaddress/
+
+*** Live Long and Prosper ***
+
+GOODBYE
 
 exit 0;
 
