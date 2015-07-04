@@ -6,7 +6,7 @@ use humour;
 \# And don't ride in anything with a Capissen 38 engine  
 
 ### dbDotCad - the readme  
-$VERSION = 0.009    
+$VERSION = 0.010    
 > COPYRIGHT AND LICENSE    
 > Copyright (C) 2015, floss1138  
 > floss1138 ta liamg tod moc  
@@ -83,7 +83,7 @@ Tha authir cannot spell and his werk is full of typos... however there are a cou
 
 **Why use familiar acronyms in a different context?**
 
-It makes them easier to remember.  CPD, CSI - see what they usually mean via the [acronym finder] (http://www.acronymfinder.com).
+Famous acronyms are easier to remember.  Any short combination of letters will have several acronyms.  CPD, CSI - see what they usually mean via the [acronym finder] (http://www.acronymfinder.com).
 
 ### THE CONCEPT OF CONNECTIVITY
 
@@ -107,16 +107,23 @@ Humanly readable and memorable conventions are preferable.
 
 #### DbDotCad CONNECTION DEFINITIONS AND HOUSE RULES
 
-CS = Connection segment.  A line on the drawing between two connection points.  
-CSI = Connection Segment Identifier.  A visible drawing attribute representing the cable/pipe number etc.
-NI = Node Identifier.  A visible drawing attribute representing an item of equipment the CSI is connecting to.
-CPS = Connection Point Source.  Usually a connector/plug/socket/terminal. A drawing block (BLOCKNAME, CPS_<CPNAME>) and associated attributes including the CSI.
-CPD = Connection Point Destination.  Usually a connector/plug/socket/terminal. A drawing block (BLOCKNAME, CPD_<CPNAME>) and associated attributes including the CSI.
-ND = Node.  Usually an item of equipment (but could be a simple T-Piece).  A nested block (BLOCKNAME, ND_<NODENAME>) containing Connection Point blocks and associated attributes
+**CS** = Connection segment.  A line on the drawing between two connection points.  
+**CSI** = Connection Segment Identifier.  A visible drawing attribute representing the cable/pipe number etc.  
+**NI** = Node Identifier.  A visible drawing attribute representing an item of equipment the CSI is connecting to.  
+**CPS** = Connection Point Source.  Usually a connector/plug/socket/terminal. A drawing block (BLOCKNAME, CPS_<CPNAME>) and associated attributes including the CSI.  
+**CPD** = Connection Point Destination.  Usually a connector/plug/socket/terminal. A drawing block (BLOCKNAME, CPD_<CPNAME>) and associated attributes including the CSI.  
+**NODE** = Node.  Usually an item of equipment (but could be a simple T-Piece).  A nested block (BLOCKNAME, NODE_<NODENAME>) containing Connection Point blocks and associated attributes.  
 
-OTHER ATTRUBUTES
-UDC = User Defined Comment.  
-STATUS = Status.   Normally this is an empty field but will contain X for not connected, ! for faulty or out of service.
+USUALLY INVISIBLE ATTRIBUTE NAMES
+**HANDLE** = automatically created attribute identifier
+**BLOCKNAME** = automatically created block name field
+**TITLE** = field used by dbDotCad as a document identifier
+
+OPTIONALLY VISIBLE ATTRUBUTES  NAMES
+**CSI** = Connection Segment Identifier (cable number).
+**NI** = Node Identifier (equipment).
+**UDC** = User Defined Comment (free text field).  
+**STATUS** = Status.   A single character only. X for not connected, ! for faulty or out of service.  
    
 Node is from the Latin nodus, meaning 'knot'.
 When a drawing is created, the Connection Point Source/Destination (CPS or CPD) will be a block with a unique database name and associated attributes as meta data.  Connections may have a mass of configuration information (Configuration Items) that would not normally be visible on a drawing and will be handled independantly within the database.  Drawing block attributes are limited to only those which may need to be visible or used to identify the block to the database.  The connection point will use arrows to represent the signal direction or flow.  Simplex connecitons will have a single arrow.  Duplex connections will be represented by two way arrows.  Connecitons forming part of a loop will have double arrows in the appropriate direction.  In the case of simplex connecitons, these typically 'enter' on the left and 'exit' on the right of a node.  Jackfields traditionally have outputs (sources) above inputs (destinations).
@@ -352,5 +359,6 @@ Select from the Folder or Open Drawings tab.
 I am not discouraged, because every wrong attempt discarded is another step forwards.   
 Thomas Edison.   
 
-There ain't no such thing as plain text.  Sense and reason from Joel: [Unicode explained](http://www.joelonsoftware.com/articles/Unicode.html)
+There ain't no such thing as plain text.   
+Sense and reason from Joel: [Unicode explained](http://www.joelonsoftware.com/articles/Unicode.html)
 
