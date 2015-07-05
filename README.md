@@ -114,15 +114,15 @@ Humanly readable and memorable conventions are preferable.
 **CPD** = Connection Point Destination.  Usually a connector/plug/socket/terminal. A drawing block (BLOCKNAME, CPD_<CPNAME>) and associated attributes including the CSI.  
 **NODE** = Node.  Usually an item of equipment (but could be a simple T-Piece).  A nested block (BLOCKNAME, NODE_<NODENAME>) containing Connection Point blocks and associated attributes.  
 
-USUALLY INVISIBLE ATTRIBUTE NAMES
-**HANDLE** = automatically created attribute identifier
-**BLOCKNAME** = automatically created block name field
-**TITLE** = field used by dbDotCad as a document identifier
-
-OPTIONALLY VISIBLE ATTRUBUTES  NAMES
-**CSI** = Connection Segment Identifier (cable number).
-**NI** = Node Identifier (equipment).
-**UDC** = User Defined Comment (free text field).  
+USUALLY INVISIBLE ATTRIBUTE NAMES  
+**HANDLE** = automatically created attribute identifier  
+**BLOCKNAME** = automatically created block name field  
+**TITLE** = field used by dbDotCad as a document identifier  
+   
+OPTIONALLY VISIBLE ATTRUBUTES  NAMES   
+**CSI** = Connection Segment Identifier (cable number).  
+**NI** = Node Identifier (equipment).  
+**UDC** = User Defined Comment (free text field).   
 **STATUS** = Status.   A single character only. X for not connected, ! for faulty or out of service.  
    
 Node is from the Latin nodus, meaning 'knot'.
