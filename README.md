@@ -204,19 +204,17 @@ The Title will contain will contain a unique document reference:
 
 N-N-N
 
-Where N is Numeric, one or more numbers, no spaces.  N must contain at least one number and each number is separated by hyphens.
+Where N is Numeric, one or more numbers, no~spaces.  N must contain at least one number and each number is separated by hyphens.
 
-The File name will contain the Document Title with an alphabetical revision identifier and a friendly name:
+The File name will contain the numeric, hyphen separated, Document Title with an alphabetical revision identifier then a friendly name:
 
 N-N-N-A_friendlyname.dwg
 
-Where A is an upper case alpha, one or more letters, no spaces.  This must contain at least one alphabetical character.
+Where A is an upper case alpha, one or more letters, no~spaces.  This revision identifier must contain at least one alphabetical character.
 The hyphens and underscore must be present and are used as part of a file/title name integrity check.
 
-NUMERIC_AREA_CODE**-**  
-NUMERIC_DOCUMENT_TYPE_GENERAL**-**  
-NUMERIC_DOCUMENT_TYPE_SPECIFIC**-**  
-ALPHABETICAL_REVISION_IDENTIFIER  
+NUMERIC~AREA~CODE`-`NUMERIC~DOC~TYPE~GENERAL`-`NUMERIC~DOC~TYPE~SPECIFIC`-`ALPHA~REVISION~IDENTIFIER`_`   
+followed by a friendly name and typically the .dwg file extension
 
 This will be checked with the regex ^[0-9]+-[0-9]+-[0-9]+-[A-Z]+_.*
 The configuration file will allow 3 different regex matches to be used in cases where multiple naming conventions may exist.  
