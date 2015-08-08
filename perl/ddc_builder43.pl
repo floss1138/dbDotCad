@@ -230,7 +230,7 @@ system("echo 'DIR 01;36' >> /root/.dircolors");
 
 # Hash this bit out if you dont use vim...
 print "\n Setting up vimrc for numbering and colorscheme ron \n";
-system("echo 'set su' >> /root/.vimrc");
+system("echo 'set nu' >> /root/.vimrc");
 
 # colourscheme(s) ron and elflord seem to work with perl
 system("echo 'colorscheme ron' >> /root/.vimrc");
