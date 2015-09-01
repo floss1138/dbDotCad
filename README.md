@@ -267,7 +267,7 @@ It is useful (best practice) to make one of attributes the drawing identifier an
 
 The header row in a file created by ATTOUT would look like this if a badly designed block used the TITLE tag twice:
 
-HANDLE &nbsp &nbsp BLOCKNAME &nbsp &nbsp TITLE &nbsp &nbsp FNAME TITLE(1)
+HANDLE  BLOCKNAME TITLE FNAME TITLE(1)
 
 There is a column for each attribute from all selected blocks, 
 attribute labels that do not apply to a specific block are indicated with 
@@ -312,8 +312,8 @@ In the block to create or edit field, give the block a name 'DDC_ID_V1'
 Draw something and maybe add some text and create an attribute definition  
 `ATT`
 The attribute definition window should appear.  
-In the Tag field, name the attribute key, for example 'DDC_TITLE'
-(DDC_TITLE will be the key, the value will be the Title)  
+In the Tag field, name the attribute key, for example 'TITLE'
+(TITLE will be the key, the value will be the document Title field)  
 In the Default drop down select Title (format none or define as desired).  
 In the Mode area, it's possible to not see this on the drawing by ticking Invisible.  
 Position the text within the block as necessary (even if its invisible)  
@@ -352,6 +352,11 @@ For repeated use of a block, create a drawing with just the blocks (known as a b
 Open drawings or block library drawings can be used to add blocks to new drawings via the AutoKAD DesignCentre   
 `ADCENTER`   
 Select from the Folder or Open Drawings tab.
+
+#### Attributes & Databases
+The HANDLE is not sufficiently unique to identify the block within a database.  HANDLE and TITLE can be concatenated to create the primary key,  _id.  If drawing title or file name was not included in the block attributes then the relevant part of the file name of the attout.txt file could be used to identify the document. Typically, the columns then become:  
+
+_id  BLOCKNAME  ATTRIBUTE1  ATTRIBUTE2  ATTRIBUTE3  
 
 #### Final thoughts 
 I am not discouraged, because every wrong attempt discarded is another step forwards.   
