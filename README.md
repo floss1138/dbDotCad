@@ -291,9 +291,12 @@ Command: `(setq handle-circle (cdr (assoc 5 (entget ename-circle))))`
 
 When exported from AutoKAD, the block above would have   
 key HANDLE, value '12BFE  
+
+### dbDotCad block _id
 Obviously, a single drawing has no way of knowing the handles used for other drawings.  
 For migration into a database, some additional data identifying the (uniquely named) drawing file is necessary.  
-This can be the file name (or part thereof) and/or the drawing title.  In our examples the N-N-N part of the title and/or file name will be used.
+This can be the file name (or part thereof) and/or the drawing title.  In our examples the N-N-N part of the title and/or file name will be used.   
+The attout handle always starts apostrophe and has a 3 digit or larger hex value.  As the apostrophe is a useful chek, dbDotCad preserves this as part of the database_id.  The appended document identifier is added after the handle using a + character as a separator so the _id becomes 'handle+docname e.g. '12BFE+123-23-1234
 
 ### RELEVANT AUTOKAD COMMANDS 
 
