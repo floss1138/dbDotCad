@@ -1,4 +1,4 @@
-## dbDotCad
+﻿## dbDotCad
 An experiment with MongoDB using CAD attributes as the data set
 
 \# X-Clacks-Overhead: GNU Terry Pratchett  
@@ -6,7 +6,7 @@ use humour;
 \# And don't ride in anything with a Capissen 38 engine  
 
 ### dbDotCad - the readme  
-$VERSION = 0.010    
+$VERSION = 0.045    
 > COPYRIGHT AND LICENSE    
 > Copyright (C) 2015, floss1138  
 > floss1138 ta liamg tod moc  
@@ -94,7 +94,7 @@ Client Server, Master Slave, Peer to Peer, Host to Controller...
 The adopted standard for this implementation is Source to Destination.  Where a connection branches from one to  many, that branching point is the Source.  On the end of the branch is the end point, Destination.  The Destination may branch onwards, so for the next connection it's output can become the Source to the next Destination.  
 A network switch connecting to several servers and workstations is the Source.  
 A header tank feeding several irrigation channels is the Source.  
-A distribution amplifier sending RF to several recievers is the Source.  
+A distribution amplifier sending RF to several receivers is the Source.  
 A microphone is the Source to the pre amp.   
 The pre-amp output is the Source to a power amp.  
 The power amp is the Source to the speaker.  
@@ -126,16 +126,16 @@ OPTIONALLY VISIBLE ATTRUBUTES  NAMES
 **STATUS** = Status.   A single character only. X for not connected, ! for faulty or out of service.  
    
 Node is from the Latin nodus, meaning 'knot'.
-When a drawing is created, the Connection Point Source/Destination (CPS or CPD) will be a block with a unique database name and associated attributes as meta data.  Connections may have a mass of configuration information (Configuration Items) that would not normally be visible on a drawing and will be handled independantly within the database.  Drawing block attributes are limited to only those which may need to be visible or used to identify the block to the database.  The connection point will use arrows to represent the signal direction or flow.  Simplex connecitons will have a single arrow.  Duplex connections will be represented by two way arrows.  Connecitons forming part of a loop will have double arrows in the appropriate direction.  In the case of simplex connecitons, these typically 'enter' on the left and 'exit' on the right of a node.  Jackfields traditionally have outputs (sources) above inputs (destinations).
+When a drawing is created, the Connection Point Source/Destination (CPS or CPD) will be a block with a unique database name and associated attributes as meta data.  Connections may have a mass of configuration information (Configuration Items) that would not normally be visible on a drawing and will be handled independantly within the database.  Drawing block attributes are limited to only those which may need to be visible or used to identify the block to the database.  The connection point will use arrows to represent the signal direction or flow.  Simplex connections will have a single arrow.  Duplex connections will be represented by two way arrows.  Connections forming part of a loop will have double arrows in the appropriate direction.  In the case of simplex connections, these typically 'enter' on the left and 'exit' on the right of a node.  Jackfields traditionally have outputs (sources) above inputs (destinations).
 Each Connection Point will have the Connection Segment Identifier (CSI), typically a cable number, as an attribute. This would normally be visible on the drawing.
-Items of equipment form nodes. Each node requires a unique database name, the Node Identifer (NI) and will be a nested block with BLOCKNAME = ND_<NODENAME> containing the connections.  CPS/CPD blocks are used as part of the Node block.
-All blocks will contain keys for HANDLE, BLOCKNAME (both automaticly added by AutoKAD), then TITLE and FNAME followed by attrubutes specific to the block.  
+Items of equipment form nodes. Each node requires a unique database name, the Node Identifier (NI) and will be a nested block with BLOCKNAME = ND_<NODENAME> containing the connections.  CPS/CPD blocks are used as part of the Node block.
+All blocks will contain keys for HANDLE, BLOCKNAME (both automatically added by AutoKAD), then TITLE and FNAME followed by attributes specific to the block.  
 
 IP information may be needed on a drawing.  In this case CIDR house rules apply (Classless Inter-Domain Routing notation).  [CIDR Explained] (https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
 
 ### GETTING STARTED
 
-On Unbuntu desktop or server (ideally a clean install - running in a VM) ...
+On Ubuntu desktop or server (ideally a clean install - running in a VM) ...
 
 1.  Download the build script ddc_builderv#.pl  
 2.  Edit the scrip header (or accept the defaults)
@@ -204,7 +204,8 @@ The Title will contain will contain a unique document reference:
 
 N-N-N
 
-Where N is Numeric, one or more numbers, no~spaces.  N must contain at least one number and each number is separated by hyphens.
+Where N is Numeric, one or more numbers, no~spaces.  N must contain at least one number and each number is separated by hyphens.   
+There must be no other characters used in the name.  
 
 The File name will contain the numeric, hyphen separated, Document Title with an alphabetical revision identifier then a friendly name:
 
@@ -256,10 +257,12 @@ Ideally every block definition should contain the title (and possibly file name)
 
 The file written by ATTOUT is tab-delimited ASCII.    
 The ATTOUT filename is the drawing file name with a .txt extension (but can be changed before saving).
-Some file naming standards require the document title to be in the file name, this can be a useful cross check.
+Some file naming standards require the document title to be in the file name, this can be a useful cross check.   
+DDC adopts this method and requires a strict naming standard as above.
 
 The first row in the file contains column headers that identify the data to ATTIN. 
-The first two columns are labelled HANDLE and BLOCKNAME. 
+The first two columns are always labelled HANDLE and BLOCKNAME as exported by ATTOUT (and required by the dxf standard).
+DDC requires the next attribtue to be TITLE and to identify the docuocument.  
 
 The remaining columns in the file are labelled with attribute tags as they appear in the drawing. 
 Numbers are added to duplicate attribute tags to ensure that they are unique. 
@@ -267,7 +270,7 @@ It is useful (best practice) to make one of attributes the drawing identifier an
 
 The header row in a file created by ATTOUT would look like this if a badly designed block used the TITLE tag twice:
 
-HANDLE  BLOCKNAME TITLE FNAME TITLE(1)
+HANDLE BLOCKNAME TITLE ATTRIBUTE1 ATTRIBUTE2 TITLE(1)
 
 There is a column for each attribute from all selected blocks, 
 attribute labels that do not apply to a specific block are indicated with 
@@ -349,17 +352,39 @@ Edit the file name and location as desired.
 Click Save.
 
 `ATTOUT` is a LISP express tool installed by default with AutoKAD 2008 upwards to export the attributes of selected blocks.
-`ATTIN` performs the opposit function.
+`ATTIN` performs the opposite function.
 
 For repeated use of a block, create a drawing with just the blocks (known as a block library drawing).
 Open drawings or block library drawings can be used to add blocks to new drawings via the AutoKAD DesignCentre   
 `ADCENTER`   
 Select from the Folder or Open Drawings tab.
 
-#### Attributes & Databases
-The HANDLE is not sufficiently unique to identify the block within a database.  HANDLE and TITLE can be concatenated to create the primary key,  _id.  If drawing title or file name was not included in the block attributes then the relevant part of the file name of the attout.txt file could be used to identify the document. Typically, the columns then become:  
+#### Attribute HANDLE & Databases
+The HANDLE is not sufficiently unique to identify the block within a database.  HANDLE and TITLE can be concatenated to create a unique primary key,  _id.  For ease of reading, a + character is used as the separator between the handle and title fields.  As an additional aid to identification, the leading apostrophe created by attout is retained.  For example _id will become, 'HANDLE+TITLE and will look something like this: '35068+1234-5678-9012   
+If drawing title or file name was not included in the block attributes then the relevant part of the file name (which includes the document title) can be extracted from the attout.txt file name. Typically, the columns as seen by the database then become:  
 
 _id  BLOCKNAME  ATTRIBUTE1  ATTRIBUTE2  ATTRIBUTE3  
+
+where _id = HANDLE+TITLE
+
+#### Bulk import into database
+mongoDB has a bulk import function and will accept javascript as an command line argument to the mongo command.
+The attout format can easily be modified to comply with bulk import function.  For example, here the attout data becomes variable attout:  
+`
+var attout = db.collection_name.initializeUnorderedBulkOp();
+attout.insert( { "_id": "'35068+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA01A", "LOCATION": "ROOM2/A01", "BRAND":"MEGAUNLIMITED" }); 
+attout.insert( { "_id": "'35069+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA02A", "LOCATION": "ROOM2/A02", "BRAND":"MEGAUNLIMITED" }); 
+attout.insert( { "_id": "'35071+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA04A", "LOCATION": "ROOM2/A04", "BRAND":"MEGAUNLIMITED" }); 
+attout.insert( { "_id": "'35072+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA05A", "LOCATION": "ROOM2/A01", "BRAND":"MEGAUNLIMITED" }); 
+attout.insert( { "_id": "'35073+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA06A", "LOCATION": "ROOM2/A06", "BRAND":"MEGAUNLIMITED" }); 
+attout.execute();
+`
+If the modified attout.txt is saved as a new file, typically with a .js extension this can be passed to the mongo client:
+`mongo bulkinsert_example.js`
+
+mongoDB will automatically reject a duplicate _id.  This is not an error and for this application is the desired behaviour.  
+The first import will succeed and can be used to initially populate or seed desired fields.  From this point onwards it is necessary to manipulate the data from within the database itself.  The databases is King and should always be this way.  Future attout operations will provide the _id for a query but only new _ids will add data to the database. 
+
 
 #### Final thoughts 
 I am not discouraged, because every wrong attempt discarded is another step forwards.   
@@ -367,4 +392,3 @@ Thomas Edison.
 
 There ain't no such thing as plain text.   
 Sense and reason from Joel: [Unicode explained](http://www.joelonsoftware.com/articles/Unicode.html)
-
