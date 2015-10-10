@@ -386,6 +386,18 @@ mongoDB will automatically reject a duplicate _id.  This is not an error and for
 The first import will succeed and can be used to initially populate or seed desired fields.  From this point onwards it is necessary to manipulate the data from within the database itself.  The databases is King and should always be this way.  Future attout operations will provide the _id for a query but only new _ids will add data to the database. 
 
 
+#### Attributes and nested blocks
+When blocks are nested, clicking on the block only presents attributes for the *parent* block.  Similarly using ATTOUT on a nested block only captures attributes from the *parent* and not the *children* within.
+If the *parent* block is exploded then attributes of the *children* become visible.  Third party routines may exist to extract attributes from nested blocks but it is not possible with Express Tools and a default installation.  
+
+For nested blocks containing other blocks defining connection points, it is possible to make a filtered selection of these within a drawing and then EXPLODE prior to using ATTOUT.  In this case consider defining colours BYBLOCK.
+
+See also, third party lisp routines from:   
+http://www.lee-mac.com/macatt.html   
+http://www.lee-mac.com/attributecolour.html   
+and check out the standard AppLoad and AttCol commands
+
+
 #### Final thoughts 
 I am not discouraged, because every wrong attempt discarded is another step forwards.   
 Thomas Edison.   
