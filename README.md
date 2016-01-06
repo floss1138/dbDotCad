@@ -6,7 +6,7 @@ use humour;
 \# And don't ride in anything with a Capissen 38 engine  
 
 ### dbDotCad - the readme  
-$VERSION = 0.045    
+$VERSION = 0.046    
 > COPYRIGHT AND LICENSE    
 > Copyright (C) 2015, floss1138  
 > floss1138 ta liamg tod moc  
@@ -129,9 +129,43 @@ Node is from the Latin nodus, meaning 'knot'.
 When a drawing is created, the Connection Point Source/Destination (CPS or CPD) will be a block with a unique database name and associated attributes as meta data.  Connections may have a mass of configuration information (Configuration Items) that would not normally be visible on a drawing and will be handled independantly within the database.  Drawing block attributes are limited to only those which may need to be visible or used to identify the block to the database.  The connection point will use arrows to represent the signal direction or flow.  Simplex connections will have a single arrow.  Duplex connections will be represented by two way arrows.  Connections forming part of a loop will have double arrows in the appropriate direction.  In the case of simplex connections, these typically 'enter' on the left and 'exit' on the right of a node.  Jackfields traditionally have outputs (sources) above inputs (destinations).
 Each Connection Point will have the Connection Segment Identifier (CSI), typically a cable number, as an attribute. This would normally be visible on the drawing.
 Items of equipment form nodes. Each node requires a unique database name, the Node Identifier (NI) and will be a nested block with BLOCKNAME = ND_<NODENAME> containing the connections.  CPS/CPD blocks are used as part of the Node block.
-All blocks will contain keys for HANDLE, BLOCKNAME (both automatically added by AutoKAD), then TITLE and FNAME followed by attributes specific to the block.  
+All blocks will contain keys for HANDLE (automatically added by AutoKAD), BLOCKNAME, then TITLE and FNAME followed by attributes specific to the block.  
 
 IP information may be needed on a drawing.  In this case CIDR house rules apply (Classless Inter-Domain Routing notation).  [CIDR Explained] (https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
+
+#### CONNECTIONS FOR NETWORK AND A/V/CONTROL
+
+<Type description e.g. net>-<Sub Type e.g. ana, dig, 1g>-<Block description e.g. pinsrc, pindst>_<Version e.g. 001>  
+
+net-1g-pinsrc_001  
+
+Type:  
+
+tgf = 10G Ethernet over Fibre optic  
+net = Ethernet including iscsi over cat cable, rj45  
+fib = Fibre channel  
+fcl = Fibre channel arbitrated loop  
+tax = Twinax based connection such as Infiniband and UCS intterconnects, ucs, inf  
+vid = Video analogue or digital ana, dig  
+aud = Audio analoghe or digital ana, dig  
+ctl = Control including serial RS422/485/232  
+kvm = Keyboard Mouse & KVM extensions  
+usb = USB direct or extended, 2.0, 3.0  
+dpt = Display port, sub type can be thunderbolt tb_, miN  
+vga = VGA or SCART  
+gpi = GPI  
+pwr = Power DC, AC  
+asi = ASI  
+rf_ = RF  
+dvi = DVI  
+hdm = HDMI  
+tel = Telephone, PSTN  
+opt = optical bundle, number of cores  
+
+Sub Type:  
+
+non =  no specific variation or the expected standard connection/connector  
+
 
 ### GETTING STARTED
 
@@ -370,15 +404,15 @@ where _id = HANDLE+TITLE
 #### Bulk import into database
 mongoDB has a bulk import function and will accept javascript as an command line argument to the mongo command.
 The attout format can easily be modified to comply with bulk import function.  For example, here the attout data becomes variable attout:  
-`
-var attout = db.collection_name.initializeUnorderedBulkOp();
+
+`var attout = db.collection_name.initializeUnorderedBulkOp();
 attout.insert( { "_id": "'35068+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA01A", "LOCATION": "ROOM2/A01", "BRAND":"MEGAUNLIMITED" }); 
 attout.insert( { "_id": "'35069+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA02A", "LOCATION": "ROOM2/A02", "BRAND":"MEGAUNLIMITED" }); 
 attout.insert( { "_id": "'35071+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA04A", "LOCATION": "ROOM2/A04", "BRAND":"MEGAUNLIMITED" }); 
 attout.insert( { "_id": "'35072+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA05A", "LOCATION": "ROOM2/A01", "BRAND":"MEGAUNLIMITED" }); 
 attout.insert( { "_id": "'35073+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA06A", "LOCATION": "ROOM2/A06", "BRAND":"MEGAUNLIMITED" }); 
-attout.execute();
-`
+attout.execute();`
+
 If the modified attout.txt is saved as a new file, typically with a .js extension this can be passed to the mongo client:
 `mongo bulkinsert_example.js`
 
