@@ -135,7 +135,7 @@ IP information may be needed on a drawing.  In this case CIDR house rules apply 
 
 #### CONNECTIONS FOR NETWORK AND A/V/CONTROL
 
-<Type description e.g. net>-<Sub Type e.g. ana, dig, 1g>-<Block description e.g. pinsrc, pindst>_<Version e.g. 001>  
+    <Type description e.g. net>-<Sub Type e.g. ana, dig, 1g>-<Block description e.g. pinsrc, pindst>_<Version e.g. 001>  
 
 net-1g-pinsrc_001  
 
@@ -185,7 +185,7 @@ Check the [mongodb download page](https://www.mongodb.org/downloads) for the lat
 4.  Save the revised script.
 5.  Before running the build, consider capturing the build output to a file   
 `script ddcbuild_capture.txt`   
-6.  As root run ddc_builderv#.pl   
+6.  As root run ddc_builder_vx.pl   
 `sudo perl ddc_builder_vx.pl`   
 
 mongodb is not installed from the Ubuntu repository as the 
@@ -405,13 +405,13 @@ where _id = HANDLE+TITLE
 mongoDB has a bulk import function and will accept javascript as an command line argument to the mongo command.
 The attout format can easily be modified to comply with bulk import function.  For example, here the attout data becomes variable attout:  
 
-`var attout = db.collection_name.initializeUnorderedBulkOp();
-attout.insert( { "_id": "'35068+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA01A", "LOCATION": "ROOM2/A01", "BRAND":"MEGAUNLIMITED" }); 
-attout.insert( { "_id": "'35069+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA02A", "LOCATION": "ROOM2/A02", "BRAND":"MEGAUNLIMITED" }); 
-attout.insert( { "_id": "'35071+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA04A", "LOCATION": "ROOM2/A04", "BRAND":"MEGAUNLIMITED" }); 
-attout.insert( { "_id": "'35072+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA05A", "LOCATION": "ROOM2/A01", "BRAND":"MEGAUNLIMITED" }); 
-attout.insert( { "_id": "'35073+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA06A", "LOCATION": "ROOM2/A06", "BRAND":"MEGAUNLIMITED" }); 
-attout.execute();`
+`var attout = db.collection_name.initializeUnorderedBulkOp();`
+`attout.insert( { "_id": "'35068+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA01A", "LOCATION": "ROOM2/A01", "BRAND":"MEGAUNLIMITED" });` 
+`attout.insert( { "_id": "'35069+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA02A", "LOCATION": "ROOM2/A02", "BRAND":"MEGAUNLIMITED" });` 
+`attout.insert( { "_id": "'35071+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA04A", "LOCATION": "ROOM2/A04", "BRAND":"MEGAUNLIMITED" });` 
+`attout.insert( { "_id": "'35072+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA05A", "LOCATION": "ROOM2/A01", "BRAND":"MEGAUNLIMITED" });` 
+`attout.insert( { "_id": "'35073+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA06A", "LOCATION": "ROOM2/A06", "BRAND":"MEGAUNLIMITED" });` 
+`attout.execute();`
 
 If the modified attout.txt is saved as a new file, typically with a .js extension this can be passed to the mongo client:
 `mongo bulkinsert_example.js`
