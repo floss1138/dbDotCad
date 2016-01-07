@@ -1,12 +1,14 @@
 ﻿## dbDotCad
 An experiment with MongoDB using CAD attributes as the data set
 
+use strict;
 \# X-Clacks-Overhead: GNU Terry Pratchett  
 use humour;  
 \# And don't ride in anything with a Capissen 38 engine  
+$VERSION = 0.047
 
 ### dbDotCad - the readme  
-$VERSION = 0.046    
+
 > COPYRIGHT AND LICENSE    
 > Copyright (C) 2015, floss1138  
 > floss1138 ta liamg tod moc  
@@ -115,16 +117,23 @@ Humanly readable and memorable conventions are preferable.
 **NODE** = Node.  Usually an item of equipment (but could be a simple T-Piece).  A nested block (BLOCKNAME, NODE_<NODENAME>) containing Connection Point blocks and associated attributes.  
 
 USUALLY INVISIBLE ATTRIBUTE NAMES  
-**HANDLE** = automatically created attribute identifier  
-**BLOCKNAME** = automatically created block name field  
-**TITLE** = field used by dbDotCad as a document identifier  
-   
+**HANDLE** = automatically created attribute identifier, unique for each block in a drawing   
+**BLOCKNAME** = mandatory block name field, should contain a version number for revision identification  
+**TITLE** = field used by dbDotCad as a document (drawing) identifier  
+**ALIAS** = field used by dbDotCad as a friendly name for connection name    
+**UDC** = User Defined Comment (free text field).   
+**COLCABLE** = Cable colour
+**COLSLEEVE** = Sleeve colour if used
+**
+
 OPTIONALLY VISIBLE ATTRUBUTES  NAMES   
 **CSI** = Connection Segment Identifier (cable number).  
 **NI** = Node Identifier (equipment).  
-**UDC** = User Defined Comment (free text field).   
 **STATUS** = Status.   A single character only. X for not connected, ! for faulty or out of service.  
-   
+**LOCATION** = Location of the connection.  Site/Room/Rack/Rail/Chassis/Board  
+**TOFROM**  = block_id from the connection block (HANDLE+TITLE)
+
+
 Node is from the Latin nodus, meaning 'knot'.
 When a drawing is created, the Connection Point Source/Destination (CPS or CPD) will be a block with a unique database name and associated attributes as meta data.  Connections may have a mass of configuration information (Configuration Items) that would not normally be visible on a drawing and will be handled independantly within the database.  Drawing block attributes are limited to only those which may need to be visible or used to identify the block to the database.  The connection point will use arrows to represent the signal direction or flow.  Simplex connections will have a single arrow.  Duplex connections will be represented by two way arrows.  Connections forming part of a loop will have double arrows in the appropriate direction.  In the case of simplex connections, these typically 'enter' on the left and 'exit' on the right of a node.  Jackfields traditionally have outputs (sources) above inputs (destinations).
 Each Connection Point will have the Connection Segment Identifier (CSI), typically a cable number, as an attribute. This would normally be visible on the drawing.
@@ -329,11 +338,13 @@ Command: `(setq handle-circle (cdr (assoc 5 (entget ename-circle))))`
 When exported from AutoKAD, the block above would have   
 key HANDLE, value '12BFE  
 
-### dbDotCad block _id
+### dbDotCad block_id
 Obviously, a single drawing has no way of knowing the handles used for other drawings.  
 For migration into a database, some additional data identifying the (uniquely named) drawing file is necessary.  
 This can be the file name (or part thereof) and/or the drawing title.  In our examples the N-N-N part of the title and/or file name will be used.   
-The attout handle always starts apostrophe and has a 3 digit or larger hex value.  As the apostrophe is a useful chek, dbDotCad preserves this as part of the database_id.  The appended document identifier is added after the handle using a + character as a separator so the _id becomes 'handle+docname e.g. '12BFE+123-23-1234
+The attout handle always starts apostrophe and has a 3 digit or larger hex value.  As the apostrophe is a useful chek, dbDotCad preserves this as part of the database_id.  The appended document identifier is added after the handle using a + character as a separator so the MongoDB primary key _id becomes 'handle+docname e.g. '12BFE+123-23-1234  
+This will be know as the **block_id** 
+
 
 ### RELEVANT AUTOKAD COMMANDS 
 
@@ -405,13 +416,13 @@ where _id = HANDLE+TITLE
 mongoDB has a bulk import function and will accept javascript as an command line argument to the mongo command.
 The attout format can easily be modified to comply with bulk import function.  For example, here the attout data becomes variable attout:  
 
-`var attout = db.collection_name.initializeUnorderedBulkOp();`
-`attout.insert( { "_id": "'35068+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA01A", "LOCATION": "ROOM2/A01", "BRAND":"MEGAUNLIMITED" });` 
-`attout.insert( { "_id": "'35069+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA02A", "LOCATION": "ROOM2/A02", "BRAND":"MEGAUNLIMITED" });` 
-`attout.insert( { "_id": "'35071+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA04A", "LOCATION": "ROOM2/A04", "BRAND":"MEGAUNLIMITED" });` 
-`attout.insert( { "_id": "'35072+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA05A", "LOCATION": "ROOM2/A01", "BRAND":"MEGAUNLIMITED" });` 
-`attout.insert( { "_id": "'35073+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA06A", "LOCATION": "ROOM2/A06", "BRAND":"MEGAUNLIMITED" });` 
-`attout.execute();`
+`var attout = db.collection_name.initializeUnorderedBulkOp();`   
+`attout.insert( { "_id": "'35068+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA01A", "LOCATION": "ROOM2/A01", "BRAND":"MEGAUNLIMITED" });`  
+`attout.insert( { "_id": "'35069+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA02A", "LOCATION": "ROOM2/A02", "BRAND":"MEGAUNLIMITED" });`  
+`attout.insert( { "_id": "'35071+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA04A", "LOCATION": "ROOM2/A04", "BRAND":"MEGAUNLIMITED" });`  
+`attout.insert( { "_id": "'35072+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA05A", "LOCATION": "ROOM2/A01", "BRAND":"MEGAUNLIMITED" });`  
+`attout.insert( { "_id": "'35073+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA06A", "LOCATION": "ROOM2/A06", "BRAND":"MEGAUNLIMITED" });`  
+`attout.execute();`   
 
 If the modified attout.txt is saved as a new file, typically with a .js extension this can be passed to the mongo client:
 `mongo bulkinsert_example.js`
