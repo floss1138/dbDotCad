@@ -693,8 +693,14 @@ print << "GOODBYE";
 
 If capturing the script output, you may want to cancel that now ...
 Reload the shell to take advantage of the new path  source ~/.bashrc 
+The script should have created a test db, check and modify entries:
+/root/mongodb/bin/mongo
+use ddcBLOCKS
+db.ddc_testblock.find()
+db.ddc_testblock.update({ "_id" : "'deleteme_id1"}, { "mission" : "Local confusion" })
+
 Check http://$ipaddress/
-Now run $ddc_read ...
+then run $ddc_read ...
 
 *** Live Long and Prosper ***
 
