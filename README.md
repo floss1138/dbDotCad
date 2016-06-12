@@ -1,11 +1,10 @@
 ﻿## dbDotCad
 An experiment with MongoDB using CAD attributes as the data set
 
-use strict;
+use strict;   
 \# X-Clacks-Overhead: GNU Terry Pratchett  
 use humour;  
 \# And don't ride in anything with a Capissen 38 engine  
-$VERSION = 0.047
 
 ### dbDotCad - the readme  
 
@@ -26,10 +25,10 @@ If you run this software you are also using it at your own risk.
 **What is dbDotCad?**
 
 An experiment with MongoDB using CAD attributes as the data set.
-Initially using Ubuntu as the OS, Perl & JavaScript for scripting.
-MongodB will be used to store CAD metadata and (drawing) file history/version tracking.
-Data needs to be manipulated in spread sheets using xlxs format.
-CAD attributes (metadata) will be use the DXF standard.
+Initially using Ubuntu as the OS, Perl & JavaScript.
+MongoDB will be used to store CAD metadata and for drawing history/version tracking.
+Data needs to be manipulated in spreadsheets using xlxs format.
+CAD attributes (metadata) will use the DXF standard.
 For more on DXF search for 'DXF Reference' or read the [reference manual](http://images.autodesk.com/adsk/files/autocad_2012_pdf_dxf-reference_enu.pdf)   
 Shared storage between the client (running CAD) and server (running mongodb)
 will use CIFS/SAMBA.   Web service will use Apache. 
