@@ -101,6 +101,8 @@ The pre-amp output is the Source to a power amp.
 The power amp is the Source to the speaker.  
 As a convention to defining connectivity **the Source will always be defined first** & matched to the Destination.
 
+Any connection usually involves two parts.  Typically, some form of plug and some form of socket. It has been known for wring systems to cheat a little here and assume equipment has the appropriate connection and the drawing simply defines the required interconnection without the ability to ensure the equipment block and the connection match.  In this case the connecting association is with the equipment block and not individual connecting points on the block.  Both approaches should be supported.  Note that wiring schedules should always be from the perspective of the cable.  If a male connector is defined in a schedule, this implies male end on cable and not a male on the equipment which would require human interpretation to fit the correct connector.
+
 The Database can be used to provide next in sequence numbers/names by keeping track of the next in sequence running number.  
 It should also be possible to 'seed' the provided sequence (at the expanse of redundant number space).
 Further development could allow 'subnetting' of number space.  
