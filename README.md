@@ -25,6 +25,7 @@ If you run this software you are also using it at your own risk.
 **What is dbDotCad?**
 
 An experiment with MongoDB using CAD attributes as the data set.
+After looking for a MongoDB API, DreamFactory came up as an application worth a test drive.
 Initially using Ubuntu as the OS, Perl & JavaScript.
 MongoDB will be used to store CAD metadata and for drawing history/version tracking.
 Data needs to be manipulated in spreadsheets using xlxs format.
@@ -225,7 +226,33 @@ ddc_builder will:
 8.  This installation of mongodb will not run at boot time unless startup.sh is executed and will add an @reboot line to the crontab
 9.  Write a javascript file to create and test the database ddc_create.js 
 10. wget other scripts a needed from Github
+11. Install the DreamFactory LAMP stack using bitnami (includes MongoDB, MySQL and Postgress but with NginX as the web server)
 
+### DreamFactory
+It is easy to use the bitnami image https://bitnami.com/stack/dreamfactory/installer#linux
+The ddc install script downloads this, chmod 755s the image and runs the install. 
+For now there will be two instances of Mongo to play with. 
+Change the DreamFactory web port to 8080 and Mongo to 27080 (as 80 and 27017 are already in use by ddc). 
+For DreamFactory Mongo, installs to installs by defautl to: /opt/dreamfactory-<version.number>/mongodb/bin 
+but it is possible to specify the install path (/opt/dreamfactory seems sensible).  
+
+DreamFactory 2.0 supports forever session. 
+By default it is disabled. 
+To enable this uncomment the following line in .env file and set it to 'true'.   
+
+`DF_ALLOW_FOREVER_SESSIONS=true`    
+
+To make sure forever session is enabled, make the following API call.   
+`GET http://{url}/api/v2/system/environment`   
+Look for the following in your response.   
+`...`   
+`"authentication":{`   
+`    ....`    
+`    "allow_forever_sessions":true`    
+`    ....`   
+`}`   
+`...`   
+ 
 ### dbDotCad Part1
 
 write a ddc_upload.pl script to do the following:
