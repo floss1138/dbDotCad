@@ -234,7 +234,12 @@ The ddc install script downloads this, chmod 755s the image and runs the install
 For now there will be two instances of Mongo to play with. 
 Change the DreamFactory web port to 8080 and Mongo to 27080 (as 80 and 27017 are already in use by ddc). 
 For DreamFactory Mongo, installs to installs by defautl to: /opt/dreamfactory-<version.number>/mongodb/bin 
-but it is possible to specify the install path (/opt/dreamfactory seems sensible).  
+but it is possible to specify the install path (/opt/dreamfactory seems sensible).    
+Files are also accessible via the API.  Path to New_Folder on server becomes:   
+`/opt/dreamfactory/apps/dreamfactory/htdocs/storage/app/New_Folder`   
+.txt files open in an exit window via the browser but need a chmod   
+
+
 
 DreamFactory 2.0 supports forever session. 
 By default it is disabled. 
@@ -326,7 +331,7 @@ Ideally every block definition should contain the title (and possibly file name)
 
 ### ATTRIBUTE DATA FORMAT
 
-The file written by ATTOUT is tab-delimited ASCII.    
+The file written by ATTOUT is tab-delimited ASCII. These only include blocks with attributes.  In the following notes, assume that the term block referes to blocks with attribute data.      
 The ATTOUT filename is the drawing file name with a .txt extension (but can be changed before saving).
 Some file naming standards require the document title to be in the file name, this can be a useful cross check.   
 DDC adopts this method and requires a strict naming standard as above.
@@ -343,10 +348,10 @@ The header row in a file created by ATTOUT would look like this if a badly desig
 
 HANDLE BLOCKNAME TITLE ATTRIBUTE1 ATTRIBUTE2 TITLE(1)
 
-There is a column for each attribute from all selected blocks, 
-attribute labels that do not apply to a specific block are indicated with 
+Each field (attribute/key name) is separated by a tab.  There is a column for each attribute from all selected blocks, 
+data under each attribute/key that do not apply to a specific BLOCKNAME are indicated with 
 `<>`
-in the cells that do not apply.
+in the cells that do not apply.  If the entry between tabs is simply empty, then the key is valid and the data is empty.
 
 The handle is an id automatically generated and unique to each block, ONLY FOR THE ORIGINATING DRAWING.  
 The `ATTOUT` command adds a preceding apostrophe/single quote character to the HANDLE data which can be a useful validity check.
@@ -364,7 +369,15 @@ To find the handle associated with an ename, use the DXF 5 group of the ename's 
 Command: `(setq handle-circle (cdr (assoc 5 (entget ename-circle))))`  
 
 When exported from AutoKAD, the block above would have   
-key HANDLE, value '12BFE  
+key HANDLE, value '12BFE   
+    
+It is planned to separate out all the BLOCKNAMES found onto a different spreadsheet tabs.
+A current implementation has only limited blocks which will be treated as special cases, these are:   
+NAME (yes that the default if the block is not named)  
+PINL   
+PINR   
+Any others such as blocks used in surrounds need not special attention.
+
 
 ### dbDotCad block_id
 Obviously, a single drawing has no way of knowing the handles used for other drawings.  
