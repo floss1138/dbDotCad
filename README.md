@@ -274,45 +274,38 @@ Include path to attribute file, growing file check delay, enforce title, documen
 
 ### NAMING CONVENTION FOR DRAWINGS
 It is best practice is to create naming and numbering systems which follow a logical hierarchy. 
-Based on some real world naming, ddc will adopt the following document naming convention for the CAD drawings.  
+Based on some real world naming, a unique document title will form the first part of the file name and contain an alphanumeric revision (upper case) and friendly name after this numeric document title identifier: 
 
-The Title will contain will contain a unique document reference:
+N-N-N-N-A_frienly name which may have spaces.dwg
 
-N-N-N
+Where N is Numeric, one or more numbers, no spaces.  N must contain at least one number and each number is separated by hyphens. There must be no other characters used in the name.  
 
-Where N is Numeric, one or more numbers, no~spaces.  N must contain at least one number and each number is separated by hyphens.   
-There must be no other characters used in the name.  
+The file name will contain the numeric, hyphen separated, document title with an alphabetical revision identifier then a friendly name.
 
-The File name will contain the numeric, hyphen separated, Document Title with an alphabetical revision identifier then a friendly name:
-
-N-N-N-A_friendlyname.dwg
-
-Where A is an upper case alpha, one or more letters, no~spaces.  This revision identifier must contain at least one alphabetical character.
+Where A is an upper case alpha, one or more letters, no spaces.  This revision identifier must contain at least one alphabetical character.
 The hyphens and underscore must be present and are used as part of a file/title name integrity check.
 
-NUMERIC~AREA~CODE`-`NUMERIC~DOC~TYPE~GENERAL`-`NUMERIC~DOC~TYPE~SPECIFIC`-`ALPHA~REVISION~IDENTIFIER`_`   
-followed by a friendly name and typically the .dwg file extension
+NUMERIC SITE OR COUNTRY CODE`-`NUMERIC AREA CODE`-`NUMERIC DOC TYPE GENERAL`-`NUMERIC DOC TYPE SPECIFIC`-`ALPHA REVISION~ DENTIFIER`_`   
+followed by a friendly name with spaces allowed (underscors are better) and typically the .dwg file extension
 
-This will be checked with the regex ^[0-9]+-[0-9]+-[0-9]+-[A-Z]+_.*
-The configuration file will allow 3 different regex matches to be used in cases where multiple naming conventions may exist.  
+This will be checked with the regex ^[0-9]+-[0-9]+-[0-9]+-[0-9]+-[A-Z]+_.*
+The configuration file will allow 3 different regex matches to be used in cases where multiple naming conventions may exist.  ddc has to cope with a use case where existing naming had insufficient provision for the site code and different databases were used for different sites.  If the site code is missing (i.e the title is N-N-N-A not N-N-N-N-A) the site code will be assumed to be 01 by default.
 
-The Title is included as the beginning of the file name which may also include a descriptive name which may contain spaces.
-The descriptive part of the name will not be used by the database for identification.  This is only for by humans who sometimes use white space in file names.
+The descriptive part of the name and the revision will not be used by the database for identification as part of a primary key.  This is only for by humans who sometimes use white space in file names.
 It is mandatroy to link the Alphabetical revision part to the name via an underscore to the description.
 
-N-N-N-A_Descriptive name spaces allowed.extension
 
 For example:
-`123-23-1234_C My Ace Design.dwg` or
-`456-78-4567-AD_new_office_fist_floor.dwg`
+`01-123-23-1234_C My Ace Design.dwg` or for site 02
+`02-456-78-4567-AD_new_office_fist_floor.dwg` for site 02
 
-CAD drawings must have a unique master name.  
-i.e. the N-N-N part MUST be unique.  The revision identifier should be in UPPER CASE.
+Note that CAD drawings must have a unique master name.  
+i.e. the N-N-N-N part MUST be unique.  The revision identifier should be in UPPER CASE.
 This format will be checked and enforced (using a regex that can be easily modified for other requirements)
 For AutoKAD the .dwg extension is necessary.
 Spaces in file names are common, even if undesirable these are allowed.
 
-The database ID for each Block will be created by appending the Handle to the N-N-N part of the document title.
+The database ID for each Block will be created by appending the Handle to the N-N-N-N part of the document title.
 This creates a totally unique reference for each block within the database.
 
 Block identifying information will be unique so file revision data is not needed for block attributes.
@@ -326,7 +319,7 @@ This will not change with the file name and is often maintained if the file form
 Ideally dbDotCad needs to adopt this as a best practice even if existing drawings and blocks have not been created to support a title field.
 Optionally, the title name can be cross checked against the file name and the use of a document title enforced.
 When first creating a drawing, ALWAYS define the Document Title using `dwgprops` or File -> Drawing Properties... Summary tab
-and ensure this contains the unique document reference (N-N-N part of the file name) detailed above. 
+and ensure this contains the unique document reference (N-N-N-N part of the file name) detailed above. 
 Ideally every block definition should contain the title (and possibly file name) as attributes.  Although this is easy to do (see creating a block below), existing blocks may not follow this convention.  To make an existing document comply with the use of document titles, a single (possibly invisible) block can be added which simply contains just the title, file name and subject fields.  This will be captured if 'select all' is used before the attributes are exported and will be handled as an exception case where the document title is enforced but not contained in the existing blocks.
 
 ### ATTRIBUTE DATA FORMAT
