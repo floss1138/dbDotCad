@@ -286,17 +286,17 @@ Where A is an upper case alpha, one or more letters, no spaces.  This revision i
 The hyphens and underscore must be present and are used as part of a file/title name integrity check.
 
 NUMERIC SITE OR COUNTRY CODE`-`NUMERIC AREA CODE`-`NUMERIC DOC TYPE GENERAL`-`NUMERIC DOC TYPE SPECIFIC`-`ALPHA REVISION~ DENTIFIER`_`   
-followed by a friendly name with spaces allowed (underscors are better) and typically the .dwg file extension
+followed by a friendly name with spaces allowed (underscores are better) and typically the .dwg file extension
 
 This will be checked with the regex ^[0-9]+-[0-9]+-[0-9]+-[0-9]+-[A-Z]+_.*
 The configuration file will allow 3 different regex matches to be used in cases where multiple naming conventions may exist.  ddc has to cope with a use case where existing naming had insufficient provision for the site code and different databases were used for different sites.  If the site code is missing (i.e the title is N-N-N-A not N-N-N-N-A) the site code will be assumed to be 01 by default.
 
 The descriptive part of the name and the revision will not be used by the database for identification as part of a primary key.  This is only for by humans who sometimes use white space in file names.
-It is mandatroy to link the Alphabetical revision part to the name via an underscore to the description.
+It is mandatory to link the Alphabetical revision part to the name via an underscore to the description.
 
 
 For example:
-`01-123-23-1234_C My Ace Design.dwg` or for site 02
+`01-123-23-1234_C My Ace Design.dwg` for site 01
 `02-456-78-4567-AD_new_office_fist_floor.dwg` for site 02
 
 Note that CAD drawings must have a unique master name.  
@@ -324,14 +324,14 @@ Ideally every block definition should contain the title (and possibly file name)
 
 ### ATTRIBUTE DATA FORMAT
 
-The file written by ATTOUT is tab-delimited ASCII. These only include blocks with attributes.  In the following notes, assume that the term block referes to blocks with attribute data.      
+The file written by ATTOUT is tab-delimited ASCII. These only include blocks with attributes.  In the following notes, assume that the term block refers to blocks with attribute data.      
 The ATTOUT filename is the drawing file name with a .txt extension (but can be changed before saving).
 Some file naming standards require the document title to be in the file name, this can be a useful cross check.   
 DDC adopts this method and requires a strict naming standard as above.
 
 The first row in the file contains column headers that identify the data to ATTIN. 
 The first two columns are always labelled HANDLE and BLOCKNAME as exported by ATTOUT (and required by the dxf standard).
-DDC requires the next attribtue to be TITLE and to identify the docuocument.  
+DDC requires the next attribute to be TITLE and to identify the document.  
 
 The remaining columns in the file are labelled with attribute tags as they appear in the drawing. 
 Numbers are added to duplicate attribute tags to ensure that they are unique. 
