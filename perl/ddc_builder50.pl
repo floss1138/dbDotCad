@@ -366,7 +366,7 @@ print "\n Install Spreadsheet::Read";
 # The Read module had to be forced if an earlier version was present
 system("cpanm -f Spreadsheet::Read");
 
-print "\n Install JSON\n";
+print "\n Install JSON module\n";
 system("cpanm JSON"); 
  
 
