@@ -278,7 +278,7 @@ Based on some real world naming, a unique document title will form the first par
 
 N-N-N-N-A_frienly name which may have spaces.dwg
 
-Where N is Numeric, one or more numbers, no spaces.  N must contain at least one number and each number is separated by hyphens. There must be no other characters used in the name.  
+Where N is Numeric, one or more numbers, no spaces, trailing zeros will be removed/ignored.  N must contain at least one number and each number is separated by hyphens. There must be no other characters used in the name.  
 
 The file name will contain the numeric, hyphen separated, document title with an alphabetical revision identifier then a friendly name.
 
@@ -296,8 +296,10 @@ It is mandatory to link the Alphabetical revision part to the name via an unders
 
 
 For example:
-`01-123-23-1234_C My Ace Design.dwg` for site 01
-`02-456-78-4567-AD_new_office_fist_floor.dwg` for site 02
+`1-123-23-1234_C My Ace Design.dwg` for site 1
+`002-456-078-4567-AD_new_office_fist_floor.dwg` for site 002.   
+The entry will become `2-456-078-4567-AD_new_office_fist_floor.dwg` after processing.   
+The `2-456-078-4567` part will form the database key once concatonated with the block handle.
 
 Note that CAD drawings must have a unique master name.  
 i.e. the N-N-N-N part MUST be unique.  The revision identifier should be in UPPER CASE.
@@ -305,7 +307,8 @@ This format will be checked and enforced (using a regex that can be easily modif
 For AutoKAD the .dwg extension is necessary.
 Spaces in file names are common, even if undesirable these are allowed.
 
-The database ID for each Block will be created by appending the Handle to the N-N-N-N part of the document title.
+The database ID for each Block will be created by appending the Handle to the N-N-N-N part of the document title. `2-456-78-4567_D57B8`  Adding an underscore between the document title and the handle make this more readable.      
+
 This creates a totally unique reference for each block within the database.
 
 Block identifying information will be unique so file revision data is not needed for block attributes.
