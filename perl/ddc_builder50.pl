@@ -249,7 +249,7 @@ system("apt-get upgrade");
 print "\n Installing tree command\n";
 system("apt-get install tree");
 
-print "\n Installing ssh (openssh-server\n"
+print "\n Installing ssh (openssh-server\n";
 system ("apt-get install openssh-server");
 # dont seem to need "ufw allow 22"
 
@@ -365,6 +365,10 @@ print "\n Install Spreadsheet::Read";
 
 # The Read module had to be forced if an earlier version was present
 system("cpanm -f Spreadsheet::Read");
+
+print "\n Install JSON\n";
+system("cpanm JSON"); 
+ 
 
 # SAMBA ENVIRONMENT
 
