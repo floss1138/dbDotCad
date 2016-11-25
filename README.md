@@ -308,7 +308,7 @@ This format will be checked and enforced (using a regex that can be easily modif
 For AutoKAD the .dwg extension is necessary.
 Spaces in file names are common, even if undesirable these are allowed.
 
-The database ID for each Block will be created by appending the Handle to the N-N-N-N part of the document title. `2-456-78-4567_D57B8`  Adding an underscore between the document title and the handle make this more readable.      
+The database ID for each Block will be created by appending the Handle to the N-N-N-N part of the document title with a + separator. '`D57B8+2-456-78-4567`        
 
 This creates a totally unique reference for each block within the database.
 
@@ -373,13 +373,13 @@ A current implementation has only limited blocks which will be treated as specia
 NAME (yes that the default if the block is not named)  
 PINL   
 PINR   
-Any others such as blocks used in surrounds need not special attention.
+Other blocks used in surrounds need no special attention.
 
 
 ### dbDotCad block_id
 Obviously, a single drawing has no way of knowing the handles used for other drawings.  
 For migration into a database, some additional data identifying the (uniquely named) drawing file is necessary.  
-This can be the file name (or part thereof) and/or the drawing title.  In our examples the N-N-N part of the title and/or file name will be used.   
+This can be the file name (or part thereof) and/or the drawing title.  In our examples the N-N-N-N part of the title and/or file name will be used.   
 The attout handle always starts apostrophe and has a 3 digit or larger hex value.  As the apostrophe is a useful chek, dbDotCad preserves this as part of the database_id.  The appended document identifier is added after the handle using a + character as a separator so the MongoDB primary key _id becomes 'handle+drawingnumber e.g. '12BFE+123-23-1234  
 This will be know as the **block_id** and becomes the primary key for the database.  Mongo allows the apostrophe (single quote character) in an id but not the double quote that would need delimiting when used in JSON.
 
