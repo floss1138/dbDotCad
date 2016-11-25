@@ -266,30 +266,31 @@ write a ddc_upload.pl script to do the following:
 1.  Implement a -c switch to create a default conf (to be used by the builder script)
 Include path to attribute file, growing file check delay, enforce title, document count limit, error/status log names, database name.
 2.  Scan watch folder (the SAMBA share) and check attribute file is present not growing.
-3.  Process file creating unique id from handle and title.
+3.  Process file creating unique id from handle and document number.
 4.  Parse attribute file to create a js file.
 5.  Bulk import to MongoDB.
 6.  Optionally delete original files on success.
 7.  Write status and log files
 
-### NAMING CONVENTION FOR DRAWINGS
+### NAMING CONVENTION FOR DRAWINGS 
+
 It is best practice is to create naming and numbering systems which follow a logical hierarchy. 
-Based on some real world naming, a unique document title will form the first part of the file name and contain an alphanumeric revision (upper case) and friendly name after this numeric document title identifier: 
+Based on some real world naming, a unique document/drawing number, the TITLE, will form the first part of the file name and contain an alphanumeric revision (upper case) followed by a friendly name to create the file name: 
 
-N-N-N-N-A_frienly name which may have spaces.dwg
+N-N-N-N-A_friendly name which may have spaces.dwg
 
-Where N is Numeric, one or more numbers, no spaces, trailing zeros will be removed/ignored.  N must contain at least one number and each number is separated by hyphens. There must be no other characters used in the name.  
+N is Numeric, one or more numbers, no spaces; trailing zeros will be removed/ignored.  The N part must contain at least one number and each number is separated by hyphens; this is the document/drawing TITLE. TITLEs should be allocated so they are unique.  The revision must be upper case alpha characters only. The revision and the friendly name are not used by the database for identification.  The TITLE must exist in the AutoKAD, File -> Summary Tab -> Drawing Properties -> Title: to be available to the block and to be maintained if the file is saved as a pdf or .dxf 
 
-The file name will contain the numeric, hyphen separated, document title with an alphabetical revision identifier then a friendly name.
+The file name will contain the numeric, hyphen separated, document/drawing number with an alphabetical revision identifier then a friendly name.
 
 Where A is an upper case alpha, one or more letters, no spaces.  This revision identifier must contain at least one alphabetical character.
-The hyphens and underscore must be present and are used as part of a file/title name integrity check.
+The hyphens and underscore must be present and are used as part of a file/title name integrity check.   
+Typical use for each field is:   
 
-NUMERIC SITE OR COUNTRY CODE`-`NUMERIC AREA CODE`-`NUMERIC DOC TYPE GENERAL`-`NUMERIC DOC TYPE SPECIFIC`-`ALPHA REVISION~ DENTIFIER`_`   
-followed by a friendly name with spaces allowed (underscores are better) and typically the .dwg file extension
+NUMERIC SITE or COUNTRY CODE`-`NUMERIC AREA CODE`-`NUMERIC DOC TYPE GENERAL`-`NUMERIC DOC TYPE SPECIFIC`-`ALPHA REVISION`_`FILE IDENTIFIER`.`FILE EXTENSION   
 
-This will be checked with the regex ^[0-9]+-[0-9]+-[0-9]+-[0-9]+-[A-Z]+_.*
-The configuration file will allow 3 different regex matches to be used in cases where multiple naming conventions may exist.  ddc has to cope with a use case where existing naming had insufficient provision for the site code and different databases were used for different sites.  If the site code is missing (i.e the title is N-N-N-A not N-N-N-N-A) the site code will be assumed to be 01 by default.
+This will be checked with the regex ^[0-9]+-[0-9]+-[0-9]+-[0-9]+-[A-Z]+_.* or more concisely ^[0-9]+-([0-9]+-){3}[A-Z]+_.*   
+The configuration file will allow 3 different regex matches to be used in cases where multiple naming conventions may exist.  ddc has to cope with a use case where existing naming had insufficient provision for the site code and different databases were used for different sites.  If the site code is missing (i.e the title is N-N-N-A not N-N-N-N-A) the site code will be assumed to be 1 by default.
 
 The descriptive part of the name and the revision will not be used by the database for identification as part of a primary key.  This is only for by humans who sometimes use white space in file names.
 It is mandatory to link the Alphabetical revision part to the name via an underscore to the description.
@@ -379,8 +380,8 @@ Any others such as blocks used in surrounds need not special attention.
 Obviously, a single drawing has no way of knowing the handles used for other drawings.  
 For migration into a database, some additional data identifying the (uniquely named) drawing file is necessary.  
 This can be the file name (or part thereof) and/or the drawing title.  In our examples the N-N-N part of the title and/or file name will be used.   
-The attout handle always starts apostrophe and has a 3 digit or larger hex value.  As the apostrophe is a useful chek, dbDotCad preserves this as part of the database_id.  The appended document identifier is added after the handle using a + character as a separator so the MongoDB primary key _id becomes 'handle+docname e.g. '12BFE+123-23-1234  
-This will be know as the **block_id** 
+The attout handle always starts apostrophe and has a 3 digit or larger hex value.  As the apostrophe is a useful chek, dbDotCad preserves this as part of the database_id.  The appended document identifier is added after the handle using a + character as a separator so the MongoDB primary key _id becomes 'handle+drawingnumber e.g. '12BFE+123-23-1234  
+This will be know as the **block_id** and becomes the primary key for the database.  Mongo allows the apostrophe (single quote character) in an id but not the double quote that would need delimiting when used in JSON.
 
 
 ### RELEVANT AUTOKAD COMMANDS 
