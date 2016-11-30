@@ -345,10 +345,10 @@ The header row in a file created by ATTOUT would look like this if a badly desig
 
 HANDLE BLOCKNAME TITLE ATTRIBUTE1 ATTRIBUTE2 TITLE(1)
 
-Each field (attribute/key name) is separated by a tab.  There is a column for each attribute from all selected blocks, 
+Each field (attribute/key name) is separated by a tab.  There is a column for each attribute from all selected blocks; 
 data under each attribute/key that do not apply to a specific BLOCKNAME are indicated with 
 `<>`
-in the cells that do not apply.  If the entry between tabs is simply empty, then the key is valid and the data is empty.
+in the cells that do not apply.  If the entry for the tag value is empty then data between tabs of the ATTOUT file will be empty. i.e. No tag value results in a valid key and the data is empty.  If `<>` is used as the tag data, this will be saved in the ATTOUT operation but a warning `One or more records of data cannot be matched ...` will be shown during ATTIN operation. Where the attribute has `<>`, existing values will not be updated i.e. remaining data will not be overwritten.  Duplicating TAG names between different blocks is OK.  This is only listed once in the ATTOUT header.		
 
 The handle is an id automatically generated and unique to each block, ONLY FOR THE ORIGINATING DRAWING.  
 The `ATTOUT` command adds a preceding apostrophe/single quote character to the HANDLE data which can be a useful validity check.
@@ -366,11 +366,14 @@ To find the handle associated with an ename, use the DXF 5 group of the ename's 
 Command: `(setq handle-circle (cdr (assoc 5 (entget ename-circle))))`  
 
 When exported from AutoKAD, the block above would have   
-key HANDLE, value '12BFE   
+key HANDLE, value '12BFE   i
+
+It is possible to select or zoom to an entity (block) by using the HANDEL identifier.   
+Issue the command SLELECT or ZOOM (_SELECT or _ZOOM if not using an English version of AutoKad). If zooming, first select O for object, then enter `(HANDENT "1234")` where 1234 is the HANDEL identification, without the apostrophe added by the ATTOUT command.   
     
 It is planned to separate out all the BLOCKNAMES found onto a different spreadsheet tabs.
 A current implementation has only limited blocks which will be treated as special cases, these are:   
-NAME (yes that the default if the block is not named)  
+NAME (the default if the block is not named)  
 PINL   
 PINR   
 Other blocks used in surrounds need no special attention.
