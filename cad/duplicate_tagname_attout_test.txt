@@ -1,0 +1,6 @@
+HANDLE	BLOCKNAME	BLOCK1TAG1	ATTRIBUTE1	ATTRIBUTE1(1)	ATTRIBUTE1(2)	ATTRIBUTE1(3)	ATTRIBUTE1(4)	BLOCK2TAG4	BLOCK2TAG3	BLOCK4TAG2	BLOCK4TAG1	BLOCK3TAG1	BLOCK3TAG2	BLOCK2TAG2	BLOCK2TAG1	BLOCK1TAG2
+'351	Duplicate_tags	DUPLICATE TAG!	attribute1 data	attribute1 data	attribute1 data	attribute1 data	attribute1 data	<>	<>	<>	<>	<>	<>	<>	<>	<>
+'29F	block4	<>	<>	<>	<>	<>	<>	Block 4 tag 4 data		Block 4 tag 2 Note that there is no data for tag 3	Block 4 tag 1 data	<>	<>	<>	<>	<>
+'23C	BLOCK3	<>	<>	<>	<>	<>	<>	Block 2 tag 4 data	Block 2 tag 3 data	<>	<>	Block 3 tag 1 data	Block 3 tag 2 data	<>	<>	<>
+'221	BLOCK2	<>	<>	<>	<>	<>	<>	Block 2 tag 4 data	Block 2 tag 3 data	<>	<>	<>	<>	Block 2 tag 2 data	Block 2 tag 1 data	<>
+'203	BLOCK1	block1tag1 data	<>	<>	<>	<>	<>	<>	<>	<>	<>	<>	<>	<>	<>	Block 1 tag 2 data
