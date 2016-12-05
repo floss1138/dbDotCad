@@ -352,7 +352,7 @@ in the cells that do not apply.  If the entry for the tag value is empty then da
 
 The handle is an id automatically generated and unique to each block, ONLY FOR THE ORIGINATING DRAWING.  
 The `ATTOUT` command adds a preceding apostrophe/single quote character to the HANDLE data which can be a useful validity check.
-Within AutoKAD it is possible to view the HANDLE data using LISP to show entity values for a selected object.  
+Within AutoKAD it is possible to view the HANDLE data using LISP to show entity values for a selected object. Turn on the command line dispaly (ctrl+9) if this is not showing.  ctrl+9 will turn it off again.   
 Command:  `(entget (car (entsel)))`
 car returns first item in the list, group 5 is the handle.  
 For example  
@@ -366,8 +366,9 @@ To find the handle associated with an ename, use the DXF 5 group of the ename's 
 Command: `(setq handle-circle (cdr (assoc 5 (entget ename-circle))))`  
 
 When exported from AutoKAD, the block above would have   
-key HANDLE, value '12BFE   i
-
+key HANDLE, value `'12BFE`    
+The Entity handle is a text string of up to 16 hexadecimal digits.  For [more information of group codes] (http://www.autodesk.com/techpubs/autocad/acad2000/dxf/group_condes_in_numerical_order_dxf_01.txt) just Google for `dxf group codes`.   
+    
 It is possible to select or zoom to an entity (block) by using the HANDEL identifier.   
 Issue the command SLELECT or ZOOM (_SELECT or _ZOOM if not using an English version of AutoKad). If zooming, first select O for object, then enter `(HANDENT "1234")` where 1234 is the HANDEL identification, without the apostrophe added by the ATTOUT command.   
     
