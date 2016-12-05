@@ -367,7 +367,7 @@ Command: `(setq handle-circle (cdr (assoc 5 (entget ename-circle))))`
 
 When exported from AutoKAD, the block above would have   
 key HANDLE, value `'12BFE`    
-The Entity handle is a text string of up to 16 hexadecimal digits.  For [more information of group codes] (http://www.autodesk.com/techpubs/autocad/acad2000/dxf/group_condes_in_numerical_order_dxf_01.txt) just Google for `dxf group codes`.   
+The Entity handle is a text string of up to 16 hexadecimal digits.  For [more information of group codes] (http://www.autodesk.com/techpubs/autocad/acad2000/dxf/group_codes_in_numerical_order_dxf_01.htm) just Google for `dxf group codes`.   
     
 It is possible to select or zoom to an entity (block) by using the HANDEL identifier.   
 Issue the command SLELECT or ZOOM (_SELECT or _ZOOM if not using an English version of AutoKad). If zooming, first select O for object, then enter `(HANDENT "1234")` where 1234 is the HANDEL identification, without the apostrophe added by the ATTOUT command.   
