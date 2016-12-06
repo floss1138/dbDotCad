@@ -36,7 +36,7 @@ my $CONF;                   # File handle for conf file
 my $EMPTY   = q{};  # Empty string the Critic way
 my %config  = ();   # initialise hash to hold config
 my @matches = ();   # Array to hold regex patterns used to match candidate files
-our %attributes = (); # Empty has to hold attributes (AutoKad Metadata)
+our %attributes = ();    # Empty has to hold attributes (AutoKad Metadata)
 
 ## SUB TO CREATE LOCALTIME FORMATTED STRING ##
 
@@ -263,8 +263,8 @@ sub read_conf {
 
 exit 2
   if !print q{-} x '68'
-      . "\n ddc_read $VERSION, run with -c to create default conf file then exit\n"
-      . q{-} x '68' . "\n";
+  . "\n ddc_read $VERSION, run with -c to create default conf file then exit\n"
+  . q{-} x '68' . "\n";
 
 my $option = shift @ARGV || '1';
 
@@ -336,7 +336,7 @@ sub read_watch_folder {
           || croak "can't opendir $watch_folder - program will terminate";
         my $match = $_;
 
-       #  print "\n matchng with > $match\n";
+       #  print "\n matching with > $match\n";
        #  print "\n First match regex is $matches[0]\n";
        # Cannot use $_ within readdir for next match so assigned to a $match var
        # It is possible sort { -M ($watch_folder.$b) <=> -M ($watch_folder.$a) }
@@ -345,16 +345,18 @@ sub read_watch_folder {
           grep { !/^\./ && -f "$watch_folder/$_" && (/$match/xms) }
           readdir(DIR);
 
-        
-         # Prefix fix.  Fix is applied by adding prefix value to legacy file name found in 1st match ONLY        
-         foreach (@candidates) {
-         # print"Candidate file: $_\n";
-             if (/$matches[0]/xms && ($config{prefixfix} ne 'UNDEFINED')) {
-         #    print "\n Legacy file name found \n Needs to be $config{prefixfix}$_ \n";
-        		rename "$config{watch_folder}$_", "$config{watch_folder}$config{prefixfix}$_";
-    			    }
-                  
-				}
+# Prefix fix.  Fix is applied by adding prefix value to legacy file name found in 1st match ONLY
+        foreach (@candidates) {
+
+             print"Candidate file: $_\n";
+            if ( /$matches[0]/xms && ( $config{prefixfix} ne 'UNDEFINED' ) ) {
+
+  #    print "\n Legacy file name found \n Needs to be $config{prefixfix}$_ \n";
+                rename "$config{watch_folder}$_",
+                  "$config{watch_folder}$config{prefixfix}$_";
+            }
+
+        }
         push @total, @candidates;
     }
 
@@ -467,32 +469,46 @@ sub statnseek {
 # Return array of Key names
 
 sub readHANDELline {
-my ($att_file_name) = @_;
-my @keys = (); 
-if ( !open my $ATTOUT, '<', $att_file_name){
-print "\n   failed to open $att_file_name\n";
-} 
-else {
-my $line = <$ATTOUT>;
-# take first line only into $line
-if ($line =~ /^HANDEL/xsm)
-{ print "\n   Valid attout found\n";
+    my ($att_file_name) = @_;
+   #  print "\n   Attribute file name = $att_file_name\n";
+    my @keys = ();
+    if ( !open my $ATTOUT, '<', $att_file_name ) {
+        print "\n   failed to open $att_file_name\n";
+    }
+    else {
+        my $line;
+        # $line needs to be initialised in the case that the file is empty to prevent error
+        $line = <$ATTOUT>;
+        if (!defined ($line)) {
+        print "\n  File seems empty or contents undefined\n";
+        return 0;
+         }
+        print "\n line contains >$line< ";
+        # take first line only into $line
+        chomp($line);
+        if ( $line =~ /^HANDEL/xsm ) {
+            print "\n   Valid attout found\n";
 
-# remove line breaks
-$_ =~ s/\r?\n$//; 
-# alternative to $/ = "\r\n"; for both Linux and Windows
+            # remove line breaks
+            $_ =~ s/\r?\n$//;
 
-# split on tab
-my @keys = split(/\t/,$_);
-          chomp(@keys);
+            # alternative to $/ = "\r\n"; for both Linux and Windows
 
+            # split on tab
+            my @keys = split( /\t/, $_ );
+            chomp(@keys);
+
+        }
+        else {
+            print "\n   $att_file_name does not look like an attribute file\n";
+        }
+        close($ATTOUT);
+    }
+    return @keys;
 }
-else { print "\n   $att_file_name does not look like an attribute file\n";
-     }
-close ($ATTOUT);
-     }
-return @keys;
-}
+
+# End of readHANDELline sub
+
 ## THE PROGRAM
 
 # print the hash for debug
@@ -521,62 +537,68 @@ foreach (@match_files) {
 #   print " Using following regex for matching:\n >$_<\n";
 # }
 
-
 while (1) {
 
-# read watch folder and create an array of attribute files found:
-my @attfiles = read_watch_folder( $config{watch_folder} );
+    # read watch folder and create an array of attribute files found:
+    my @attfiles = read_watch_folder( $config{watch_folder} );
 
- print "\nTotal matched files >\n";
-foreach (@attfiles) {
-    my $attfile      = $_;
-# add the file path to the file
-    my $filewithpath = $config{watch_folder} . $attfile;
-# see if its locked
-    my $isitlocked   = locktest($filewithpath);
-    # print "$filewithpath locktest = $isitlocked\n";
-# if file is not locked, see if its growing
-    if ( $isitlocked eq 0 ) {
-        my $isitgrowing1 = statnseek($filewithpath);
-        # print " \n$_ $isitgrowing1 is not locked check again for growing\n";
-        sleep $config{growing_time};
-        my $isitgrowing2 = statnseek($filewithpath);
-        if ($isitgrowing1 eq $isitgrowing2){
-        # print "\n not growing\n";
+    print "\nTotal matched files >\n";
+    foreach (@attfiles) {
+        my $attfile = $_;
+
+        # add the file path to the file
+        my $filewithpath = $config{watch_folder} . $attfile;
+
+        # see if its locked
+        my $isitlocked = locktest($filewithpath);
+
+        # print "$filewithpath locktest = $isitlocked\n";
+        # if file is not locked, see if its growing
+        if ( $isitlocked eq 0 ) {
+            my $isitgrowing1 = statnseek($filewithpath);
+
+          # print " \n$_ $isitgrowing1 is not locked check again for growing\n";
+            sleep $config{growing_time};
+            my $isitgrowing2 = statnseek($filewithpath);
+            if ( $isitgrowing1 eq $isitgrowing2 ) {
+
+                # print "\n not growing\n";
 ### process files here
-        my $done_name = $config{done_dir} . $attfile;
-# read HANDEL line
+                my $done_name = $config{done_dir} . $attfile;
 
+                # read HANDEL line into array @keys from $filewithpath
+                my @keys = readHANDELline($filewithpath);
 
-# create attribute hash here:
-        open my $ATTOUT, "$filewithpath" or die "cannot open file: $!";
-        while (<$ATTOUT>){
-              $_ =~ s/\r?\n$//; # alternative to $/ = "\r\n"; for both Linux and Windows
-              my @att = split(/\t/,$_); # split on tab
-              chomp(@att);
-              # if $att[0] =~ /^HANDEL/ { 
-              # Read title row into new array
-              # my @titles = @att;
-              
-              foreach my $val (@att)
-              { 
-              print "\nval is: $val";
-             
-              }
-	               }
-	close ($ATTOUT);
-                             
-     
-# move file to done directory
-        if ( rename $filewithpath, $done_name ) {
-           print "\n $filewithpath moved to:\n $done_name\n";
+                # create attribute hash here:
+                open my $ATTOUT, "$filewithpath" or die "cannot open file: $!";
+                while (<$ATTOUT>) {
+                    $_ =~ s/\r?\n$//
+                      ; # alternative to $/ = "\r\n"; for both Linux and Windows
+                    my @att = split( /\t/, $_ );    # split on tab
+                    chomp(@att);
+
+                    # if $att[0] =~ /^HANDEL/ {
+                    # Read title row into new array
+                    # my @titles = @att;
+
+                    foreach my $val (@att) {
+                        print "\nval is: $val";
+
+                    }
+                }
+                close($ATTOUT);
+
+                # move file to done directory
+                if ( rename $filewithpath, $done_name ) {
+                    print "\n $filewithpath moved to:\n $done_name\n";
+                }
+
+            }
         }
 
-        }
     }
 
-}
-# End of while read loop
- sleep $config{repeat_delay}
+    # End of while read loop
+    sleep $config{repeat_delay}
 
-} 
+}
