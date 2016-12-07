@@ -468,7 +468,7 @@ sub statnseek {
 # Confirm attout format by checking first line starts with HANDEL
 # Return array of Key names
 
-sub readHANDELline {
+sub readHANDLEline {
     my ($att_file_name) = @_;
    #  print "\n   Attribute file name = $att_file_name\n";
     my @keys = ();
@@ -477,34 +477,38 @@ sub readHANDELline {
     }
     else {
         my $line;
-        # $line needs to be initialised in the case that the file is empty to prevent error
+        # take first line only into $line
         $line = <$ATTOUT>;
         if (!defined ($line)) {
-        print "\n  File seems empty or contents undefined\n";
+        print "\n  $att_file_name seems empty or contents undefined\n";
         return 0;
          }
-        print "\n line contains >$line< ";
-        # take first line only into $line
-        chomp($line);
-        if ( $line =~ /^HANDEL/xsm ) {
-            print "\n   Valid attout found\n";
+        chomp ($line);
+        # print "\n line contains $line\n";
+        
+        if ( $line =~ /^HANDLE/xsm ) {
+            print "\n   $att_file_name is a valid\n";
 
             # remove line breaks
-            $_ =~ s/\r?\n$//;
+            $line =~ s/\r?\n$//;
 
             # alternative to $/ = "\r\n"; for both Linux and Windows
 
             # split on tab
-            my @keys = split( /\t/, $_ );
-            chomp(@keys);
-
+            @keys = split( /\t/, $line );
+           # chomp(@keys); already chommped $line above
+         #   foreach my $heading (@keys) {
+          #  print "\n  $heading\n";}
+             return (@keys);
         }
         else {
             print "\n   $att_file_name does not look like an attribute file\n";
-        }
+            return 1;
+            }
         close($ATTOUT);
     }
-    return @keys;
+    #end of reading HANDEL line routine
+    print "\n read HANDEL line is over! This line should not be reached \n";
 }
 
 # End of readHANDELline sub
@@ -567,8 +571,13 @@ while (1) {
                 my $done_name = $config{done_dir} . $attfile;
 
                 # read HANDEL line into array @keys from $filewithpath
-                my @keys = readHANDELline($filewithpath);
-
+                my @keys = readHANDLEline($filewithpath);
+                # enable for debug
+                print "  \n Column headings are:\n";
+                foreach my $heading_keys (@keys) {
+                    print "  $heading_keys";                
+                    }
+                print "\n\n";
                 # create attribute hash here:
                 open my $ATTOUT, "$filewithpath" or die "cannot open file: $!";
                 while (<$ATTOUT>) {
@@ -576,15 +585,10 @@ while (1) {
                       ; # alternative to $/ = "\r\n"; for both Linux and Windows
                     my @att = split( /\t/, $_ );    # split on tab
                     chomp(@att);
-
-                    # if $att[0] =~ /^HANDEL/ {
-                    # Read title row into new array
-                    # my @titles = @att;
-
-                    foreach my $val (@att) {
-                        print "\nval is: $val";
-
-                    }
+                   
+                   # foreach my $val (@att) {
+                   #    print "\nval is: $val";
+                   #}
                 }
                 close($ATTOUT);
 
