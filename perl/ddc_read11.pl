@@ -572,6 +572,8 @@ while (1) {
 
                 # read HANDEL line into array @keys from $filewithpath
                 my @keys = readHANDLEline($filewithpath);
+                # skip if file is empty or invalid
+                next if ($keys[0] eq 0 | $keys[0] eq 1);
                 # enable for debug
                 print "  \n Column headings are:\n";
                 foreach my $heading_keys (@keys) {
@@ -583,12 +585,13 @@ while (1) {
                 while (<$ATTOUT>) {
                     $_ =~ s/\r?\n$//
                       ; # alternative to $/ = "\r\n"; for both Linux and Windows
+               if ( $_ =~ /^'[0-9A-F]/xsm ){
+               print ("\n   Valid attribute line: $_\n"); 
+               
                     my @att = split( /\t/, $_ );    # split on tab
                     chomp(@att);
-                   
-                   # foreach my $val (@att) {
-                   #    print "\nval is: $val";
-                   #}
+                    # NOW write to hash....
+                }    
                 }
                 close($ATTOUT);
 
