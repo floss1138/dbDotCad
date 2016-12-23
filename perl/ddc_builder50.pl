@@ -560,13 +560,18 @@ print "\n Check smbstatus \n";
 system("smbstatus");
 
 # CREATE WEB INDEX PAGE
-# dont expect the link back into user directories to work without more work
+# dont expect the link back into user directories to work without more effort
 
 # SUB TO CREATE INDEX
 sub indexhtml {
 
     my $index_html = << "INDEX";
-<html><body><h1>Welcome to dbDotCad</h1>
+<head>
+<meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+<title>Welcome to dbBotCad</title>
+</head>
+<html><body>
+<!-- <h1>Welcome to dbDotCad</h1> -->
 <p>Server build created with  $PROGRAM_NAME V$VERSION </p>
 <p>MongoDB installed from <br>$mongodb_latest</p>
 <p><a href="/home/$user/dbdotcad/ddclog">users log files</a></p>
@@ -732,6 +737,13 @@ then run $ddc_read ...
 
 Check DreamFactory is running and set up the admin account on
 https://$ipaddress/:8080
+
+To enable to root account on Ununtu Server, sudo passwd root.
+To enable root ssh sudo vi /etc/ssh/sshd_config, PermitRootLogin yes, service ssh restart.
+From /root, git clone https://ghithub.com/floss1138/dbDotCad 
+Configure git:
+git config --global email.address floss1138\@gmail.com
+git config --global user.name "floss1138"
 
 *** Live Long and Prosper ***
 
