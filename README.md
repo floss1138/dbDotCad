@@ -120,7 +120,7 @@ Humanly readable and memorable conventions are preferable.
 
 USUALLY INVISIBLE ATTRIBUTE NAMES  
 **HANDLE** = automatically created attribute identifier, unique for each block in a drawing   
-**BLOCKNAME** = mandatory block name field, should contain a version number for revision identification  
+**BLOCKNAME** = mandatory block name field, should contain a version number for revision identification, no leading or trailing spaces should be used  
 **TITLE** = field used by dbDotCad as a document (drawing) identifier  
 **ALIAS** = field used by dbDotCad as a friendly name for connection name    
 **UDC** = User Defined Comment (free text field).   
@@ -372,7 +372,7 @@ The Entity handle is a text string of up to 16 hexadecimal digits.  For [more in
 It is possible to select or zoom to an entity (block) by using the HANDLE identifier.   
 Issue the command SLELECT or ZOOM (_SELECT or _ZOOM if not using an English version of AutoKad). If zooming, first select O for object, then enter `(HANDENT "1234")` where 1234 is the HANDLE identification, without the apostrophe added by the ATTOUT command.   
     
-It is planned to separate out all the BLOCKNAMES found onto a different spreadsheet tabs.
+It is planned to separate out all the BLOCKNAMES found onto a different spreadsheet tabs.  BLOCKNAMES will be trimmed to remove leading or trailing spaces.   
 A current implementation has only limited blocks which will be treated as special cases, these are:   
 NAME (the default if the block is not named)  
 PINL   
