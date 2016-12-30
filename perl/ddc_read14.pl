@@ -129,10 +129,16 @@ fname_match1="^[0-9]+-[0-9]+-[0-9]+-[A-Z]+_.*(\.txt|\.TXT)"
 fname_match2="^[0-9]+-([0-9]+-){3}[A-Z]+_.*(\.txt|\.TXT)"
 fname_match3="UNDEFINED"
 
+# DOCUMENT TITLE
+# Pattern match for the docuemnt title.  This will be used to validify the document title
+# If the file name is used to provide title information, this match filters the title part
+# from the whole file name.  This is a bracketed regex intended to return the match in $1
+doc_title="(^[0-9]+-[0-9]+-[0-9]+-[0-9])"
+
 # PREFIX FIX
 # The first match can be corrected to meet fname_match2 on next iteration by adding a prefix
 # This is an edge case for legacy drawing numbers with insufficient number groups
-# e.g. prefixfix="1-"  Note that it is necessary to add the hyphen fi using 
+# e.g. prefixfix="1-"  Note that it is necessary to add the hyphen if using 
 # the fname_match1 example above.  The file will be renamed and meet fname_match2 on the next run
 # This is only applied to fname_match1, used to identify the legacy pattern
 # Set this to UNDEFINED if not used
@@ -490,7 +496,7 @@ sub readHANDLEline {
         # print "\n line contains $line\n";
 
         if ( $line =~ /^HANDLE/xsm ) {
-            print "\n   $att_file_name is a valid\n";
+            print "\n   $att_file_name is valid\n";
 
             # remove line breaks
             $line =~ s/\r?\n$//;
@@ -606,17 +612,18 @@ while (1) {
                         chomp(@att);
 
                         # enable for debug
-                        print "\n Attribute line contains:\n";
-                        foreach my $attributes (@att) {
-                            print " $attributes ";
-                        }
+                        # print "\n Attribute line contains:\n";
+                        # foreach my $attributes (@att) {
+                        #    print " $attributes ";
+                        # }
 
 # block_name = $att[1] i.e. second elemet is always the BLOCKNAME
 # putting this into a hash deduplicates the blockname, value does not matter but is used as a count
 # A block name with a leading or trailing space will be treated as a different name so trim spaces
                         $att[1] =~ s/^\s+|\s+$//g;
-                        if ( exists $blocks{ $att[1] } ) {
-                            print "\n $att[1] has been seen before\n";
+                        
+                         if ( exists $blocks{ $att[1] } ) {
+                        #    print "\n $att[1] has been seen before\n";
 
                # if exits, increment count for that block name, else set it to 1
                             $blocks{ $att[1] }++;
@@ -627,25 +634,31 @@ while (1) {
                         else {
                             $blocks{ $att[1] } = '1';
 
-# This creates a hash of arrays, but if the BLOCKNAME repeats only the first instance is kept.
-# $hof_blocks{$att[1]} = \@att;
+# Create a hash of attribute arrays where $att[1] is the key.  By adding the document title matched from $attfile filename, a primary key is generated
+# With new blocks the TITLE field in the block would be used.
+my $doctitle = 'doc_title_is_undefined';
+	# print "\n File name is $attfile, regex used is $config{doc_title} \n";
+	$attfile =~ /$config{doc_title}/xsm; 
+	$doctitle = $1;
+# print " \n  matching document title is $doctitle \n";
+
+# Create primary key by appending the HANDLE to the TITLE.  The + sign is deliberate syntax.  So is leaving in the leading ' provided by AutoKAD
+my $pkey = "$att[0]+$doctitle";
+
+# print "\n   primary key is $pkey\n";
                             $hof_blocks{ $att[0] } = \@att;
                         }
-                        print "\n   Dumping blocks hash:\n";
-                        print Dumper \%blocks;
-                        print
-"\n   Dumping hash of blocks (attributes sorted by BLOCKNAME as the key to the array):\n";
-                        print Dumper \%hof_blocks;
-
-                        # print array out if BLOCKNAME = block3, might be better with an array of arrays to preserve HANDLE order??
-                        print "\n If blockname is block3 \n";
-                        foreach my $k (sort keys %hof_blocks ) {
-                            foreach ( @{ $hof_blocks{$k} } ) {
-                                print ": $_ \n"
-                                  if ( $hof_blocks{$k}[1] =~ /block3/xsm );
-                            }
-                            print "\n";
-                        }
+                        # Enable for debug:
+                        # print Dumper \%blocks;
+                        # print Dumper \%hof_blocks;
+                        # print array out if BLOCKNAME = test, might be better with an array of arrays to preserve HANDLE order??
+                        # foreach my $k (sort keys %hof_blocks ) {
+                        #    foreach ( @{ $hof_blocks{$k} } ) {
+                        #        print "   Block with name >test< found: $_ \n"
+                        #          if ( $hof_blocks{$k}[1] =~ /test/xsm );
+                        #    }
+                        #    print "\n";
+                        # }
                     }
 
                     # end of if ^'[0-9]
@@ -653,7 +666,8 @@ while (1) {
 
                 # end of while (<ATTOUT>)
                 close($ATTOUT);
-
+                print Dumper \%blocks;
+                print Dumper \%hof_blocks;
                 # move file to done directory
                 if ( rename $filewithpath, $done_name ) {
                     print "\n $filewithpath moved to:\n $done_name\n";
