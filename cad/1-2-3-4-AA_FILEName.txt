@@ -1,0 +1,10 @@
+HANDLE	BLOCKNAME	TITLE	FNAME
+'378	DDC_IDSTAMP_V1	0-0-0-0	0-0-0-0_A_ddc_title_and_filename_blocks.dwg
+'379	block2	title2	fname2
+'380	block3	title3	fname3_380
+'381	block3	title3_again	fname3_again_381
+'382	block3	title3_yet_again	fname3_yet_again_382
+'383	block3 	title3_with_space in block name 	fname3+again_383
+'384	 block3	title3_with starting space	fname3+again_384
+'385	test	test_title1	test1.txt_385
+'386	test	test_title2	test2.txt_386
