@@ -15,6 +15,9 @@ use File::stat;
 use File::Basename;
 use IPC::Open2;
 
+# use JSON for encode_json
+use JSON;
+
 # use Sys::Hostname;
 use feature qw(say switch state);
 
@@ -354,7 +357,7 @@ sub read_watch_folder {
 # Prefix fix.  Fix is applied by adding prefix value to legacy file name found in 1st match ONLY
         foreach (@candidates) {
 
-            print "Candidate file: $_\n";
+            print "Candidate file name: $_\n";
             if ( /$matches[0]/xms && ( $config{prefixfix} ne 'UNDEFINED' ) ) {
 
   #    print "\n Legacy file name found \n Needs to be $config{prefixfix}$_ \n";
@@ -595,6 +598,14 @@ while (1) {
                 }
                 print "\n\n";
 
+# Document TITLE is taken from the filename (or, in later version the TITLE attribute)
+# Extract title based on config file regex here:
+my $doctitle = 'doc_title_is_undefined';
+	# print "\n File name is $attfile, regex used is $config{doc_title} \n";
+	$attfile =~ /$config{doc_title}/xsm; 
+	$doctitle = $1;
+# print " \n  matching document title is $doctitle \n";
+
 # read attribute line into array @att from $filewithpath
 # deduplicate block names into %blocks hash adding block name count as the value
                 my %blocks;
@@ -617,6 +628,15 @@ while (1) {
                         #    print " $attributes ";
                         # }
 
+# Create a hash of attribute arrays where $att[0] is the key.  By adding the document title matched from $attfile filename, a primary key is generated
+# With new blocks the TITLE field in the block would be used.
+# Create primary key by appending the HANDLE to the TITLE.  The + sign is deliberate syntax.  So is leaving in the leading ' provided by AutoKAD
+my $pkey = "$att[0]+$doctitle";
+
+# print "\n   primary key is $pkey\n";
+ 
+
+
 # block_name = $att[1] i.e. second elemet is always the BLOCKNAME
 # putting this into a hash deduplicates the blockname, value does not matter but is used as a count
 # A block name with a leading or trailing space will be treated as a different name so trim spaces
@@ -629,24 +649,11 @@ while (1) {
                             $blocks{ $att[1] }++;
 
                             # Write attribute array to hash of blocks
-                            $hof_blocks{ $att[0] } = \@att;
+                            $hof_blocks{ $pkey } = \@att;
                         }
                         else {
                             $blocks{ $att[1] } = '1';
-
-# Create a hash of attribute arrays where $att[1] is the key.  By adding the document title matched from $attfile filename, a primary key is generated
-# With new blocks the TITLE field in the block would be used.
-my $doctitle = 'doc_title_is_undefined';
-	# print "\n File name is $attfile, regex used is $config{doc_title} \n";
-	$attfile =~ /$config{doc_title}/xsm; 
-	$doctitle = $1;
-# print " \n  matching document title is $doctitle \n";
-
-# Create primary key by appending the HANDLE to the TITLE.  The + sign is deliberate syntax.  So is leaving in the leading ' provided by AutoKAD
-my $pkey = "$att[0]+$doctitle";
-
-# print "\n   primary key is $pkey\n";
-                            $hof_blocks{ $att[0] } = \@att;
+                            $hof_blocks{ $pkey } = \@att;
                         }
                         # Enable for debug:
                         # print Dumper \%blocks;
@@ -668,6 +675,31 @@ my $pkey = "$att[0]+$doctitle";
                 close($ATTOUT);
                 print Dumper \%blocks;
                 print Dumper \%hof_blocks;
+                my $json = encode_json \%hof_blocks;
+                print "\n JSON version of hash of blocks:\n$json\n";
+                    print "\nvar attout = db.collection_name.initializeUnorderedBulkOp()\;\n";
+                $|=1;
+                    foreach (keys %hof_blocks) {
+                    # print "\n-->";
+                    print "attout.insert( { \"_id\": \"$_\"";
+                    my $column_count = @keys;
+                    
+                        for (my $i=1; $i<$column_count; $i++){
+                        print ", \"@keys[$i]\":";
+                        # print "@keys[$i]"; SOMETHING IN @keys IS MESSING UP THE PRINT LINE
+                        print "\"$hof_blocks{$_}[$i]\"";
+                        }
+                    print " })\;\n";
+                  #  print "Column count is : $column_count\n";
+                    }
+                  # sub print_col {
+                  # my (@column) =@_;
+                  # my $col_count = '1';
+                  # foreach my (@column){
+                  # print "$col:";
+                  #                }
+                  #      }
+                    
                 # move file to done directory
                 if ( rename $filewithpath, $done_name ) {
                     print "\n $filewithpath moved to:\n $done_name\n";
