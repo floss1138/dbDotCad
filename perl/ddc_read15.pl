@@ -67,6 +67,8 @@ sub get_conf {
 
 ## SUB TO CREATE A DEFAULT CONF FILE ##
 
+# This config is intended to be for each user
+
 sub create_conf {
     my $conf = << 'TAG';
     
@@ -357,7 +359,7 @@ sub read_watch_folder {
 # Prefix fix.  Fix is applied by adding prefix value to legacy file name found in 1st match ONLY
         foreach (@candidates) {
 
-            print "Candidate file name: $_\n";
+            # print "Candidate file name: $_\n";
             if ( /$matches[0]/xms && ( $config{prefixfix} ne 'UNDEFINED' ) ) {
 
   #    print "\n Legacy file name found \n Needs to be $config{prefixfix}$_ \n";
@@ -690,7 +692,10 @@ while (1) {
 "var attout = db.collection_name.initializeUnorderedBulkOp()\;\n";
 
 #  $|=1; Autoflush not necessary
+
 #  Note that the first element [0] is the HANDLE which forms part of _id, so the actual document content starts at [1] with the BLOCKNAME
+#  For each key create a line entry in Mongo
+
                 foreach ( keys %hof_blocks ) {
 
                     # print "attout.insert({\"_id\" : \"$_\"";
@@ -699,35 +704,39 @@ while (1) {
 
                     for ( my $i = 1 ; $i < $column_count ; $i++ ) {
 
-                        # print ", \"$keys[$i]\" : ";
+                        # Add key to string bassed on column number
+                        # but only if the value is not <> i.e. AutoKAD attout value was empty as this key does not appear in the block
+                        # Will throw use of uninitialised value if value of key is empty as is the case
+                        if ($hof_blocks{$_}[$i] ne '<>') {
                         $jstring .= ", \"$keys[$i]\" : ";
 
-            # print "@keys[$i]"; SOMETHING IN @keys IS MESSING UP THE PRINT LINE
-            # print "\"$hof_blocks{$_}[$i]\"";
+            # Add element value after key based on same column number 
                         $jstring .= "\"$hof_blocks{$_}[$i]\"";
+                                                          }
                     }
 
-                    #  print "})\;\n";
-                    $jstring .= "})\;\n";
+                    #  Add user name and terminating string
+                    $jstring .= " , \"USER_NAME\" : \"$config{user_name}\"})\;\n";
 
                     # print string on each run to see it build line by line:
-                    print "\n\n$jstring\n\n";
+                    # print "\n\n$jstring\n\n";
                 }
 
+                # pring final json bulk op string to screen for debug
+                  print "\n\n$jstring\n\n";
+                  # remove <> entries as this is attout code for no data, for example '"ATTRIBUTE1" : "<>",'
+                  # i.e. any key value entry with <> as the value needs to be removed
+                 # $jstring =~ s/"(.*?)"\s?:\s?"<>"\s?,//;
+                 #   $jstring =~ s/^,\s?".*"\s?:\s?"<>"\s?,$//gm;
+                 #    $jstring =~ s/,(?<=,) ".+?" : "<>"(?=,)//gm;
+                #  $jstring =~ s/,? ".+?" : "<>"(?=,)//gm;
+                 # print "\nString with <> entries removed:\n$jstring\n\n";
                 # Write js bulk output to file
                 open my $JSON, '>',
                   '/home/alice/dbdotcad/attout_to_db/mongo_attout.js'
                   or carp "Mongo js file could not be opened\n";
                 exit 1 if !print {$JSON} "$jstring";
                 close $JSON or carp "Unable to close Mongo js file\n";
-
-                # sub print_col {
-                # my (@column) =@_;
-                # my $col_count = '1';
-                # foreach my (@column){
-                # print "$col:";
-                #                }
-                #      }
 
                 # move file to done directory
                 if ( rename $filewithpath, $done_name ) {
