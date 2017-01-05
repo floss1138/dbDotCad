@@ -370,7 +370,7 @@ key HANDLE, value `'12BFE`
 The Entity handle is a text string of up to 16 hexadecimal digits.  For [more information of group codes] (http://www.autodesk.com/techpubs/autocad/acad2000/dxf/group_codes_in_numerical_order_dxf_01.htm) just Google for `dxf group codes`.   
     
 It is possible to select or zoom to an entity (block) by using the HANDLE identifier.   
-Issue the command SLELECT or ZOOM (_SELECT or _ZOOM if not using an English version of AutoKad). If zooming, first select O for object, then enter `(HANDENT "1234")` where 1234 is the HANDLE identification, without the apostrophe added by the ATTOUT command.   
+Issue the command SLELECT or ZOOM (_SELECT or _ZOOM if not using an English version of AutoKad). If zooming, first select O for object, then enter `(HANDENT "1234")` where 1234 is the HANDLE identification, without the apostrophe added by the ATTOUT command. Enter to take the HANDENT entry and Enter again to perform the zoom or selection.  
     
 It is planned to separate out all the BLOCKNAMES found onto a different spreadsheet tabs.  BLOCKNAMES will be trimmed to remove leading or trailing spaces.   
 A current implementation has only limited blocks which will be treated as special cases, these are:   
@@ -459,11 +459,11 @@ mongoDB has a bulk import function and will accept javascript as an command line
 The attout format can easily be modified to comply with bulk import function.  For example, here the attout data becomes variable attout:  
 
 `var attout = db.collection_name.initializeUnorderedBulkOp();`   
-`attout.insert( { "_id": "'35068+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA01A", "LOCATION": "ROOM2/A01", "BRAND":"MEGAUNLIMITED" });`  
-`attout.insert( { "_id": "'35069+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA02A", "LOCATION": "ROOM2/A02", "BRAND":"MEGAUNLIMITED" });`  
-`attout.insert( { "_id": "'35071+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA04A", "LOCATION": "ROOM2/A04", "BRAND":"MEGAUNLIMITED" });`  
-`attout.insert( { "_id": "'35072+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA05A", "LOCATION": "ROOM2/A01", "BRAND":"MEGAUNLIMITED" });`  
-`attout.insert( { "_id": "'35073+1234-5678-9012", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA06A", "LOCATION": "ROOM2/A06", "BRAND":"MEGAUNLIMITED" });`  
+`attout.insert({"_id": "'35068+1234-5678-9012", "BLOCKNAME" : "MDU", "SYSTEMNAME":"172/MDUA01A", "LOCATION" : "ROOM2/A01", "BRAND" : "MEGAUNLIMITED"});`  
+`attout.insert({"_id": "'35069+1234-5678-9012", "BLOCKNAME" : "MDU", "SYSTEMNAME":"172/MDUA02A", "LOCATION" : "ROOM2/A02", "BRAND" : "MEGAUNLIMITED"});`  
+`attout.insert({"_id": "'35071+1234-5678-9012", "BLOCKNAME" : "MDU", "SYSTEMNAME":"172/MDUA04A", "LOCATION" : "ROOM2/A04", "BRAND" : "MEGAUNLIMITED"});`  
+`attout.insert({"_id": "'35072+1234-5678-9012", "BLOCKNAME" : "MDU", "SYSTEMNAME":"172/MDUA05A", "LOCATION" : "ROOM2/A01", "BRAND" : "MEGAUNLIMITED"});`  
+`attout.insert({"_id": "'35073+1234-5678-9012", "BLOCKNAME" : "MDU", "SYSTEMNAME":"172/MDUA06A", "LOCATION" : "ROOM2/A06", "BRAND" : "MEGAUNLIMITED"});`  
 `attout.execute();`   
 
 If the modified attout.txt is saved as a new file, typically with a .js extension this can be passed to the mongo client:
