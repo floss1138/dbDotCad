@@ -619,17 +619,22 @@ while (1) {
                 my %hof_blocks;
                 open my $ATTOUT, "$filewithpath" or die "cannot open file: $!";
                 while (<$ATTOUT>) {
-                    $_ =~ s/\r?\n$//
-                      ; # alternative to $/ = "\r\n"; for both Linux and Windows
                     if ( $_ =~ /^'[0-9A-F]/xsm ) {
 
                         # print ("\n   Valid start to attribute line: $_\n");
 
                         my @att = split( /\t/, $_ );    # split on tab
-                        chomp(@att);
-
+                        # It seems necessary to leave the newline in before the split as an empty attribute value 
+                        # will be missed if this is the last item in the intended array.  Chomp each value in the array
+                        # after the split
+                        foreach my $chomping (@att) {
+                        $chomping =~ s/\r?\n$//;
+                        # alternative to $/ = "\r\n"; for both Linux and Windows
+                        }
                         # enable for debug
                         # print "\n Attribute line contains:\n";
+                        # my $att_number = @att;
+                        # print "\n $att_number attribute value(s) captured\n\n";
                         # foreach my $attributes (@att) {
                         #    print " $attributes ";
                         # }
@@ -661,7 +666,7 @@ while (1) {
                             $hof_blocks{$pkey} = \@att;
                         }
 
-# Enable for debug:
+# Enable for debug (used here will run on each loop):
 # print Dumper \%blocks;
 # print Dumper \%hof_blocks;
 # print array out if BLOCKNAME = test, might be better with an array of arrays to preserve HANDLE order??
@@ -681,15 +686,17 @@ while (1) {
                 close($ATTOUT);
 
                 # Dump blocks for debug
+                # print "\n now dumping blocks \n";
                 # print Dumper \%blocks;
-                # `print Dumper \%hof_blocks;
-                my $json = encode_json \%hof_blocks;
-                print "\n JSON version of hash of blocks:\n$json\n";
+                # print "\n now dumping hash of blocks \n";
+                # print Dumper \%hof_blocks;
+                # my $json = encode_json \%hof_blocks;
+                # print "\n JSON version of hash of blocks:\n$json\n";
                 my $jstring
                   ; # string to hold js script to bulk output attributes as json to mongo
                  #    print "\nvar attout = db.collection_name.initializeUnorderedBulkOp()\;\n";
                 $jstring =
-"var attout = db.collection_name.initializeUnorderedBulkOp()\;\n";
+" // bulk attribute import // \n\nvar attout = db.collection_name.initializeUnorderedBulkOp()\;\n";
 
 #  $|=1; Autoflush not necessary
 
@@ -707,6 +714,9 @@ while (1) {
                         # Add key to string bassed on column number
                         # but only if the value is not <> i.e. AutoKAD attout value was empty as this key does not appear in the block
                         # Will throw use of uninitialised value if value of key is empty as is the case
+                     #   if (!defined $hof_blocks{$_}[$i]){
+                     #   print "\n Row $_, key $keys[$i] had an undefined element $i if last array element is missing \n";
+                     #                                    }
                         if ($hof_blocks{$_}[$i] ne '<>') {
                         $jstring .= ", \"$keys[$i]\" : ";
 
