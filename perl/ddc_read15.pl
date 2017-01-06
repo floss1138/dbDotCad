@@ -559,6 +559,7 @@ foreach (@match_files) {
 #   print " Using following regex for matching:\n >$_<\n";
 # }
 
+my $user_time = time_check();
 while (1) {
 
     # read watch folder and create an array of attribute files found:
@@ -696,7 +697,7 @@ while (1) {
                   ; # string to hold js script to bulk output attributes as json to mongo
                  #    print "\nvar attout = db.collection_name.initializeUnorderedBulkOp()\;\n";
                 $jstring =
-" // bulk attribute import // \n\nvar attout = db.collection_name.initializeUnorderedBulkOp()\;\n";
+" // bulk BLOCK attribute import // \n\nvar attout = db.ATTOUT.initializeUnorderedBulkOp()\;\n";
 
 #  $|=1; Autoflush not necessary
 
@@ -705,8 +706,10 @@ while (1) {
 
                 foreach ( keys %hof_blocks ) {
 
-                    # print "attout.insert({\"_id\" : \"$_\"";
-                    $jstring .= "attout.insert({\"_id\" : \"$_\"";
+                    # Create json string beginning with mongo _id and document TITLE
+                    # Although document TITLE is part of the primary key, db.ATTOUT.find({ "_id": /\+1-02-03-04/ }) is costly
+                    # Having a TITLE field allows for future indexing.  TITLE will also exist as an attribute in well made blocks
+                    $jstring .= "attout.insert({\"_id\" : \"$_\", \"TITLE\" : \"$doctitle\"";
                     my $column_count = @keys;
 
                     for ( my $i = 1 ; $i < $column_count ; $i++ ) {
@@ -725,25 +728,21 @@ while (1) {
                                                           }
                     }
 
-                    #  Add user name and terminating string
-                    $jstring .= " , \"USER_NAME\" : \"$config{user_name}\"})\;\n";
+                    #  Add user name, time and terminating string
+                    
+                    $jstring .= ", \"TITLE\" : \"$doctitle\", \"USERNAME_TIME\" : \"$config{user_name} $user_time\"})\;\n";
 
                     # print string on each run to see it build line by line:
                     # print "\n\n$jstring\n\n";
                 }
-
+                # Add js command to execute bulk output as last line of js script
+                $jstring .= "attout.execute()\;\n\n // run as, mongo ddcBLOCKS mongo_attout.js //";
                 # pring final json bulk op string to screen for debug
                   print "\n\n$jstring\n\n";
-                  # remove <> entries as this is attout code for no data, for example '"ATTRIBUTE1" : "<>",'
-                  # i.e. any key value entry with <> as the value needs to be removed
-                 # $jstring =~ s/"(.*?)"\s?:\s?"<>"\s?,//;
-                 #   $jstring =~ s/^,\s?".*"\s?:\s?"<>"\s?,$//gm;
-                 #    $jstring =~ s/,(?<=,) ".+?" : "<>"(?=,)//gm;
-                #  $jstring =~ s/,? ".+?" : "<>"(?=,)//gm;
-                 # print "\nString with <> entries removed:\n$jstring\n\n";
-                # Write js bulk output to file
+                
+                # Write js bulk output script to file
                 open my $JSON, '>',
-                  '/home/alice/dbdotcad/attout_to_db/mongo_attout.js'
+                  '/home/alice/dbdotcad/done/mongo_attout.js'
                   or carp "Mongo js file could not be opened\n";
                 exit 1 if !print {$JSON} "$jstring";
                 close $JSON or carp "Unable to close Mongo js file\n";
