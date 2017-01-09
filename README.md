@@ -454,16 +454,19 @@ _id  BLOCKNAME  ATTRIBUTE1  ATTRIBUTE2  ATTRIBUTE3
 
 where _id = HANDLE+TITLE
 
-#### Bulk import into database
+#mport into database
 mongoDB has a bulk import function and will accept javascript as an command line argument to the mongo command.
-The attout format can easily be modified to comply with bulk import function.  For example, here the attout data becomes variable attout:  
-
-`var attout = db.collection_name.initializeUnorderedBulkOp();`   
-`attout.insert({"_id": "'35068+1234-5678-9012", "BLOCKNAME" : "MDU", "SYSTEMNAME":"172/MDUA01A", "LOCATION" : "ROOM2/A01", "BRAND" : "MEGAUNLIMITED"});`  
-`attout.insert({"_id": "'35069+1234-5678-9012", "BLOCKNAME" : "MDU", "SYSTEMNAME":"172/MDUA02A", "LOCATION" : "ROOM2/A02", "BRAND" : "MEGAUNLIMITED"});`  
-`attout.insert({"_id": "'35071+1234-5678-9012", "BLOCKNAME" : "MDU", "SYSTEMNAME":"172/MDUA04A", "LOCATION" : "ROOM2/A04", "BRAND" : "MEGAUNLIMITED"});`  
-`attout.insert({"_id": "'35072+1234-5678-9012", "BLOCKNAME" : "MDU", "SYSTEMNAME":"172/MDUA05A", "LOCATION" : "ROOM2/A01", "BRAND" : "MEGAUNLIMITED"});`  
-`attout.insert({"_id": "'35073+1234-5678-9012", "BLOCKNAME" : "MDU", "SYSTEMNAME":"172/MDUA06A", "LOCATION" : "ROOM2/A06", "BRAND" : "MEGAUNLIMITED"});`  
+The attout format can easily be modified to comply with bulk import function.  For example, here the attout data becomes variable attout:
+`// Bulk import //`
+`// Switch to required db with getSibling so db name after mongo command not required`
+`// this will also create the database if it does not exist and will override *dbname* in mongo *dbname* scriptname.js
+`db = db.getSiblingDB('1-database_name`);`
+`var attout = db.attout_collection_name.initializeUnorderedBulkOp();`
+`attout.insert( { "_id": "'35068+1234-5678-9012-12", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA01A", "LOCATION": "ROOM2/A01", "BRAND":"MEGAUNLIMITED" });`
+`attout.insert( { "_id": "'35069+1234-5678-9012-12", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA02A", "LOCATION": "ROOM2/A02", "BRAND":"MEGAUNLIMITED" });`
+`attout.insert( { "_id": "'35071+1234-5678-9012-12", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA04A", "LOCATION": "ROOM2/A04", "BRAND":"MEGAUNLIMITED" });`
+`attout.insert( { "_id": "'35072+1234-5678-9012-12", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA05A", "LOCATION": "ROOM2/A01", "BRAND":"MEGAUNLIMITED" });`  
+`attout.insert( { "_id": "'35073+1234-5678-9012-12", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA06A", "LOCATION": "ROOM2/A06", "BRAND":"MEGAUNLIMITED" });`  
 `attout.execute();`   
 
 If the modified attout.txt is saved as a new file, typically with a .js extension this can be passed to the mongo client:
@@ -472,6 +475,13 @@ If the modified attout.txt is saved as a new file, typically with a .js extensio
 mongoDB will automatically reject a duplicate _id.  This is not an error and for this application is the desired behaviour.  
 The first import will succeed and can be used to initially populate or seed desired fields.  From this point onwards it is necessary to manipulate the data from within the database itself.  The databases is King and should always be this way.  Future attout operations will provide the _id for a query but only new _ids will add data to the database. 
 
+#### Collection names
+The existing application has cable number collections which are site wide. 
+In the future it would be sensible to limit this to site-area, with inter area cable numbers in a separate collection. 
+Enterprise wide data such as hostnames, should be in a separate database. 
+For now, blocks for site 1 will be in collection 1-blocks, for site 2, 2-blocks etc. 
+In the future, cable numbers could be subnetted and the area codes could also be used 1-02-blocks, for site 1 area 2 blocks.   
+### Bulk import into database
 
 #### Attributes and nested blocks
 When blocks are nested, clicking on the block only presents attributes for the *parent* block.  Similarly using ATTOUT on a nested block only captures attributes from the *parent* and not the *children* within.
