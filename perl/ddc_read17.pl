@@ -144,7 +144,7 @@ fname_match3="UNDEFINED"
 # from the whole file name.  This is a bracketed regex intended to return the match in $1
 doc_title="(^[0-9]+-[0-9]+-[0-9]+-[0-9])"
 
-# PREFIX FIX
+# PREFIX FIX (originally added to add missing site code)
 # The first match can be corrected to meet fname_match2 on next iteration by adding a prefix
 # This is an edge case for legacy drawing numbers with insufficient number groups
 # e.g. prefixfix="1-"  Note that it is necessary to add the hyphen if using 
@@ -153,10 +153,17 @@ doc_title="(^[0-9]+-[0-9]+-[0-9]+-[0-9])"
 # Set this to UNDEFINED if not used
 prefixfix="1-"
 
-# COLLECTION PREFIX
+# DB COLLECTION PREFIX
 # Collection prefix is intended to be site (and possibly area) code. e.g. 1-20
 # Taken from the drawing title with the following match
-site_match="([1-9][0-9]*-)"
+# Note that collections should not begin with numbers or contain hyphens - ah!
+site_match="([1-9][0-9]*-\d+)"
+
+# COLLECTION PREFIX FIX
+# If your naming convention begins with a number and contains hyphens, these need to be replace
+# to match mongoDB collection naming standards, 1-02 as the start of a collection name
+# becomes s1a02 for site 1, area 02
+# This is currently a hard coded subsitution s/(\d+)-(\d+)/s$1a$2/xsm
 
 # FILE TRANSFER ORDER
 # When more than one matching file is found, these can be sorted & sent by mtime
@@ -625,12 +632,15 @@ while (1) {
                 #  $doctitle =~ m/(^[1-9][0-9]*-)/;
                # match doctitle to extract site prefix (from site_match in config file)
                 $doctitle =~ /$config{site_match}/xsm; 
-               # collection names cannot start with a number or contain a - without delimiting, change \d- to site\d
+               # collection names cannot start with a number or contain a hyphen (without unpredictable delimiting)
+               # 1-02 needs to be changed to, say s1a02 for site 1, area 02
                my $collection_prefix = $1;
-                  $collection_prefix =~ s/(\d+)-/site$1/xsm;
+               # Hardcoded replacement of number-number with snumberanumber
+                 $collection_prefix =~ s/(\d+)-(\d+)/s$1a$2/xsm;
+                
                 # create collection name based on site prefix and collection name for blocks
                 my $collection = $collection_prefix.$config{block_collection};
-                 print " \n  matching document title is >$doctitle<, site match is: $1, collection is $collection \n";
+                # print " \n  matching document title is >$doctitle<, site match is: $1, collection is $collection \n";
 
 # read attribute line into array @att from $filewithpath
 # deduplicate block names into %blocks hash adding block name count as the value
