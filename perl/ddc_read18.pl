@@ -640,8 +640,9 @@ while (1) {
 
    # Leading zeros may or may not exist but for collection names they are banned
    #  Remove leading zero from area or any number in a collection name here
-                $collection_prefix =~ s/0(\d+)/$1/xsm;
-
+                $collection_prefix =~ s/0+(\d+)/$1/xsm;
+   #  Remove any hyphens from the collection name          
+                $collection_prefix =~ s/-+//xsm;
     # create collection name based on site prefix and collection name for blocks
                 my $collection = $collection_prefix . $config{block_collection};
 
