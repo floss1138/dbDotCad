@@ -287,9 +287,9 @@ Where A is an upper case alpha, one or more letters, no spaces.  This revision i
 The hyphens and underscore must be present and are used as part of a file/title name integrity check.   
 Typical use for each field is:   
 
-NUMERIC SITE or COUNTRY CODE`-`NUMERIC AREA CODE`-`NUMERIC DOC TYPE GENERAL`-`NUMERIC DOC TYPE SPECIFIC`-`ALPHA REVISION`_`FILE IDENTIFIER`.`FILE EXTENSION   
+`s` NUMERIC SITE or COUNTRY CODE`_`NUMERIC AREA CODE`-`NUMERIC DOC TYPE GENERAL`-`NUMERIC DOC TYPE SPECIFIC`-`ALPHA REVISION`_`FILE IDENTIFIER`.`FILE EXTENSION   
 
-This will be checked with the regex ^[0-9]+-[0-9]+-[0-9]+-[0-9]+-[A-Z]+_.* or more concisely ^[0-9]+-([0-9]+-){3}[A-Z]+_.*   
+This will be checked with the regex ^s\d+_[0-9]+-[0-9]+-[0-9]+-[A-Z]+_.* or more concisely ^s+_([0-9]+-){3}[A-Z]+_.*   
 The configuration file will allow 3 different regex matches to be used in cases where multiple naming conventions may exist.  ddc has to cope with a use case where existing naming had insufficient provision for the site code and different databases were used for different sites.  If the site code is missing (i.e the title is N-N-N-A not N-N-N-N-A) the site code will be assumed to be 1 by default.
 
 The descriptive part of the name and the revision will not be used by the database for identification as part of a primary key.  This is only for by humans who sometimes use white space in file names.
@@ -297,20 +297,22 @@ It is mandatory to link the Alphabetical revision part to the name via an unders
 
 
 For example:
-`1-123-23-1234_C My Ace Design.dwg` for site 1
-`002-456-078-4567-AD_new_office_fist_floor.dwg` for site 002.   
-The entry will become `2-456-078-4567-AD_new_office_fist_floor.dwg` after processing.   
-The `2-456-078-4567` part will form the database key once concatonated with the block handle.
+`s1_123-23-1234_C My Ace Design.dwg` for site 1
+`s2_456-078-4567-AD_new_office_fist_floor.dwg` for site 2.   
+The entry will become `s1_33-078-4567-AD_new_office_fist_floor.dwg` after processing.   
+The `s1_33-078-4567` part will form the database key once concatonated with the block handle.
 
 Note that CAD drawings must have a unique master name.  
-i.e. the N-N-N-N part MUST be unique.  The revision identifier should be in UPPER CASE.
+i.e. the sN_N-N-N part MUST be unique.  The alpha revision identifier should be in UPPER CASE.
 This format will be checked and enforced (using a regex that can be easily modified for other requirements)
 For AutoKAD the .dwg extension is necessary.
-Spaces in file names are common, even if undesirable these are allowed.
+Spaces in file names are common, even if undesirable these are allowed. Hyphens should be avoided as they can be interpolated by scripts as subtraction operators.
+Names beginning with numbers cannot be used as mongoDB collection names without delimiting.
+Leading zeros can be problematic.  Unfortunately the N-N-N format is common in drawing names.
 
-The database ID for each Block will be created by appending the Handle to the N-N-N-N part of the document title with a + separator. '`D57B8+2-456-78-4567`        
+The database ID for each Block will be created by appending the Handle to the sN_N-N-N part of the document title with an underscore separator. `'D57B8_s2-456-78-4567`        
 
-This creates a totally unique reference for each block within the database.
+This creates a totally unique reference for each block within the database and depending on the naming convention can provide a site and area reference.
 
 Block identifying information will be unique so file revision data is not needed for block attributes.
 Block attribute data (meta data) is independent of the drawing.  
@@ -383,8 +385,8 @@ Other blocks used in surrounds need no special attention.
 ### dbDotCad block_id
 Obviously, a single drawing has no way of knowing the handles used for other drawings.  
 For migration into a database, some additional data identifying the (uniquely named) drawing file is necessary.  
-This can be the file name (or part thereof) and/or the drawing title.  In our examples the N-N-N-N part of the title and/or file name will be used.   
-The attout handle always starts apostrophe and has a 3 digit or larger hex value.  As the apostrophe is a useful chek, dbDotCad preserves this as part of the database_id.  The appended document identifier is added after the handle using a + character as a separator so the MongoDB primary key _id becomes 'handle+drawingnumber e.g. '12BFE+123-23-1234  
+This can be the file name (or part thereof) and/or the drawing title.  In our examples the sN_N-N-N part of the title and/or file name will be used.   
+The attout handle always starts apostrophe and has a 3 digit or larger hex value.  As the apostrophe is a useful chek, dbDotCad preserves this as part of the database_id.  The appended document identifier is added after the handle using a + character as a separator so the MongoDB primary key _id becomes 'handle_drawingnumber e.g. '12BFE_s1_123-23-1234  
 This will be know as the **block_id** and becomes the primary key for the database.  Mongo allows the apostrophe (single quote character) in an id but not the double quote that would need delimiting when used in JSON.
 
 
@@ -447,27 +449,28 @@ Open drawings or block library drawings can be used to add blocks to new drawing
 Select from the Folder or Open Drawings tab.
 
 #### Attribute HANDLE & Databases
-The HANDLE is not sufficiently unique to identify the block within a database.  HANDLE and TITLE can be concatenated to create a unique primary key,  _id.  For ease of reading, a + character is used as the separator between the handle and title fields.  As an additional aid to identification, the leading apostrophe created by attout is retained.  For example _id will become, 'HANDLE+TITLE and will look something like this: '35068+1234-5678-9012   
+The HANDLE is not sufficiently unique to identify the block within a database.  HANDLE and TITLE can be concatenated to create a unique primary key,  _id.  For ease of reading, an underscore _ character is used as the separator between the handle and title fields.  As an additional aid to identification, the leading apostrophe created by attout is retained.  For example _id will become, 'HANDLE_TITLE and will look something like this: '35068_s1_12-5678-9012   
 If drawing title or file name was not included in the block attributes then the relevant part of the file name (which includes the document title) can be extracted from the attout.txt file name. Typically, the columns as seen by the database then become:  
 
 _id  BLOCKNAME  ATTRIBUTE1  ATTRIBUTE2  ATTRIBUTE3  
 
-where _id = HANDLE+TITLE
+where _id = HANDLE_TITLE
 
-#mport into database
+###Bulk import into database   
+
 mongoDB has a bulk import function and will accept javascript as an command line argument to the mongo command.
 The attout format can easily be modified to comply with bulk import function.  For example, here the attout data becomes variable attout:
-`// Bulk import //`
+`// Bulk import //`   
 `// Switch to required db with getSibling so db name after mongo command not required`
 `// this will also create the database if it does not exist and will override *dbname* in mongo *dbname* scriptname.js
-`db = db.getSiblingDB('1-database_name`);`
-`var attout = db.attout_collection_name.initializeUnorderedBulkOp();`
-`attout.insert( { "_id": "'35068+1234-5678-9012-12", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA01A", "LOCATION": "ROOM2/A01", "BRAND":"MEGAUNLIMITED" });`
-`attout.insert( { "_id": "'35069+1234-5678-9012-12", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA02A", "LOCATION": "ROOM2/A02", "BRAND":"MEGAUNLIMITED" });`
-`attout.insert( { "_id": "'35071+1234-5678-9012-12", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA04A", "LOCATION": "ROOM2/A04", "BRAND":"MEGAUNLIMITED" });`
-`attout.insert( { "_id": "'35072+1234-5678-9012-12", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA05A", "LOCATION": "ROOM2/A01", "BRAND":"MEGAUNLIMITED" });`  
-`attout.insert( { "_id": "'35073+1234-5678-9012-12", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA06A", "LOCATION": "ROOM2/A06", "BRAND":"MEGAUNLIMITED" });`  
-`attout.execute();`   
+`db = db.getSiblingDB('database_name`);`
+`var attout = db.attout_collection_name.initializeUnorderedBulkOp();`   
+`attout.insert( { "_id": "'35068+1234-5678-9012-12", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA01A", "LOCATION": "ROOM2/A01", "BRAND":"MEGAUNLIMITED" });`   
+`attout.insert( { "_id": "'35069+1234-5678-9012-12", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA02A", "LOCATION": "ROOM2/A02", "BRAND":"MEGAUNLIMITED" });`   
+`attout.insert( { "_id": "'35071+1234-5678-9012-12", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA04A", "LOCATION": "ROOM2/A04", "BRAND":"MEGAUNLIMITED" });`   
+`attout.insert( { "_id": "'35072+1234-5678-9012-12", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA05A", "LOCATION": "ROOM2/A01", "BRAND":"MEGAUNLIMITED" });`   
+`attout.insert( { "_id": "'35073+1234-5678-9012-12", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA06A", "LOCATION": "ROOM2/A06", "BRAND":"MEGAUNLIMITED" });`   
+`attout.execute();`    
 
 If the modified attout.txt is saved as a new file, typically with a .js extension this can be passed to the mongo client:
 `mongo bulkinsert_example.js`
@@ -479,9 +482,8 @@ The first import will succeed and can be used to initially populate or seed desi
 The existing application has cable number collections which are site wide. 
 In the future it would be sensible to limit this to site-area, with inter area cable numbers in a separate collection. 
 Enterprise wide data such as hostnames, should be in a separate database. 
-For now, blocks for site 1 will be in collection 1-blocks, for site 2, 2-blocks etc. 
-In the future, cable numbers could be subnetted and the area codes could also be used 1-02-blocks, for site 1 area 2 blocks.   
-### Bulk import into database
+For now, blocks for site 1 will be in collection 1blocks, for site 002, 2blocks etc. Leading zeros will be removed.  Hyphens will be removed.
+In the future, cable numbers could be subnetted by area code.   
 
 #### Attributes and nested blocks
 When blocks are nested, clicking on the block only presents attributes for the *parent* block.  Similarly using ATTOUT on a nested block only captures attributes from the *parent* and not the *children* within.
