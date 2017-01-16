@@ -287,7 +287,11 @@ Where A is an upper case alpha, one or more letters, no spaces.  This revision i
 The hyphens and underscore must be present and are used as part of a file/title name integrity check.   
 Typical use for each field is:   
 
-`s` NUMERIC SITE or COUNTRY CODE`_`NUMERIC AREA CODE`-`NUMERIC DOC TYPE GENERAL`-`NUMERIC DOC TYPE SPECIFIC`-`ALPHA REVISION`_`FILE IDENTIFIER`.`FILE EXTENSION   
+`s` NUMERIC SITE CODE`_`NUMERIC AREA CODE`-`NUMERIC DOC TYPE GENERAL`-`NUMERIC DOC TYPE SPECIFIC`-`ALPHA REVISION`_`FILE IDENTIFIER`.`FILE EXTENSION   
+`s1_` added for site 1 releated data    
+`x1_` added for cross site or site wide data for site 1, for example, inter-area cables    
+`e1_` added for enterprise wide data for enterprise 1, for example, host names    
+
 
 This will be checked with the regex ^s\d+_[0-9]+-[0-9]+-[0-9]+-[A-Z]+_.* or more concisely ^s+_([0-9]+-){3}[A-Z]+_.*   
 The configuration file will allow 3 different regex matches to be used in cases where multiple naming conventions may exist.  ddc has to cope with a use case where existing naming had insufficient provision for the site code and different databases were used for different sites.  If the site code is missing (i.e the title is N-N-N-A not N-N-N-N-A) the site code will be assumed to be 1 by default.
@@ -474,6 +478,9 @@ The attout format can easily be modified to comply with bulk import function.  F
 
 If the modified attout.txt is saved as a new file, typically with a .js extension this can be passed to the mongo client:
 `mongo bulkinsert_example.js`
+
+It is possible to script the find command to produce clean json by addin a forEach(prinjson) loop, for example:   
+`db.s1_2blocks.find ({"_id" : "'30C91_s1_02-20-3023"}).forEach(printjson);`   
 
 mongoDB will automatically reject a duplicate _id.  This is not an error and for this application is the desired behaviour.  
 The first import will succeed and can be used to initially populate or seed desired fields.  From this point onwards it is necessary to manipulate the data from within the database itself.  The databases is King and should always be this way.  Future attout operations will provide the _id for a query but only new _ids will add data to the database. 
