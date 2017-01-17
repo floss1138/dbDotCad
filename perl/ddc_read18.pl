@@ -142,12 +142,12 @@ fname_match3="UNDEFINED"
 # Pattern match for the docuemnt title.  This will be used to check the document title
 # If the file name is used to provide title information, this match filters the title part
 # from the whole file name.  This is a bracketed regex intended to return the match in $1
-doc_title="(^s\d+_[0-9]+-[0-9]+-[0-9])"
+doc_title="(^s\d+_[0-9]+-[0-9]+-[0-9]+)"
 
-# PREFIX FIX (originally added to add missing site code)
+# PREFIX FIX for fname_match1 (adds missing site code)
 # The first match can be corrected to meet fname_match2 on next iteration by adding a prefix
 # This is an edge case for legacy drawing numbers with insufficient number groups
-# e.g. prefixfix="S1_"
+# e.g. prefixfix="s1_" or x1 for cross site 1
 #  The file will be renamed and meet fname_match2 on the next run
 # This is only applied to fname_match1, used to identify the legacy pattern
 # Set this to UNDEFINED if not used
@@ -160,18 +160,11 @@ prefixfix="s1_"
 # site_match="([1-9][0-9]*-\d+)"
 site_match="(s\d+_\d+)"
 
-# COLLECTION PREFIX FIX
-# If your naming convention begins with a number and contains hyphens, these need to be replace
-# to match mongoDB collection naming standards, 1-02 as the start of a collection name
-# becomes s1a02 for site 1, area 02
-# This is currently a hard coded subsitution s/(\d+)-(\d+)/s$1a$2/xsm
-
 # FILE TRANSFER ORDER
 # When more than one matching file is found, these can be sorted & sent by mtime
 # File to go first:  OLD or NEW (old is default if NEW not specified)
 sort_order="OLD"
 
- 
 # GROWING DELAY IN SECONDS
 # Duration in whole seconds used to pause and check file for growth
 # Minimum is 1 second. Set to a small value if xml trigger file used
@@ -624,10 +617,10 @@ while (1) {
 # Extract title based on config file regex here:
                 my $doctitle = 'doc_title_is_undefined';
 
-        # print "\n File name is $attfile, regex used is $config{doc_title} \n";
+         print "\n File name is $attfile, regex used is $config{doc_title} \n";
                 $attfile =~ /$config{doc_title}/xsm;
                 $doctitle = $1;
-
+         print "\n doctitle is $doctitle\n";
 # site code is the first number(s) before the first - and should not have a leading 0
 # site code is used to prefix the collection name and may become a site-area code in the future
 
@@ -781,7 +774,9 @@ while (1) {
                 print "\n$jstring\n";
 
                 # Write js bulk output script to file
-                open my $JSON, '>', '/home/alice/dbdotcad/done/mongo_attout.js'
+              #  open my $JSON, '>', '/home/alice/dbdotcad/done/mongo_attout.js'
+                open my $JSON, '>', "$config{done_dir}$doctitle.attout.js"
+
                   or carp "Mongo js file could not be opened\n";
                 exit 1 if !print {$JSON} "$jstring";
                 close $JSON or carp "Unable to close Mongo js file\n";
