@@ -541,6 +541,26 @@ sub readHANDLEline {
 
 # End of readHANDELline sub
 
+## SUB TO CREATE MONGODB QUEREY HEADER
+# Takes document title as the argument for the file name
+sub makeqheader {
+my $quereyh =" // block querey // \n\ndb = db.getSiblingDB('$config{ddc_dbname}')\;";
+my $doct = @_;
+# open querey file attin.js for writing
+   if ( !open my $QUEREY, '<', "$config{done_dir}$doct.attin.js" ) {
+        print "\n  querey file $doct.attin.js would not open for writing \n";
+   }  
+    else {
+         print "\n Writing header \n $quereyh \n to querey file $doct.attin.js\n";
+         print $QUEREY "$quereyh";
+ 
+         close $QUEREY or carp "Unable to close querey file";
+     }
+
+
+}
+# End of quereyheader sub
+
 ## THE PROGRAM
 
 # print the hash for debug
@@ -732,14 +752,21 @@ while (1) {
                 #  $|=1; Autoflush not necessary
 
 #  Note that the first element [0] is the HANDLE which forms part of _id, so the actual document content starts at [1] with the BLOCKNAME
-#  For each key create a line entry in Mongo
+#  For each key create a line entry to be turned into a mongoDB document
 
                 foreach ( keys %hof_blocks ) {
 
-# Create json string beginning with mongo _id and document TITLE
-# Although document TITLE is part of the primary key, db.ATTOUT.find({ "_id": /.*s1-02-03-04/ }) is costly
-# Having a TITLE field allows for future indexing.  TITLE will also exist as an attribute in well made blocks
+# Create json string beginning with mongoDB primary key, _id and document _title
+# Although document _title is part of the primary key, db.ATTOUT.find({ "_id": /.*s1-02-03-04/ }) is costly
+# Having a _title field allows for future indexing.  _title will also exist as an attribute in well made blocks
                     $jstring .= "attout.insert({\"_id\" : \"$_\"";
+# Use _id to also create a querey script using doctitle.attin.js as the file name:
+
+
+# makeqheader($doctitle); messed up passing doctitle = array is 1 exit 1 to test here #############
+
+
+
                     my $column_count = @keys;
 
                     for ( my $i = 1 ; $i < $column_count ; $i++ ) {
@@ -761,7 +788,7 @@ while (1) {
                     #  Add user name, time and terminating string
 
                     $jstring .=
-", \"_TITLE\" : \"$doctitle\", \"_FILENAME\" : \"$attfile\", \"_ERRANCY\" : \"OK\", \"_USER_TIME\" : \"$config{user_name} $user_time\"})\;\n";
+", \"_link\" : \"NO\", \"_title\" : \"$doctitle\", \"_filename\" : \"$attfile\", \"_errancy\" : \"OK\", \"_user_time\" : \"$config{user_name} $user_time\"})\;\n";
 
                     # print string on each run to see it build line by line:
                     # print "\n\n$jstring\n\n";
