@@ -39,6 +39,7 @@ my $CONF;                   # File handle for conf file
 my $EMPTY   = q{};  # Empty string the Critic way
 my %config  = ();   # initialise hash to hold config
 my @matches = ();   # Array to hold regex patterns used to match candidate files
+my @primkeys =();   # initialise array to hold primary keys for block attributes 
 our %attributes = ();    # Empty has to hold attributes (AutoKad Metadata)
 
 ## SUB TO CREATE LOCALTIME FORMATTED STRING ##
@@ -542,22 +543,20 @@ sub readHANDLEline {
 # End of readHANDELline sub
 
 ## SUB TO CREATE MONGODB QUEREY HEADER
-# Takes document title as the argument for the file name
+# Takes path with filename as argument
 sub makeqheader {
-my $quereyh =" // block querey // \n\ndb = db.getSiblingDB('$config{ddc_dbname}')\;";
-my $doct = @_;
-# open querey file attin.js for writing
-   if ( !open my $QUEREY, '<', "$config{done_dir}$doct.attin.js" ) {
-        print "\n  querey file $doct.attin.js would not open for writing \n";
+my ($qfile, $dbname) = @_;
+my $quereyh =" // block querey // \n\ndb = db.getSiblingDB('$dbname}')\;";
+# open querey file for writing
+   if ( !open my $QUEREY, '>', "$qfile" ) {
+        print "\n  querey file $qfile would not open for writing \n";
    }  
     else {
-         print "\n Writing header \n $quereyh \n to querey file $doct.attin.js\n";
+         # print "\n Writing header \n $quereyh \n to querey file $qfile\n";
          print $QUEREY "$quereyh";
- 
-         close $QUEREY or carp "Unable to close querey file";
+         close $QUEREY or carp "Unable to close $qfile file";
      }
-
-
+return 0;
 }
 # End of quereyheader sub
 
@@ -640,7 +639,7 @@ while (1) {
          print "\n File name is $attfile, regex used is $config{doc_title} \n";
                 $attfile =~ /$config{doc_title}/xsm;
                 $doctitle = $1;
-         print "\n doctitle is $doctitle\n";
+         # print "\n doctitle is $doctitle\n";
 # site code is the first number(s) before the first - and should not have a leading 0
 # site code is used to prefix the collection name and may become a site-area code in the future
 
@@ -760,10 +759,14 @@ while (1) {
 # Although document _title is part of the primary key, db.ATTOUT.find({ "_id": /.*s1-02-03-04/ }) is costly
 # Having a _title field allows for future indexing.  _title will also exist as an attribute in well made blocks
                     $jstring .= "attout.insert({\"_id\" : \"$_\"";
-# Use _id to also create a querey script using doctitle.attin.js as the file name:
+# Write id into primkeyis array
+                    push (@primkeys, "$_"); 
 
 
-# makeqheader($doctitle); messed up passing doctitle = array is 1 exit 1 to test here #############
+
+# Use _id to also create a querey script using doctitle.attin.js as the file name
+# Open file and add the header, makee querey header takes pathwithfilename, dbname as arguements 
+makeqheader("$config{done_dir}$doctitle.attin.js", "$config{ddc_dbname}"); 
 
 
 
@@ -807,7 +810,10 @@ while (1) {
                   or carp "Mongo js file could not be opened\n";
                 exit 1 if !print {$JSON} "$jstring";
                 close $JSON or carp "Unable to close Mongo js file\n";
-
+                
+                # Print primary keys used
+                print "\n Primary keys are:\n @primkeys\n";
+                
                 # move file to done directory
                 if ( rename $filewithpath, $done_name ) {
                     print "\n $filewithpath moved to:\n $done_name\n";
