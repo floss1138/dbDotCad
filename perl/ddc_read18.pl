@@ -829,3 +829,28 @@ makeqheader("$config{done_dir}$doctitle.attin.js", "$config{ddc_dbname}");
 
 }
 
+
+__END__
+
+
+todo ad querymaker
+
+# querymaker takes filename of queryheader file, database name and array of keys as arguments
+sub quereymaker {
+my ($qfile, $dbname, \@primkeys) = @_;
+ # open querey file for writing
+  if ( !open my $QUEREY, '>>', "$qfile" ) {
+        print "\n  querey file $qfile would not open for writing \n";
+   }
+     else {
+          # print "\n Writing querey data to querey file $qfile\n";
+          foreach @primkeys {
+          
+          print $QUEREY "$dbname.find ({ \"_id\" : "\"$_\"}).forEach(printjson);";
+           }
+          close $QUEREY or carp "Unable to close $qfile file";
+      }
+return 0;
+ }
+#  End of quereymaker sub
+
