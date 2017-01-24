@@ -275,9 +275,9 @@ Include path to attribute file, growing file check delay, enforce title, documen
 ### NAMING CONVENTION FOR DRAWINGS 
 
 It is best practice is to create naming and numbering systems which follow a logical hierarchy. 
-Based on some real world naming, a unique document/drawing number, the TITLE, will form the first part of the file name and contain an alphanumeric revision (upper case) followed by a friendly name to create the file name: 
+Based on some real world naming, a unique document/drawing number, the TITLE (sN_N-N-N), will form the first part of the file name followed by an alphanumeric revision (upper case) followed by a friendly name to create the file name: 
 
-N-N-N-N-A_friendly name which may have spaces.dwg
+sN_N-N-N-A_friendly name which may have spaces.dwg
 
 N is Numeric, one or more numbers, no spaces; trailing zeros will be removed/ignored.  The N part must contain at least one number and each number is separated by hyphens; this is the document/drawing TITLE. TITLEs should be allocated so they are unique.  The revision must be upper case alpha characters only. The revision and the friendly name are not used by the database for identification.  The TITLE must exist in the AutoKAD, File -> Summary Tab -> Drawing Properties -> Title: to be available to the block and to be maintained if the file is saved as a pdf or .dxf 
 
@@ -293,8 +293,8 @@ Typical use for each field is:
 `e1_` added for enterprise wide data for enterprise 1, for example, host names    
 
 
-This will be checked with the regex ^s\d+_[0-9]+-[0-9]+-[0-9]+-[A-Z]+_.* or more concisely ^s+_([0-9]+-){3}[A-Z]+_.*   
-The configuration file will allow 3 different regex matches to be used in cases where multiple naming conventions may exist.  ddc has to cope with a use case where existing naming had insufficient provision for the site code and different databases were used for different sites.  If the site code is missing (i.e the title is N-N-N-A not N-N-N-N-A) the site code will be assumed to be 1 by default.
+The title will be checked with the regex ^s\d+_[0-9]+-[0-9]+-[0-9]+-[A-Z]+_.* or more concisely ^s+_([0-9]+-){3}[A-Z]+_.*   
+The configuration file will allow 3 different regex matches to be used in cases where multiple naming conventions may exist.  ddc has to cope with a use case where existing naming had insufficient provision for the site code and different databases were used for different sites.  If the site code is missing (i.e the title is N-N-N-A not sN_N-N-N-A) the site code will be assumed to be s1_ by default.
 
 The descriptive part of the name and the revision will not be used by the database for identification as part of a primary key.  This is only for by humans who sometimes use white space in file names.
 It is mandatory to link the Alphabetical revision part to the name via an underscore to the description.
@@ -467,7 +467,7 @@ The attout format can easily be modified to comply with bulk import function.  F
 `// Bulk import //`   
 `// Switch to required db with getSibling so db name after mongo command not required`
 `// this will also create the database if it does not exist and will override *dbname* in mongo *dbname* scriptname.js
-`db = db.getSiblingDB('database_name`);`
+`db = db.getSiblingDB('database_name');`    
 `var attout = db.attout_collection_name.initializeUnorderedBulkOp();`   
 `attout.insert( { "_id": "'35068+1234-5678-9012-12", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA01A", "LOCATION": "ROOM2/A01", "BRAND":"MEGAUNLIMITED" });`   
 `attout.insert( { "_id": "'35069+1234-5678-9012-12", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA02A", "LOCATION": "ROOM2/A02", "BRAND":"MEGAUNLIMITED" });`   
@@ -482,7 +482,12 @@ If the modified attout.txt is saved as a new file, typically with a .js extensio
 It is possible to script the find command to produce clean json by addin a forEach(prinjson) loop, for example:   
 `db.s1_2blocks.find ({"_id" : "'30C91_s1_02-20-3023"}).forEach(printjson);`   
 
-mongoDB will automatically reject a duplicate _id.  This is not an error and for this application is the desired behaviour.  
+js scripts can be run without specifying the database name if they contain the getSiblingDB definition, for example:  
+`mongo attin.js`   
+If you need to see the db selection and other commands execute, direct the script to the command:   
+`monog < attin.js`   
+
+mongoDB will automatically reject a duplicate _id.  This is not an error and for this application is the desired behaviour.  UnorderedBulkOp will not stop on error but the ordered output command will.   
 The first import will succeed and can be used to initially populate or seed desired fields.  From this point onwards it is necessary to manipulate the data from within the database itself.  The databases is King and should always be this way.  Future attout operations will provide the _id for a query but only new _ids will add data to the database. 
 
 #### Collection names
