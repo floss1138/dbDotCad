@@ -465,8 +465,8 @@ where _id = HANDLE_TITLE
 mongoDB has a bulk import function and will accept javascript as an command line argument to the mongo command.
 The attout format can easily be modified to comply with bulk import function.  For example, here the attout data becomes variable attout:
 `// Bulk import //`   
-`// Switch to required db with getSibling so db name after mongo command not required`
-`// this will also create the database if it does not exist and will override *dbname* in mongo *dbname* scriptname.js
+`// Switch to required db with getSibling so db name after mongo command not required`   
+`// this will also create the database if it does not exist and will override *dbname* in mongo *dbname* scriptname.js`   
 `db = db.getSiblingDB('database_name');`    
 `var attout = db.attout_collection_name.initializeUnorderedBulkOp();`   
 `attout.insert( { "_id": "'35068+1234-5678-9012-12", "BLOCKNAME":"MDU", "SYSTEMNAME":"172/MDUA01A", "LOCATION": "ROOM2/A01", "BRAND":"MEGAUNLIMITED" });`   
