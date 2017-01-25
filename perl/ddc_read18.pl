@@ -643,7 +643,10 @@ while (1) {
          print "\n File name is $attfile, regex used is $config{doc_title} \n";
                 $attfile =~ /$config{doc_title}/xsm;
                 $doctitle = $1;
-         # print "\n doctitle is $doctitle\n";
+# remove leading zero from doctitle as this is used in primary key s1_02-03-2475 should become s1_2-3-2475
+          
+         print "\n doctitle is $doctitle\n";
+
 # site code is the first number(s) before the first - and should not have a leading 0
 # site code is used to prefix the collection name and may become a site-area code in the future
 
@@ -696,8 +699,14 @@ while (1) {
 # Create a hash of attribute arrays where $att[0] is the key.  By adding the document title matched from $attfile filename, a primary key is generated
 # With new blocks the TITLE field in the block would be used.
 # Create primary key by appending the HANDLE to the TITLE.  The underscore is deliberate syntax.  So is leaving in the leading ' provided by AutoKAD
+                        
                         my $pkey = "$att[0]_$doctitle";
-
+ 
+# Document title should not contain leading zeros but if these have been inherited from a filename, better remove them to keep the primary key clean
+# Does not apply to the CAD HANDLE
+                                                
+                        $pkey =~ s/_0+/_/g;
+                        $pkey =~ s/-0+/-/g;
                         # print "\n   primary key is $pkey\n";
 
 # block_name = $att[1] i.e. second elemet is always the BLOCKNAME
@@ -815,6 +824,12 @@ while (1) {
 # Take pathwithfilename, dbname , ref to primkeys as arguements 
  makequerey("$config{done_dir}$doctitle.attin.js", "$config{ddc_dbname}", $collection, \@primkeys);
 
+# Upload to DB - execute bulkop
+system("mongo < $config{done_dir}$doctitle.attout.js > $config{done_dir}$doctitle.attout.json");
+
+# Query database - based on same primary keys used for bulkop
+system("mongo < $config{done_dir}$doctitle.attin.js > $config{done_dir}$doctitle.attin.json");
+
  
                 # move file to done directory
                 if ( rename $filewithpath, $done_name ) {
@@ -856,3 +871,37 @@ return 0;
  }
 #  End of quereymaker sub
 
+__END__
+
+Successful bulkop contains:
+
+
+MongoDB shell version: 3.2.0
+connecting to: test
+BLOCKS
+BulkWriteResult({
+        "writeErrors" : [ ],
+        "writeConcernErrors" : [ ],
+        "nInserted" : 3,
+        "nUpserted" : 0,
+        "nMatched" : 0,
+        "nModified" : 0,
+        "nRemoved" : 0,
+        "upserted" : [ ]
+})
+bye
+
+
+bulkop with duplicate keys:
+
+MongoDB shell version: 3.2.0
+connecting to: test
+BLOCKS
+2017-01-25T17:36:07.821+0000 E QUERY    [thread1] BulkWriteError: 3 write errors in bulk operation :
+BulkWriteError({
+        "writeErrors" : [
+                {
+                        "index" : 0,
+                        "code" : 11000,
+                        "errmsg" : "E11000 duplicate key error collection: BLOCKS.s1_2blocks index: _id_ dup key: { : \"'30C99_s1_2-20-3024\" }",
+etc
