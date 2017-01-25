@@ -542,11 +542,13 @@ sub readHANDLEline {
 
 # End of readHANDELline sub
 
-## SUB TO CREATE MONGODB QUEREY HEADER
-# Takes path with filename as argument
-sub makeqheader {
-my ($qfile, $dbname) = @_;
-my $quereyh =" // block querey // \n\ndb = db.getSiblingDB('$dbname}')\;";
+## SUB TO CREATE MONGODB QUEREY 
+# Takes path with filename, database name, collection name, and ref to primary key array as arguments 
+sub makequerey {
+my ($qfile, $dbname, $coll, $prims) = @_;
+# deref array
+my @primarray = @$prims;
+my $quereyh =" // block querey // \n\ndb = db.getSiblingDB('$dbname')\;\n";
 # open querey file for writing
    if ( !open my $QUEREY, '>', "$qfile" ) {
         print "\n  querey file $qfile would not open for writing \n";
@@ -554,6 +556,8 @@ my $quereyh =" // block querey // \n\ndb = db.getSiblingDB('$dbname}')\;";
     else {
          # print "\n Writing header \n $quereyh \n to querey file $qfile\n";
          print $QUEREY "$quereyh";
+         foreach (@primarray) {
+         print $QUEREY "db.$coll.find ({\"_id\" : \"$_\"}).forEach(printjson)\;\n";}
          close $QUEREY or carp "Unable to close $qfile file";
      }
 return 0;
@@ -762,14 +766,6 @@ while (1) {
 # Write id into primkeyis array
                     push (@primkeys, "$_"); 
 
-
-
-# Use _id to also create a querey script using doctitle.attin.js as the file name
-# Open file and add the header, makee querey header takes pathwithfilename, dbname as arguements 
-makeqheader("$config{done_dir}$doctitle.attin.js", "$config{ddc_dbname}"); 
-
-
-
                     my $column_count = @keys;
 
                     for ( my $i = 1 ; $i < $column_count ; $i++ ) {
@@ -812,8 +808,14 @@ makeqheader("$config{done_dir}$doctitle.attin.js", "$config{ddc_dbname}");
                 close $JSON or carp "Unable to close Mongo js file\n";
                 
                 # Print primary keys used
-                print "\n Primary keys are:\n @primkeys\n";
-                
+                # print "\n Primary keys are:\n @primkeys\n";
+
+# Create js file to querey database with same keys used for attout               
+# Use _id to also create a querey script using doctitle.attin.js as the file name
+# Take pathwithfilename, dbname , ref to primkeys as arguements 
+ makequerey("$config{done_dir}$doctitle.attin.js", "$config{ddc_dbname}", $collection, \@primkeys);
+
+ 
                 # move file to done directory
                 if ( rename $filewithpath, $done_name ) {
                     print "\n $filewithpath moved to:\n $done_name\n";
