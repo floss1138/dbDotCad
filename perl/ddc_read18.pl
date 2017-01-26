@@ -557,12 +557,26 @@ my $quereyh =" // block querey // \n\ndb = db.getSiblingDB('$dbname')\;\n";
          # print "\n Writing header \n $quereyh \n to querey file $qfile\n";
          print $QUEREY "$quereyh";
          foreach (@primarray) {
-         print $QUEREY "db.$coll.find ({\"_id\" : \"$_\"}).forEach(printjson)\;\n";}
+         # If output required is block per line, dont printjson
+             # print $QUEREY "db.$coll.find ({\"_id\" : \"$_\"}).forEach(printjson)\;\n";
+             print $QUEREY "db.$coll.find ({\"_id\" : \"$_\"})\;\n";
+             }                 
+
          close $QUEREY or carp "Unable to close $qfile file";
      }
 return 0;
 }
-# End of quereyheader sub
+# End of makequerey sub
+
+## SUB TO CREATE ATTIN FILE FROM MONGO QUEREY
+# Takes filename with path (of querey result) and turns this into attin.txt for CAD
+# First argument is filename with path, second is the \@keys (column headings) required (in order) by CAD  
+sub attin {
+my ($fname, $columns) = @_;
+# deref array hoding column titles
+my @keys = @$columns;
+print "\n Attin is using $fname, which requires column headings: \n@keys\n";
+}
 
 ## THE PROGRAM
 
@@ -835,10 +849,14 @@ system("mongo < $config{done_dir}$doctitle.attin.js > $config{done_dir}$doctitle
                 if ( rename $filewithpath, $done_name ) {
                     print "\n $filewithpath moved to:\n $done_name\n";
                 }
+              
+            # call attin sub here to create attin file
+
 
             }
+            # End of isitgrowing
         }
-
+        # End of foreach @attfiles
     }
 
     # End of while read loop
@@ -849,29 +867,6 @@ system("mongo < $config{done_dir}$doctitle.attin.js > $config{done_dir}$doctitle
 
 __END__
 
-
-todo ad querymaker
-
-# querymaker takes filename of queryheader file, database name and array of keys as arguments
-sub quereymaker {
-my ($qfile, $dbname, \@primkeys) = @_;
- # open querey file for writing
-  if ( !open my $QUEREY, '>>', "$qfile" ) {
-        print "\n  querey file $qfile would not open for writing \n";
-   }
-     else {
-          # print "\n Writing querey data to querey file $qfile\n";
-          foreach @primkeys {
-          
-          print $QUEREY "$dbname.find ({ \"_id\" : "\"$_\"}).forEach(printjson);";
-           }
-          close $QUEREY or carp "Unable to close $qfile file";
-      }
-return 0;
- }
-#  End of quereymaker sub
-
-__END__
 
 Successful bulkop contains:
 
