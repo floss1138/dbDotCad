@@ -115,6 +115,12 @@ watch_folder="/home/alice/dbdotcad/attout_to_db/"
 # done_dir="/home/user/done/"
 done_dir="/home/alice/dbdotcad/done/"
 
+# RETRUN DIRECTORY
+# Folder to hold attribute files for loading back into CAD application
+# Must be defined eding in a slash to signify a folder
+# e.g. /home/alice/dbdotcad/attin/
+ret_dir="/home/alice/dbdotcad/attin/"
+
 # FAILED DIRECTORY
 # Folder used to hold attribute files if these have failed during processing
 # error_dir="/home/user/failed/"
@@ -223,7 +229,7 @@ TAG
 
     # open ddc.conf for writing
     if ( !open my $DDC_CONF, '>', 'ddc.conf' ) {
-        print "\n  ddc.conf would not open for reading \n";
+        print "\n  ddc.conf would not open for writing \n";
     }
     else {
         print "\n Writing defaut ddc.conf\n";
@@ -569,13 +575,34 @@ return 0;
 # End of makequerey sub
 
 ## SUB TO CREATE ATTIN FILE FROM MONGO QUEREY
-# Takes filename with path (of querey result) and turns this into attin.txt for CAD
-# First argument is filename with path, second is the \@keys (column headings) required (in order) by CAD  
+# Takes filename with path (of json querey result) and turns this into attin.txt for CAD
+# First argument is json filename with path, then the \@keys (column headings) required (in order) by CAD  
 sub attin {
-my ($fname, $columns) = @_;
+my ($finname, $columns) = @_;
 # deref array hoding column titles
 my @keys = @$columns;
-print "\n Attin is using $fname, which requires column headings: \n@keys\n";
+# my $attfile = "$config{ret_dir}.basename($finname)";
+my $attfile = $config{ret_dir}.basename($finname);
+$attfile =~ s/\.json/\.txt/;
+print "\n   Attin is using $finname, which requires column headings: \n@keys\n   Will create $attfile\n";
+if (!open my $JSONIN, '<', $finname){
+ print "\n $finname would not open for reading\n"}
+else {
+    while (<$JSONIN>) {
+         if (/^{\s*"_id"\s*:\s*"'/) {
+        # if it looks like its a json line { "_id" : "' then process it
+        
+        my $line = decode_json($_);
+         print $line->{'_id'} . " is the primary key\n";
+          my $pkey = $line->{'_id'};
+         $pkey =~ /('[0-9A-F]+)/;
+         print "\npkey is $pkey, HANDEL is $1 \n";
+         print "key: $_\n" for keys %{$line};
+         print Dumper($line);
+        }
+# print "$_";
+    }
+close $JSONIN or carp "could not close $attfile";}
 }
 
 ## THE PROGRAM
@@ -851,7 +878,7 @@ system("mongo < $config{done_dir}$doctitle.attin.js > $config{done_dir}$doctitle
                 }
               
             # call attin sub here to create attin file
-
+            attin("$config{done_dir}$doctitle.attin.json", \@keys);
 
             }
             # End of isitgrowing
