@@ -589,14 +589,14 @@ my @keys = @$columns;
 # my $attfile = "$config{ret_dir}.basename($finname)";
 my $attfile = $config{ret_dir}.basename($finname);
 $attfile =~ s/\.json/\.txt/;
-print "\n   Attin is using $finname, which requires column headings: \n@keys\n   Will create $attfile\n";
+# print "\n   Attin is using $finname, which requires column headings: \n@keys\n   Will create $attfile\n";
  foreach (@keys) {
           $attin_string .= "$_\t";
                }
-          # remvoe last tab and replace with Windows line end
-         #  $attin_string =~ s/$\t/\r\n/; substitution  not working 
-          $attin_string .= "\r\n";
-   #       print "\n First line of attin is $attin_string\n";
+          # This created column headings followed by a tab, so remove last tab and replace with Windows line end
+          $attin_string =~ s/\t$/\r\n/;  
+       ;
+          print "$attin_string<-----\n";
 
 
 if (!open my $JSONIN, '<', $finname){
@@ -615,10 +615,16 @@ else {
          # build attin_string starting with the handel
          $attin_string .= $1;
          # remove 1st element of keys (which should be HANDEL) and build line by key value 
-         my $check = shift @keys;
-         # foreach (@keys) { $attin_string .= " \t$line->{"$_"}";}
+         my $first = shift @keys;
+         print "\n first element of keys was $first\n";
+         # for remaining keys, i.e. column headings add a tab then the value of the key
+         foreach (@keys) { 
+         my $next = $line->{$_};
+         print "\n key is $_, value is $next\n";
+              #$attin_string .= \t$line->{"$_"};
+              }
          print "\n attin is \n$attin_string\n";
-         print "key: $_\n" for keys %{$line};
+       #  print "key: $_\n" for keys %{$line};
          print Dumper($line);
         }
 # print "$_";
