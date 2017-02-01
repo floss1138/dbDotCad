@@ -596,39 +596,45 @@ $attfile =~ s/\.json/\.txt/;
           # This created column headings followed by a tab, so remove last tab and replace with Windows line end
           $attin_string =~ s/\t$/\r\n/;  
        ;
-          print "$attin_string<-----\n";
+    #      print "$attin_string<-----\n";
 
 
 if (!open my $JSONIN, '<', $finname){
  print "\n $finname would not open for reading\n"}
 else {
+ # remove 1st element of keys (which should be HANDEL) and build line by key value 
+          my $first = shift @keys;
+     #     print "\n first element of keys was $first\n";
+
     while (<$JSONIN>) {
          if (/^{\s*"_id"\s*:\s*"'/) {
         # if it looks like its a json line { "_id" : "' then process it
         
         my $line = decode_json($_);
-         print $line->{'_id'} . " is the primary key\n";
+        #  print $line->{'_id'} . " is the primary key\n";
           my $pkey = $line->{'_id'};
          $pkey =~ /('[0-9A-F]+)/;
          print "\npkey is $pkey, HANDEL is $1 \n";
            
          # build attin_string starting with the handel
          $attin_string .= $1;
-         # remove 1st element of keys (which should be HANDEL) and build line by key value 
-         my $first = shift @keys;
-         print "\n first element of keys was $first\n";
          # for remaining keys, i.e. column headings add a tab then the value of the key
          foreach (@keys) { 
          my $next = $line->{$_};
-         print "\n key is $_, value is $next\n";
-              #$attin_string .= \t$line->{"$_"};
+      #   print "\n key is $_, value is $next\n";
+              $attin_string .= "\t$next";
               }
-         print "\n attin is \n$attin_string\n";
+         $attin_string .= "\r\n";
+         # print "\n attin is \n$attin_string\n";
        #  print "key: $_\n" for keys %{$line};
-         print Dumper($line);
+       #  print Dumper($line);
         }
-# print "$_";
+        # end of while JSONIN
     }
+
+ print "\n attin_string is \n$attin_string\n";
+ # print $attin_string to a file attin.txt
+
 close $JSONIN or carp "could not close $attfile";}
 }
 
@@ -897,7 +903,7 @@ while (1) {
  makequerey("$config{done_dir}$doctitle.attin.js", "$config{ddc_dbname}", $collection, \@primkeys);
 
 # Upload to DB - execute bulkop
-system("mongo < $config{done_dir}$doctitle.attout.js > $config{done_dir}$doctitle.attout.json");
+system("mongo < $config{done_dir}$doctitle.attout.js > $config{done_dir}$doctitle.attout_result.txt");
 
 # Query database - based on same primary keys used for bulkop
 system("mongo < $config{done_dir}$doctitle.attin.js > $config{done_dir}$doctitle.attin.json");
