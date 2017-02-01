@@ -287,11 +287,12 @@ Where A is an upper case alpha, one or more letters, no spaces.  This revision i
 The hyphens and underscore must be present and are used as part of a file/title name integrity check.   
 Typical use for each field is:   
 
-`s` NUMERIC SITE CODE`_`NUMERIC AREA CODE`-`NUMERIC DOC TYPE GENERAL`-`NUMERIC DOC TYPE SPECIFIC`-`ALPHA REVISION`_`FILE IDENTIFIER`.`FILE EXTENSION   
+`Lowercase alpha``NUMERIC SITE CODE`_`NUMERIC AREA CODE`-`NUMERIC DOC TYPE GENERAL`-`NUMERIC DOC TYPE SPECIFIC`-`ALPHA REVISION`_`FILE IDENTIFIER`.`FILE EXTENSION   
 `s1_` added for site 1 releated data    
 `x1_` added for cross site or site wide data for site 1, for example, inter-area cables    
 `e1_` added for enterprise wide data for enterprise 1, for example, host names    
-
+`t1_` templates for site 1, or `t0` for global templates with 0 for area code   
+`h1_` hostnames for site 1, or `h0` for global hostnames with 0 for area code  
 
 The title will be checked with the regex ^s\d+_[0-9]+-[0-9]+-[0-9]+-[A-Z]+_.* or more concisely ^s+_([0-9]+-){3}[A-Z]+_.*   
 The configuration file will allow 3 different regex matches to be used in cases where multiple naming conventions may exist.  ddc has to cope with a use case where existing naming had insufficient provision for the site code and different databases were used for different sites.  If the site code is missing (i.e the title is N-N-N-A not sN_N-N-N-A) the site code will be assumed to be s1_ by default.
