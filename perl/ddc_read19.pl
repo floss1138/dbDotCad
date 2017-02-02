@@ -235,7 +235,7 @@ TAG
         print "\n  ddc.conf would not open for writing \n";
     }
     else {
-        print "\n Writing defaut ddc.conf\n";
+        print "\n Writing default ddc.conf\n";
         print $DDC_CONF "$conf";
 
         close $DDC_CONF or carp "Unable to close ddc.conf";
@@ -621,6 +621,8 @@ else {
          # for remaining keys, i.e. column headings add a tab then the value of the key
          foreach (@keys) { 
          my $next = $line->{$_};
+         # If undefined then CAD data had no value for this key and attout pack this with <>, //= is the assignment opertor verrsion of // logical defined-or operator
+         $next //= '<>';
       #   print "\n key is $_, value is $next\n";
               $attin_string .= "\t$next";
               }
@@ -634,7 +636,17 @@ else {
 
  print "\n attin_string is \n$attin_string\n";
  # print $attin_string to a file attin.txt
+ # open attin file for writing
+    if ( !open my $ATTIN, '>', '/home/alice/dbdotcad/attin/attin_test.txt' ) { 
+        print "\n  attin would not open for writing \n";
+    }   
+    else {
+        print "\n Writing default attin file\n";
+        print $ATTIN "$attin_string";
 
+        close $ATTIN or carp "Unable to close attin file";
+    }   
+ 
 close $JSONIN or carp "could not close $attfile";}
 }
 
