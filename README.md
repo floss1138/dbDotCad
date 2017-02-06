@@ -257,6 +257,17 @@ Look for the following in your response.
 `    ....`   
 `}`   
 `...`   
+
+STARTING DREAMFACTORY
+If dreamfactory was installed in opt/dreamfactory, start via the ctlscript.sh   
+`sh /opt/dreamfactory/ctlscript.sh star`   
+
+To remove login requirement, turn off security and restart   
+
+`vim /opt/dreamfactory/mongod/mongod.conf`
+`# Turn on/off security.  Off is currently the default`   
+`noauth = true`   
+`#auth = true`   
  
 ### dbDotCad Part1
 

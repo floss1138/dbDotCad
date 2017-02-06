@@ -327,6 +327,10 @@ system("chown $user:$user /home/$user/.profile");
 print "\n Listing the $user home directory \n";
 system(" ls -aln /home/$user; tree /home/$user");
 
+print "\n Install docker \n";
+system("apt install docker.io");
+
+
 # PERL ENVIRONMENT
 
 print "\n Setting up Perl Tidy\n";
