@@ -18,6 +18,9 @@ use IPC::Open2;
 # use JSON for encode_json
 use JSON;
 
+# required for xlsx creation 
+use Excel::Writer::XLSX;
+
 # use Sys::Hostname;
 use feature qw(say switch state);
 
@@ -26,7 +29,7 @@ use Data::Dumper;    # Enable for debug
 
 # use Regexp::Debugger; # Enable for debug
 
-our $VERSION = '0.0.20';    # Version number of this script
+our $VERSION = '0.0.21';    # Version number of this script
 
 ##  DEFINE FILENAMES FOR CONF AND LOG FILES HERE ##
 
@@ -666,7 +669,48 @@ sub attin {
         }
 
         close $JSONIN or carp "could not close $finname/";
-    }
+    } # End of else JSONIN
+
+# Also create a spread sheet of the attin file:
+my $row=3; # Starting row number used to populate spread sheet to allow for a heading if necessary
+
+ my $xlsxout = $config{ret_dir} . basename($finname);
+$xlsxout  =~ s/\.json/\.xlsx/;
+print "\nxlsx file will be called $xlsxout \n";
+
+        my $workbook = Excel::Writer::XLSX->new( "$xlsxout" );
+
+$workbook->set_properties(
+        title    => 'attout data',
+        author   => 'DeeV',
+        comments => 'Support cross platform Open Source solutions.  Respect CC & GPL Licenses',
+                        );  # This might not be visible from Open Office
+
+        my $worksheet1 = $workbook->add_worksheet('Attributes');        # Will be sheet 1 if not specified
+        my $worksheet2 = $workbook->add_worksheet('Custom_1');          # Worksheet 3 is a custom verson of 1      
+        my $worksheet3 = $workbook->add_worksheet('Readme');            # Worksheet 3 is a readme
+
+        #$worksheet1->write( 'A3', $A3data );                   
+        #$worksheet1->write( 'C2', 'Column 2' ); 
+        #$worksheet1->write( 'D2', 'Column 3' );
+
+ $worksheet1->write( 'B2', 'Worksheet 1' );
+ $worksheet2->write( 'B3', 'Worksheet 2' );
+
+
+# $worksheet1->write( $key, $cell_att{$key} );
+# $worksheet2->write( $key, $cell_att{$key} );
+
+#Format Worksheet 3:
+$worksheet3->write( 'B2', "Created by ddc reader $VERSION");     #  worksheet created for info, notices & copyright
+$worksheet3->write( 'B3', "This software is Free - copyright (c) 2017 by Floss (floss1138\@gmail.com) written for my PDP.  All rights reserved.");
+$worksheet3->write( 'B4', "You are free to use, copy and distribute this software under the same GPL terms as the Perl 5 programming language.");
+$worksheet3->write( 'B5', "The Excel module used is copyright (c) John McNamara under GPL http://opensource.org/licenses/gpl-license.php");
+$worksheet3->write( 'B8', 'Notes:');
+$worksheet3->write( 'B9', 'The Attribute sheet first (A = HANDLE) column is intentionally hidden by default');
+
+
+
 }
 
 ## THE PROGRAM
