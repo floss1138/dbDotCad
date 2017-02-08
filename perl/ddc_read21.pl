@@ -588,9 +588,10 @@ sub makequerey {
 ## SUB TO CREATE ATTIN FILE FROM MONGO QUEREY
 # Takes filename with path (of json querey result) and turns this into attin.txt for CAD
 # First argument is json filename with path, then the \@keys (column headings) required (in order) by CAD
+# Blocknames are required to create spreadsheet (for each tab), third argument is \@blocks
 sub attin {
     my $attin_string;
-    my ( $finname, $columns ) = @_;
+    my ( $finname, $columns, $blocknames ) = @_;
 
     # deref array hoding column titles
     my @keys = @$columns;
@@ -628,9 +629,10 @@ sub attin {
                 #  print $line->{'_id'} . " is the primary key\n";
                 my $pkey = $line->{'_id'};
                 $pkey =~ /('[0-9A-F]+)/;
-
+                
                 #  print "\npkey is $pkey, HANDEL is $1 \n";
-
+                 my $bname =  $line->{'BLOCKNAME'};  
+                # print "BLOCKNAME is $bname\n";
                 # build attin_string starting with the handel
                 $attin_string .= $1;
 
@@ -653,8 +655,8 @@ sub attin {
 
             # end of while JSONIN
         }
-
-        print "\n attin_string is \n$attin_string\n";
+       # Print attin file for debug
+       # print "\n attin_string is \n$attin_string\n";
 
         # print $attin_string to a file attin.txt
         # open attin file for writing
@@ -686,30 +688,40 @@ $workbook->set_properties(
         comments => 'Support cross platform Open Source solutions.  Respect CC & GPL Licenses',
                         );  # This might not be visible from Open Office
 
-        my $worksheet1 = $workbook->add_worksheet('Attributes');        # Will be sheet 1 if not specified
-        my $worksheet2 = $workbook->add_worksheet('Custom_1');          # Worksheet 3 is a custom verson of 1      
-        my $worksheet3 = $workbook->add_worksheet('Readme');            # Worksheet 3 is a readme
+# print "\n $blocknames is a ref to hash of BLOCKNAME, count  BLOCKNAME from CAD is always upper case \n";
+# print Dumper \$blocknames;
+# create worksheet (tabs) for each BLOCKNAME, sort for consistency
+my @tabs;
+    foreach my $tab (sort keys $blocknames){
+    # print "$tab\n";
+
+        my $worksheet = $workbook->add_worksheet("$tab");       
+       # my $worksheet2 = $workbook->add_worksheet('Custom_1');          # Worksheet 3 is a custom verson of 1      
+       # my $worksheet3 = $workbook->add_worksheet('Readme');            # Worksheet 3 is a readme
+ 
+   $worksheet->write( 'B2', "Worksheet for $tab" );
+   }
 
         #$worksheet1->write( 'A3', $A3data );                   
         #$worksheet1->write( 'C2', 'Column 2' ); 
         #$worksheet1->write( 'D2', 'Column 3' );
 
- $worksheet1->write( 'B2', 'Worksheet 1' );
- $worksheet2->write( 'B3', 'Worksheet 2' );
+# $worksheet1->write( 'B2', 'Worksheet 1' );
+# $worksheet2->write( 'B3', 'Worksheet 2' );
 
 
 # $worksheet1->write( $key, $cell_att{$key} );
 # $worksheet2->write( $key, $cell_att{$key} );
 
-#Format Worksheet 3:
-$worksheet3->write( 'B2', "Created by ddc reader $VERSION");     #  worksheet created for info, notices & copyright
-$worksheet3->write( 'B3', "This software is Free - copyright (c) 2017 by Floss (floss1138\@gmail.com) written for my PDP.  All rights reserved.");
-$worksheet3->write( 'B4', "You are free to use, copy and distribute this software under the same GPL terms as the Perl 5 programming language.");
-$worksheet3->write( 'B5', "The Excel module used is copyright (c) John McNamara under GPL http://opensource.org/licenses/gpl-license.php");
-$worksheet3->write( 'B8', 'Notes:');
-$worksheet3->write( 'B9', 'The Attribute sheet first (A = HANDLE) column is intentionally hidden by default');
+ my $worksheetrm = $workbook->add_worksheet('Readme'); 
 
-
+#Format Worksheet readme tab:
+$worksheetrm->write( 'B2', "Created by ddc reader $VERSION");     #  worksheet created for info, notices & copyright
+$worksheetrm->write( 'B3', "This software is Free - copyright (c) 2017 by Floss (floss1138\@gmail.com) written for my PDP.  All rights reserved.");
+$worksheetrm->write( 'B4', "You are free to use, copy and distribute this software under the same GPL terms as the Perl 5 programming language.");
+$worksheetrm->write( 'B5', "The Excel module used is copyright (c) John McNamara under GPL http://opensource.org/licenses/gpl-license.php");
+$worksheetrm->write( 'B8', 'Notes:');
+$worksheetrm->write( 'B9', 'The Attribute sheet first (A = HANDLE) column is intentionally hidden by default');
 
 }
 
@@ -1005,7 +1017,7 @@ while (1) {
                 }
 
                 # call attin sub here to create attin file
-                attin( "$config{done_dir}$doctitle.attin.json", \@keys );
+                attin( "$config{done_dir}$doctitle.attin.json", \@keys, \%blocks );
 
             }
 
