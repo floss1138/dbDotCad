@@ -632,6 +632,7 @@ sub attin {
                 
                 #  print "\npkey is $pkey, HANDEL is $1 \n";
                  my $bname =  $line->{'BLOCKNAME'};  
+                my @block;
                 # print "BLOCKNAME is $bname\n";
                 # build attin_string starting with the handel
                 $attin_string .= $1;
@@ -639,14 +640,21 @@ sub attin {
   # for remaining keys, i.e. column headings add a tab then the value of the key
                 foreach (@keys) {
                     my $next = $line->{$_};
-
+                     if (defined $next){
+                    # print "$bname uses $_\n";
+                     push @block, "$_";
+                     }
 # If undefined then CAD data had no value for this key and attout packs (no) value with <>, //= is the assignment opertor of // logical defined-or operator
                     $next //= '<>';
-
+                    
                     #   print "\n key is $_, value is $next\n";
                     $attin_string .= "\t$next";
                 }
                 $attin_string .= "\r\n";
+                # Default blockname is NAME, so duplicates may appear with different columns
+                # could use concat of @block to identify
+                # print "BLOCKNAME is $bname, contains @block \n";
+
 
                 # print "\n attin is \n$attin_string\n";
                 #  print "key: $_\n" for keys %{$line};
@@ -1077,3 +1085,4 @@ update example:
 WriteResult({ "nMatched" : 1, "nUpserted" : 0, "nModified" : 1 })
 
 Not working as expected: db.s1_2blocks.findAndModify( { querey: { "NUM" : /N0213103/}, update: { "COMMENT" : "updated in database!" }, upsert: true})
+Check out join overlaps with $lookup, dbrunCommand({"create" : "test"});
