@@ -454,10 +454,12 @@ From the Object type, select Block Reference. Leave 'Apply to:' as Entire drawin
 Select the required blocks (Ctrl + A selects all)
 `ATTOUT`
 Edit the file name and location as desired.
-Click Save.
+Click Save.    
+This is also accessible from the toolbar as, Express > Blocks > Export Attribute Information.
 
 `ATTOUT` is a LISP express tool installed by default with AutoKAD 2008 upwards to export the attributes of selected blocks.
-`ATTIN` performs the opposite function.
+`ATTIN` performs the opposite function.   
+This is also accessible from the toolbar as, Express > Blocks > Import Attribute Information.
 
 For repeated use of a block, create a drawing with just the blocks (known as a block library drawing).
 Open drawings or block library drawings can be used to add blocks to new drawings via the AutoKAD DesignCentre   
@@ -508,6 +510,15 @@ In the future it would be sensible to limit this to site-area, with inter area c
 Enterprise wide data such as hostnames, should be in a separate database. 
 For now, blocks for site 1 will be in collection 1blocks, for site 002, 2blocks etc. Leading zeros will be removed.  Hyphens will be removed.
 In the future, cable numbers could be subnetted by area code.   
+
+#### Blocknames
+Blocknames cannot be blank and must contain at least one character. 
+It is wise to add a version number to the block name and change this if tags are added, removed or changed, even if only the tag order is changed. 
+Refefining blocks without changing the blockname or pasting blocks from one drawing to another can result in colliding blocknames with different tags.  Handels remain unique to the drawing so attributes will still export and import successfully.  It is possible to check block/tag integrity by filtering the defined tags as a key:   
+`BLOCKNAME,tag1,tag2,tag3`   
+`BLOCKNAME,tag1,tag4,tag5`   
+Such blocks would impact clean creation of spread sheets.  Beware.   
+
 
 #### Attributes and nested blocks
 When blocks are nested, clicking on the block only presents attributes for the *parent* block.  Similarly using ATTOUT on a nested block only captures attributes from the *parent* and not the *children* within.
