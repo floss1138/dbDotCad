@@ -591,6 +591,7 @@ sub makequerey {
 # Blocknames are required to create spreadsheet (for each tab), third argument is \@blocks
 sub attin {
     my $attin_string;
+    my %block_id;
     my ( $finname, $columns, $blocknames ) = @_;
 
     # deref array holding column titles
@@ -720,18 +721,28 @@ sub attin {
                 $attin_string .= "\r\n";
 
              # It is possible to duplicate a blockname with different attributes
-             # duplicates mocay appear with different columns
-             # could use concat of @block to identify
+             # duplicates may appear with different columns
              #   print "BLOCKNAME is $bname, contains @block \n";
-                 my $block_ident = $bname;
-                 # add an underscore to create $blockname_,COL1,COL2,COL3 (COL1 will be BLOCKNAME)
-                 $block_ident .= '_';
+                # my $block_ident = $bname;
+                 my $block_ident;
+                 # create block_ident identifying string ,$blockname,COL1,COL2,COL3 (COL1 will be BLOCKNAME)
+                 # This blockname+attribute tags (in order) will identify duplicated block names
+                 unshift @block, ($bname);
                  foreach my $column (@block) {
+# A block name with a leading or trailing space will be treated as a different name so trim spaces 
+#As attin is dealing with database content it should be clean unless manually edited
+                        $column =~ s/^\s+|\s+$//g;
                  $block_ident .= ",$column";
                  }
-                 print "$block_ident\n";
+                # print "$block_ident\n";
+                if ( exists $block_id{$block_ident}){
+                # print "block_ident has been seen before for $block[0]\n";
+                } 
+                else {
+                $block_id{$block_ident} = $block[0];
+                # print "    Fist sighting of $block[0] :\n    $block_ident\n";
+                }
                 
-
                 # print "\n attin is \n$attin_string\n";
                 #  print "key: $_\n" for keys %{$line};
                 #  print Dumper($line);
@@ -739,6 +750,19 @@ sub attin {
 
             # end of while JSONIN
         }
+        # enable for debug to see duplicate blocknames with different keys here:
+        # print Dumper (\%block_id);
+       # DEDUPLICATE YOUR VALUE HERE   
+       my %dup_bnames;
+       foreach my $key_ident (sort keys %block_id) {
+        print "block names for unique attribute sets: $block_id{$key_ident}\n";
+       # add value to new hash
+        # if (exists $dup_bnames{$block_id{key_ident})
+        # { # needs to be renamed in %block_id as NAME(1) NAME(2) } else
+        # push $dup_bnames, $block_id{key_ident};
+        }
+
+       
 
         # Print attin file for debug
         # print "\n attin_string is \n$attin_string\n";
@@ -940,7 +964,28 @@ while (1) {
 # print Dumper \%blocks;
 # print Dumper \%hof_blocks;
 # print array out if BLOCKNAME = test, might be better with an array of arrays to preserve HANDLE order??
-# foreach my $k (sort keys %hof_blocks ) {
+# foreach my $k (sort keys %hof_blocks ) { block name with a leading or trailing space will be treated as a different name so trim spaces
+                        $att[1] =~ s/^\s+|\s+$//g;
+
+                        if ( exists $blocks{ $att[1] } ) {
+
+                            #    print "\n $att[1] has been seen before\n";
+
+               # if exits, increment count for that block name, else set it to 1
+                            $blocks{ $att[1] }++; 
+
+                            # Write attribute array to hash of blocks
+                            $hof_blocks{$pkey} = \@att;
+                        }
+                        else {
+                            $blocks{ $att[1] } = '1'; 
+                            $hof_blocks{$pkey} = \@att;
+                        }
+
+# Enable for debug (used here will run on each loop):
+# print Dumper \%blocks;
+# print Dumper \%hof_blocks;
+
 #    foreach ( @{ $hof_blocks{$k} } ) {
 #        print "   Block with name >test< found: $_ \n"
 #          if ( $hof_blocks{$k}[1] =~ /test/xsm );
