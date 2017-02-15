@@ -514,9 +514,9 @@ In the future, cable numbers could be subnetted by area code.
 #### Blocknames
 Blocknames cannot be blank and must contain at least one character. 
 It is wise to add a version number to the block name and change this if tags are added, removed or changed, even if only the tag order is changed. 
-Refefining blocks without changing the blockname or pasting blocks from one drawing to another can result in colliding blocknames with different tags.  Handels remain unique to the drawing so attributes will still export and import successfully.  It is possible to check block/tag integrity by filtering the defined tags as a key:   
-`BLOCKNAME,tag1,tag2,tag3`   
-`BLOCKNAME,tag1,tag4,tag5`   
+Refefining blocks without changing the blockname or pasting blocks from one drawing to another can result in colliding blocknames with different attribute tag strings.  Handels remain unique to the drawing so attributes will still export and import successfully.  It is possible to check block/tag integrity by filtering the defined attribute tags to create a key string as a block_id:   
+`,BLOCKNAME,tag1,tag2,tag3`   
+`,BLOCKNAME,tag1,tag4,tag5`   
 Such blocks would impact clean creation of spread sheets.  Beware.   
 
 

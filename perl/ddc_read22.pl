@@ -591,7 +591,9 @@ sub makequerey {
 # Blocknames are required to create spreadsheet (for each tab), third argument is \@blocks
 sub attin {
     my $attin_string;
-    my %block_id;
+    my %block_id; # block identification using attribute tag string as key, ORIGINAL block name as value
+    my %dup_bnames; # hash to hold de duplicated name values
+# If blockname value found with different attribute tag string, change that to name(1) for use in spread sheet only 
     my ( $finname, $columns, $blocknames ) = @_;
 
     # deref array holding column titles
@@ -660,7 +662,8 @@ sub attin {
     $worksheetrm->write( 'B9',
 'The Attribute sheet first (A = HANDLE) column is intentionally hidden by default'
     );
-
+# End of spread sheet creation
+	
     # my $attfile = "$config{ret_dir}.basename($finname)";
     my $attfile = $config{ret_dir} . basename($finname);
     $attfile =~ s/\.json/\.txt/;
@@ -720,13 +723,13 @@ sub attin {
                 }
                 $attin_string .= "\r\n";
 
-             # It is possible to duplicate a blockname with different attributes
+             # It is possible to duplicate a blockname with different attributes (by pasting a block into a drawing which has an existing block name.  The handel will be chaged but different attribute tags may have been imported).
              # duplicates may appear with different columns
              #   print "BLOCKNAME is $bname, contains @block \n";
                 # my $block_ident = $bname;
                  my $block_ident;
-                 # create block_ident identifying string ,$blockname,COL1,COL2,COL3 (COL1 will be BLOCKNAME)
-                 # This blockname+attribute tags (in order) will identify duplicated block names
+                 # create block_ident identifying attribute tag string ,$blockname,COL1,COL2,COL3 (COL1 will be BLOCKNAME)
+                 # This ,blockname,attribute_tag1,attribute_tag2,etc (in order) will identify duplicated block names
                  unshift @block, ($bname);
                  foreach my $column (@block) {
 # A block name with a leading or trailing space will be treated as a different name so trim spaces 
@@ -740,7 +743,7 @@ sub attin {
                 } 
                 else {
                 $block_id{$block_ident} = $block[0];
-                # print "    Fist sighting of $block[0] :\n    $block_ident\n";
+                # print "    First sighting of $block[0] :\n    $block_ident\n    blockname may be duplicated, needs checking";
                 }
                 
                 # print "\n attin is \n$attin_string\n";
@@ -751,11 +754,12 @@ sub attin {
             # end of while JSONIN
         }
         # enable for debug to see duplicate blocknames with different keys here:
-        # print Dumper (\%block_id);
+        print "\n block_id hash contains attribute tag string as hash and blockname as key\n"; 
+        print Dumper (\%block_id);
        # DEDUPLICATE YOUR VALUE HERE   
-       my %dup_bnames;
+      # my %dup_bnames;
        foreach my $key_ident (sort keys %block_id) {
-        print "block names for unique attribute sets: $block_id{$key_ident}\n";
+        print "block names for unique attribute tag string: $block_id{$key_ident}\n";
        # add value to new hash
         # if (exists $dup_bnames{$block_id{key_ident})
         # { # needs to be renamed in %block_id as NAME(1) NAME(2) } else
