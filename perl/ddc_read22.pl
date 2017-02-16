@@ -593,7 +593,9 @@ sub attin {
     my $attin_string;
     my %block_id; # block identification using attribute tag string as key, ORIGINAL block name as value
     my %dup_bnames; # hash to hold de duplicated name values
-# If blockname value found with different attribute tag string, change that to name(1) for use in spread sheet only 
+# If blockname value found with different attribute tag string, change that from say NAME to NAMEX for use in spread sheets only
+# If NAME appers again, this becomes NAMEXX.  This edge case should only occure if blocks are pasted in from another drawing
+# Best practice is to always put a version number in the block name 
     my ( $finname, $columns, $blocknames ) = @_;
 
     # deref array holding column titles
@@ -739,12 +741,35 @@ sub attin {
                  }
                 # print "$block_ident\n";
                 if ( exists $block_id{$block_ident}){
-                # print "block_ident has been seen before for $block[0]\n";
+               # print "block_ident has been seen before for $block[0], this one got there first and should not be duplicated \n";
+                  #   foreach (keys%block_id){
+                   #      if ($block[0] eq $block_id{$_}){
+                    #     print "$block_id{$_} value already exists in $_\nas a block name and needs to be changed to $block_id{$_}X\n";
+                     #    $block_id{$_} = $block_id{$_}.'X';
+                      #   }
+                    # }
                 } 
                 else {
+                # Write value against attribute tab ident for first instance but change the name value if this tab ident is already used
+                
                 $block_id{$block_ident} = $block[0];
-                # print "    First sighting of $block[0] :\n    $block_ident\n    blockname may be duplicated, needs checking";
-                }
+                print "    First sighting of block ident $block_ident\nContains name $block[0], lets check if this is already used ...\n";
+                  #  foreach (keys%block_id){
+                   #     if ($block[0] eq $block_id{$_}){
+                    #    print "$block_id{$_} value already exists in $_\nas a block name and needs to be changed to $block_id{$_}X\n";
+                     #   $block_id{$_} = $block_id{$_}.'X';
+                      #  }
+                #            else{
+                 #           $block_id{$block_ident} = $block[0];
+                       #     }
+                  #  }    
+                 }
+                # build %dup_bnames here but the the blockname as the key, attribute tag string as the value.
+                # $dup_bnames{$block[0]} = $block_ident;
+                  # foreach $dup_bnames if exists key $block[0] { append -X to blockname and overwrite value 
+                 #  $dup_bnames{$block[0]} = $block_id{$block_ident};
+               
+               # }
                 
                 # print "\n attin is \n$attin_string\n";
                 #  print "key: $_\n" for keys %{$line};
