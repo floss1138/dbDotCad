@@ -29,7 +29,7 @@ use Data::Dumper;    # Enable for debug
 
 # use Regexp::Debugger; # Enable for debug
 
-our $VERSION = '0.0.24444';    # Version number of this script
+our $VERSION = '0.0.24';    # Version number of this script
 
 ##  DEFINE FILENAMES FOR CONF AND LOG FILES HERE ##
 
@@ -593,11 +593,12 @@ sub attin {
     my $attin_string;
     my %block_id
       ; # block identification using attribute tag string as key, ORIGINAL block name as value
-    my %dup_bnames;    # hash to hold de duplicated name values
+   #  my %dup_bnames;    # hash to hold de duplicated name values
 
-# If blockname value found with different attribute tag string, change that from say NAME to NAMEX for use in spread sheets only
-# If NAME appers again, this becomes NAMEXX.  This edge case should only occure if blocks are pasted in from another drawing
-# Best practice is to always put a version number in the block name
+# If blockname value found with different attribute tag string, change existing from NAME to NAME(1) for use in spread sheets only.
+# Next NAME instance cleash becomes NAME(2) etc
+# This edge case should only occure if blocks are pasted in from another drawing
+# Best practice is to always put a version number in the block name, even if only the attribute order is changed.
     my ( $finname, $columns, $blocknames ) = @_;
 
     # deref array holding column titles
@@ -625,19 +626,19 @@ sub attin {
 # print "\n $blocknames is a ref to hash of BLOCKNAME, count  BLOCKNAME from CAD is always upper case \n";
 # print Dumper \$blocknames;
 # create worksheet (tabs) for each BLOCKNAME, sort for consistency
-    my @tabs;
-    foreach my $tab ( sort keys %$blocknames ) {
+  #  my @tabs;
+   # foreach my $tab ( sort keys %$blocknames ) {
 
 # it is possible to sort keys $blocknames but thats experimental and its necessary to deref the hashref before calling keys
 # print "$tab\n";
 
-        my $worksheet = $workbook->add_worksheet("$tab");
+       # my $worksheet = $workbook->add_worksheet("$tab");
 
 # my $worksheet2 = $workbook->add_worksheet('Custom_1');          # Worksheet 3 is a custom verson of 1
 # my $worksheet3 = $workbook->add_worksheet('Readme');            # Worksheet 3 is a readme
 
-        $worksheet->write( 'B2', "Worksheet for $tab" );
-    }
+       # $worksheet->write( 'B2', "Worksheet for $tab" );
+   # }
 
     #$worksheet1->write( 'A3', $A3data );
     #$worksheet1->write( 'C2', 'Column 2' );
@@ -748,8 +749,8 @@ sub attin {
 #As attin is dealing with database content it should be clean unless manually edited
                     $column =~ s/^\s+|\s+$//g;
                     $block_ident .= ",$column";
-
-                    # also perform on block[0] just to be safe
+                    $block[0] =~ s/^\s+|\s+$//g;
+                    # also performed on block[0] just to be safe
                 }
 
 # print "block ident is tag string: $block_ident\n";
@@ -766,62 +767,55 @@ sub attin {
 "    First sighting of block ident $block_ident\nThis has been set to blockname: $block[0]\n";
                 }
 
-#    my $name_clash  = 0;
 # There will always be one allowable instance - if more than 1, its best to sort by key for consitency.
 # Two men say they are Jesus, at least one of them must be wrong
                 foreach ( sort keys %block_id ) {
 
                     if ( $block[0] eq $block_id{$_} ) {
 
-           # if its the current tag string skip, rename the other based on count
+           # if its the current tag string skip, rename the other based on name clash count
                         next if ( $_ eq $block_ident );
                         $name_clash++;
                         if ( $name_clash > 0 ) {
                             print
 "$block_id{$_} value already exists in $_\nas a block name and needs to be changed to $block_id{$_}$name_clash\n";
 
-                            $block_id{$_} = $block_id{$_} . $name_clash;
-
-                            # $name_clash ++;
+                            $block_id{$_} = $block_id{$_} ."($name_clash)";
                         }
                     }
 
-                    #          else{
-                    #  $block_id{$block_ident} = $block[0];
-                    #         }
                 }
-
-# build %dup_bnames here but the the blockname as the key, attribute tag string as the value.
-# $dup_bnames{$block[0]} = $block_ident;
-# foreach $dup_bnames if exists key $block[0] { append -X to blockname and overwrite value
-#  $dup_bnames{$block[0]} = $block_id{$block_ident};
-
-                # }
-
+ 
                 # print "\n attin is \n$attin_string\n";
                 #  print "key: $_\n" for keys %{$line};
                 #  print Dumper($line);
-            }
+            } 
+            # end of if valid JSON line
 
+        }
+        # end of while JSONIN
+         
+             print "Blockname clashes =  $name_clash\n";
             # end of while JSONIN
+    
+    # enable for debug to see duplicate blocknames with different keys here:
+    #    print "\n block_id hash contains attribute tag string as hash and blockname as key\n";
+    #    print Dumper ( \%block_id );
+
+        # foreach my $key_ident ( sort keys %block_id ) {
+          #  print "block names for unique attribute tag string: $block_id{$key_ident}\n";
+       # }
+        
+        foreach my $unique_value ( sort values %block_id ) {
+        print "blocknames for unique attribtue tag string: $unique_value\n";
+        my $worksheet = $workbook->add_worksheet("$unique_value");
+        $worksheet->write( 'B2', "Worksheet for $unique_value" );
         }
+        # worksheet needs to be identified by using %block_id key and looking up the value
 
-        # enable for debug to see duplicate blocknames with different keys here:
-        print
-"\n block_id hash contains attribute tag string as hash and blockname as key\n";
-        print Dumper ( \%block_id );
 
-        # DEDUPLICATE YOUR VALUE HERE
-        # my %dup_bnames;
-        foreach my $key_ident ( sort keys %block_id ) {
-            print
-"block names for unique attribute tag string: $block_id{$key_ident}\n";
 
-            # add value to new hash
-            # if (exists $dup_bnames{$block_id{key_ident})
-            # { # needs to be renamed in %block_id as NAME(1) NAME(2) } else
-            # push $dup_bnames, $block_id{key_ident};
-        }
+
 
         # Print attin file for debug
         # print "\n attin_string is \n$attin_string\n";
