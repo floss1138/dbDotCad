@@ -844,8 +844,9 @@ sub attin {
 
 ## Create Excel sub
 sub excel {
-  my ( $finname ) = @_;
-
+  my ( $finname, $att_tags ) = @_;
+#de-ref attribute tags (keys) into @tags     
+my @tags = $att_tags;
 
     my $xlsxout = $config{excel_dir} . basename($finname);
     $xlsxout =~ s/\.json/\.xlsx/;
@@ -873,6 +874,9 @@ sub excel {
 # use keys to re-create block_id
 
 # TRY TO DO THIS WITHOUT TAKING KEYs as argument, just use the JSON
+# The database has additional keys to the CAD attributes.
+# A leading underscore convention has been used to match mongos field names
+# _id is the primary key, _whatever is used for fields which we may want in a spread sheet.  There could be a naming clash as CAD will allow a leading underscore so reference is made to the original CAD keys as a filter
   # for remaining keys, i.e. column headings add a tab then the value of the key
    #             foreach (@keys) {
     #                my $next = $line->{$_};
@@ -881,11 +885,15 @@ sub excel {
                         # print "$bname uses $_\n";
       #                  push @block, "$_";
        #             }
-
+# print the keys and value.  $line is a ref to the hash created by json decode with print "Key is $k, value ". $line->{$k} ."\n";
+foreach my $k ( keys %$line ) {
+# print "Key is $k, value ". $line->{$k} ."\n";
+if ($k ~~ @tags) { print "$k is a CAD tag\n"; }  
+}
 
     my $block_ident;
 # create block_ident identifying attribute tag string ,$blockname,COL1,COL2,COL3 (COL1 will be BLOCKNAME)
-# This ,blockname,attribute_tag1,attribute_tag2,etc (in order) will identify duplicated block names
+# This ,blockname,attribute_tag1,attribute_tag2,etc (in order) will identify duplicated block names - unshift adds blockname to @block as first element
                 unshift @block, ($bname);
                 foreach my $column (@block) {
 
@@ -895,7 +903,7 @@ sub excel {
                     $block_ident .= ",$column";
                     $block[0] =~ s/^\s+|\s+$//g;
                     # also performed on block[0] just to be safe
-# print "block_ident is $block_ident\n";
+print "block_ident is $block_ident\n";
                 }
              
 
@@ -1219,7 +1227,7 @@ while (1) {
                 attin( "$config{done_dir}$doctitle.attin.json",
                     \@keys, \%blocks );
                 # create xlxs from json.  Use %block_id created during attin creation to map tag identifier to a unique name.
-                excel ( "$config{done_dir}$doctitle.attin.json" );
+                excel ( "$config{done_dir}$doctitle.attin.json", \@keys );
                 
             }
 
