@@ -589,6 +589,9 @@ sub makequerey {
 }
 
 # End of makequerey sub
+my %block_id; 
+#  hash to hold block identification using attribute tag string as key, 
+# ORIGINAL block name as value that can be UPDATED if duplicated.  Updated names have update number in brackets e.g. NAME(3)
 
 ## SUB TO CREATE ATTIN FILE AND EXCEL SHEET FROM MONGO QUEREY
 # Takes filename with path (of json querey result) and turns this into attin.txt for CAD
@@ -596,9 +599,8 @@ sub makequerey {
 # Blocknames are required to create spreadsheet (for each tab), third argument is \@blocks
 sub attin {
     my $attin_string;
-    my %block_id
-      ; # block identification using attribute tag string as key, ORIGINAL block name as value
-   #  my %dup_bnames;    # hash to hold de duplicated name values
+#    my %block_id
+ #     ; # block identification using attribute tag string as key, ORIGINAL block name as value
 
 # If blockname value found with different attribute tag string, change existing from NAME to NAME(1) for use in spread sheets only.
 # Next NAME instance cleash becomes NAME(2) etc
@@ -843,6 +845,7 @@ sub attin {
 }
 
 ## Create Excel sub
+# Take filename, attribute tags and block_id as arguments
 sub excel {
   my ( $finname, $att_tags ) = @_;
 #de-ref attribute tags (keys) into @tags     
@@ -886,9 +889,15 @@ my @tags = $att_tags;
       #                  push @block, "$_";
        #             }
 # print the keys and value.  $line is a ref to the hash created by json decode with print "Key is $k, value ". $line->{$k} ."\n";
+# Testing if the key exists in the CAD tags is the same as seeing if the @keys is defined.
 foreach my $k ( keys %$line ) {
 # print "Key is $k, value ". $line->{$k} ."\n";
-if ($k ~~ @tags) { print "$k is a CAD tag\n"; }  
+if ($k ~~ @tags) { 
+    # print "$k is a CAD tag\n"; 
+    push @block, "$k";  
+# Look up this key to see if a duplicate blockname was previously identified
+# print "key is $k, value is $line->{$k} \n";
+    }  
 }
 
     my $block_ident;
@@ -903,10 +912,10 @@ if ($k ~~ @tags) { print "$k is a CAD tag\n"; }
                     $block_ident .= ",$column";
                     $block[0] =~ s/^\s+|\s+$//g;
                     # also performed on block[0] just to be safe
-print "block_ident is $block_ident\n";
-                }
+                } # end of foreach block
              
-
+ print "block_ident for excel is $block_ident\n";
+# see if this checks out in %block_id here ..
             }
         }
    }
