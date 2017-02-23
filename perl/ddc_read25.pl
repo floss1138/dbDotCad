@@ -29,7 +29,7 @@ use Data::Dumper;    # Enable for debug
 
 # use Regexp::Debugger; # Enable for debug
 
-our $VERSION = '0.0.24';    # Version number of this script
+our $VERSION = '0.0.25';    # Version number of this script
 
 ##  DEFINE FILENAMES FOR CONF AND LOG FILES HERE ##
 
@@ -508,11 +508,16 @@ sub statnseek {
 # Confirm attout format by checking first line starts with HANDEL
 # Return array of Key names
 
+# array @keys to hold attribute tag keys in CAD required order
+my @keys = ();
+
 sub readHANDLEline {
     my ($att_file_name) = @_;
 
-    #  print "\n   Attribute file name = $att_file_name\n";
+    # array @keys to hold attribute tag keys in CAD required order
     my @keys = ();
+
+    #  print "\n   Attribute file name = $att_file_name\n";
     if ( !open my $ATTOUT, '<', $att_file_name ) {
         print "\n   failed to open $att_file_name\n";
     }
@@ -589,8 +594,9 @@ sub makequerey {
 }
 
 # End of makequerey sub
-my %block_id; 
-#  hash to hold block identification using attribute tag string as key, 
+my %block_id;
+
+#  hash to hold block identification using attribute tag string as key,
 # ORIGINAL block name as value that can be UPDATED if duplicated.  Updated names have update number in brackets e.g. NAME(3)
 
 ## SUB TO CREATE ATTIN FILE AND EXCEL SHEET FROM MONGO QUEREY
@@ -599,8 +605,6 @@ my %block_id;
 # Blocknames are required to create spreadsheet (for each tab), third argument is \@blocks
 sub attin {
     my $attin_string;
-#    my %block_id
- #     ; # block identification using attribute tag string as key, ORIGINAL block name as value
 
 # If blockname value found with different attribute tag string, change existing from NAME to NAME(1) for use in spread sheets only.
 # Next NAME instance cleash becomes NAME(2) etc
@@ -633,19 +637,19 @@ sub attin {
 # print "\n $blocknames is a ref to hash of BLOCKNAME, count  BLOCKNAME from CAD is always upper case \n";
 # print Dumper \$blocknames;
 # create worksheet (tabs) for each BLOCKNAME, sort for consistency
-  #  my @tabs;
-   # foreach my $tab ( sort keys %$blocknames ) {
+#  my @tabs;
+# foreach my $tab ( sort keys %$blocknames ) {
 
 # it is possible to sort keys $blocknames but thats experimental and its necessary to deref the hashref before calling keys
 # print "$tab\n";
 
-       # my $worksheet = $workbook->add_worksheet("$tab");
+    # my $worksheet = $workbook->add_worksheet("$tab");
 
 # my $worksheet2 = $workbook->add_worksheet('Custom_1');          # Worksheet 3 is a custom verson of 1
 # my $worksheet3 = $workbook->add_worksheet('Readme');            # Worksheet 3 is a readme
 
-       # $worksheet->write( 'B2', "Worksheet for $tab" );
-   # }
+    # $worksheet->write( 'B2', "Worksheet for $tab" );
+    # }
 
     #$worksheet1->write( 'A3', $A3data );
     #$worksheet1->write( 'C2', 'Column 2' );
@@ -757,6 +761,7 @@ sub attin {
                     $column =~ s/^\s+|\s+$//g;
                     $block_ident .= ",$column";
                     $block[0] =~ s/^\s+|\s+$//g;
+
                     # also performed on block[0] just to be safe
                 }
 
@@ -780,49 +785,49 @@ sub attin {
 
                     if ( $block[0] eq $block_id{$_} ) {
 
-           # if its the current tag string skip, rename the other based on name clash count
+# if its the current tag string skip, rename the other based on name clash count
                         next if ( $_ eq $block_ident );
                         $name_clash++;
                         if ( $name_clash > 0 ) {
                             print
 "$block_id{$_} value already exists in $_\nas a block name and needs to be changed to $block_id{$_}$name_clash\n";
 
-                            $block_id{$_} = $block_id{$_} ."($name_clash)";
+                            $block_id{$_} = $block_id{$_} . "($name_clash)";
                         }
                     }
 
                 }
- 
+
                 # print "\n attin is \n$attin_string\n";
                 #  print "key: $_\n" for keys %{$line};
                 #  print Dumper($line);
-            } 
+            }
+
             # end of if valid JSON line
 
         }
+
         # end of while JSONIN
-         
-             print "Blockname clashes =  $name_clash\n";
-            # end of while JSONIN
-    
-    # enable for debug to see duplicate blocknames with different keys here:
-    #    print "\n block_id hash contains attribute tag string as hash and blockname as key\n";
-    #    print Dumper ( \%block_id );
 
-        # foreach my $key_ident ( sort keys %block_id ) {
-          #  print "block names for unique attribute tag string: $block_id{$key_ident}\n";
-       # }
-        
+        print "Blockname clashes =  $name_clash\n";
+
+        # end of while JSONIN
+
+# enable for debug to see duplicate blocknames with different keys here:
+#    print "\n block_id hash contains attribute tag string as hash and blockname as key\n";
+#    print Dumper ( \%block_id );
+
+# foreach my $key_ident ( sort keys %block_id ) {
+#  print "block names for unique attribute tag string: $block_id{$key_ident}\n";
+# }
+
         foreach my $unique_value ( sort values %block_id ) {
-        print "blocknames for unique attribtue tag string: $unique_value\n";
-        my $worksheet = $workbook->add_worksheet("$unique_value");
-        $worksheet->write( 'B2', "Worksheet for $unique_value" );
+            print "blocknames for unique attribtue tag string: $unique_value\n";
+            my $worksheet = $workbook->add_worksheet("$unique_value");
+            $worksheet->write( 'B2', "Worksheet for $unique_value" );
         }
-        # worksheet needs to be identified by using %block_id key and looking up the value
 
-
-
-
+# worksheet needs to be identified by using %block_id key and looking up the value
 
         # Print attin file for debug
         # print "\n attin_string is \n$attin_string\n";
@@ -847,20 +852,57 @@ sub attin {
 ## Create Excel sub
 # Take filename, attribute tags and block_id as arguments
 sub excel {
-  my ( $finname, $att_tags ) = @_;
-#de-ref attribute tags (keys) into @tags     
-my @tags = $att_tags;
+    my ( $finname, $att_tags ) = @_;
+
+    #de-ref attribute tags (keys) into @keys
+    my @keys = @$att_tags;
 
     my $xlsxout = $config{excel_dir} . basename($finname);
     $xlsxout =~ s/\.json/\.xlsx/;
-    print "\nxlsx file will be called $xlsxout \n";
+    print "\nxlsx output file will be called $xlsxout \n";
+
+    my $workbook = Excel::Writer::XLSX->new("$xlsxout");
+
+    $workbook->set_properties(
+        title  => 'CAD attribute data',
+        author => 'DeeV',
+        comments =>
+'Support cross platform Open Source solutions.  Respect CC & GPL Licenses',
+    );    # This might not be visible from Open Office
+
+    my $worksheet_rm = $workbook->add_worksheet('Readme');
+
+    #Format Worksheet readme tab:
+    my $time = time_check();
+    $worksheet_rm->write( 'B2', "Created by ddc reader $VERSION at $time" )
+      ;    #  worksheet created for info, notices & copyright
+    $worksheet_rm->write( 'B3',
+"This software is Free - copyright (c) 2017 by Floss (floss1138\@gmail.com) - a PDP project.  All rights reserved."
+    );
+    $worksheet_rm->write( 'B4',
+"You are free to use, copy and distribute this software under the same GPL terms as the Perl 5 programming language."
+    );
+    $worksheet_rm->write( 'B8', 'Notes:' );
+    $worksheet_rm->write( 'B9',
+'The Attribute sheet first (A = HANDLE) column is intentionally hidden by default'
+    );
+    print "Creating worksheets: ";
+
+    foreach my $unique_value ( sort values %block_id ) {
+        print "$unique_value ";
+        my $worksheet = $workbook->add_worksheet("$unique_value");
+        $worksheet->write( 'B2', "Worksheet for $unique_value" );
+    }
+    print "\n";
+
+# worksheet needs to be identified by using %block_id key and looking up the value
 
     if ( !open my $JSONIN, '<', $finname ) {
         print "\n $finname would not open for reading\n";
     }
     else {
 # remove 1st element of keys (which should be HANDEL) and build line by key value
-        # my $first = shift @keys;
+# my $first = shift @keys;
 
         while (<$JSONIN>) {
             if (/^{\s*"_id"\s*:\s*"'/) {
@@ -869,38 +911,40 @@ my @tags = $att_tags;
 
                 my $line = decode_json($_);
 
-
-
-
-  my $bname = $line->{'BLOCKNAME'};
+                my $bname = $line->{'BLOCKNAME'};
                 my @block;
-# use keys to re-create block_id
+
+                # use keys to re-create block_id
 
 # TRY TO DO THIS WITHOUT TAKING KEYs as argument, just use the JSON
 # The database has additional keys to the CAD attributes.
 # A leading underscore convention has been used to match mongos field names
 # _id is the primary key, _whatever is used for fields which we may want in a spread sheet.  There could be a naming clash as CAD will allow a leading underscore so reference is made to the original CAD keys as a filter
-  # for remaining keys, i.e. column headings add a tab then the value of the key
-   #             foreach (@keys) {
-    #                my $next = $line->{$_};
-     #               if ( defined $next ) {
+# for remaining keys, i.e. column headings add a tab then the value of the key
+                foreach (@keys) {
+                    my $next = $line->{$_};
+                    if ( defined $next ) {
 
                         # print "$bname uses $_\n";
-      #                  push @block, "$_";
-       #             }
+                        push @block, "$_";
+                    }
+                }
+
 # print the keys and value.  $line is a ref to the hash created by json decode with print "Key is $k, value ". $line->{$k} ."\n";
-# Testing if the key exists in the CAD tags is the same as seeing if the @keys is defined.
-foreach my $k ( keys %$line ) {
+
+# Testing if the key exists in the CAD tags is the same as seeing if the @keys is defined but this does not have correct order:
+#foreach my $k ( keys %$line ) {
 # print "Key is $k, value ". $line->{$k} ."\n";
-if ($k ~~ @tags) { 
-    # print "$k is a CAD tag\n"; 
-    push @block, "$k";  
+# if ($k ~~ @keys) {
+# print "$k is a CAD tag\n";
+#    push @block, "$k";
 # Look up this key to see if a duplicate blockname was previously identified
 # print "key is $k, value is $line->{$k} \n";
-    }  
-}
+#    }
+#}
 
-    my $block_ident;
+                my $block_ident;
+
 # create block_ident identifying attribute tag string ,$blockname,COL1,COL2,COL3 (COL1 will be BLOCKNAME)
 # This ,blockname,attribute_tag1,attribute_tag2,etc (in order) will identify duplicated block names - unshift adds blockname to @block as first element
                 unshift @block, ($bname);
@@ -911,14 +955,18 @@ if ($k ~~ @tags) {
                     $column =~ s/^\s+|\s+$//g;
                     $block_ident .= ",$column";
                     $block[0] =~ s/^\s+|\s+$//g;
+
                     # also performed on block[0] just to be safe
-                } # end of foreach block
-             
- print "block_ident for excel is $block_ident\n";
-# see if this checks out in %block_id here ..
+                }    # end of foreach block
+
+              # print "block_ident for excel is $block_ident\n";
+              # see if this checks out in %block_id here ..
+              # print Dumper ( \%block_id );
+              # print "Value for this tag string is: $block_id{$block_ident}\n";
+
             }
         }
-   }
+    }
 }
 ## THE PROGRAM
 
@@ -978,8 +1026,10 @@ while (1) {
 ### process files here
                 my $done_name = $config{done_dir} . $attfile;
 
-                # read HANDEL line into array @keys from $filewithpath
-                # return is zero if empty, 1 if invalid
+             # read HANDEL line into array @keys from $filewithpath
+             # return is zero if empty, 1 if invalid
+             # The @keys array contains the tag values IN THE REQUIRED CAD ORDER
+             # @keys needs to be available for the attin and excel subroutines
                 my @keys = readHANDLEline($filewithpath);
 
                 # skip if file is empty or invalid
@@ -1235,9 +1285,10 @@ while (1) {
                 # call attin sub here to create attin file
                 attin( "$config{done_dir}$doctitle.attin.json",
                     \@keys, \%blocks );
-                # create xlxs from json.  Use %block_id created during attin creation to map tag identifier to a unique name.
-                excel ( "$config{done_dir}$doctitle.attin.json", \@keys );
-                
+
+# create xlsx from json.  Use %block_id created during attin creation to map tag identifier to a unique name.
+                excel( "$config{done_dir}$doctitle.attin.json", \@keys );
+
             }
 
             # End of isitgrowing
