@@ -662,7 +662,7 @@ sub attin {
                 my $bname = $line->{'BLOCKNAME'};
                 my @block;
 
-                # print "BLOCKNAME is $bname\n";
+                print "BLOCKNAME in attin-string is $bname\n";
                 # build attin_string starting with the handel
                 $attin_string .= $1;
 
@@ -786,9 +786,8 @@ sub attin {
 }
 
 ## Create Excel sub
-# BUGS A /\ IN THE BLOCK NAME IS BEING TRANFORMED INTO JUST /, THE BACKSLASH IS REMOVED, WHERE?
-# STINGS OF BAD CHARS ARE ONLY REPLACED WITH ON TILDE
-# REMEMEBER THAT THE EXISTING JSON OUTPUT FILE IS REMAINING - YES IT ONLY GOES INTO THE DATABASE ONCE
+# A \ IN THE BLOCK NAME OR VALUE DATA IS BEING REMOVED WHEN PRINTED
+# so \\ becomes \ - dumper is OK
 # Take filename, attribute tags and block_id as arguments
 sub excel {
 
@@ -797,26 +796,25 @@ sub excel {
     my ( $finname, $att_tags, $blocknames ) = @_;
     # deref block_id hash to create a worksheet save naming version
     my %block_id_excel = %$blocknames;
-    print "block id hash passed to excel sub is:\n";
-    print Dumper (\$blocknames);
+   # print "block id hash passed to excel sub is:\n";
+   # print Dumper (\$blocknames);
     # same thing but the order will vary... 
     # print Dumper (\%block_id_excel);
    
-    foreach my $wsname (values %block_id_excel) {
-        if ($wsname =~ m/[\*\:\[\]\?\\\/]+/xsm) { 
-        print "$wsname  contains a worksheet prohibited character []:?/\\ \n";
-        }
-    }
-    # $string =~ s/[\*\:\[\]\?\\\/]+/~/g; 
+   # foreach my $wsname (values %block_id_excel) {
+    #    if ($wsname =~ m/[\*\:\[\]\?\\\/]/xsm) { 
+     #   print "$wsname  contains a worksheet prohibited character []:?/\\ \n";
+ #       }
+  #  }
 
 
         foreach my $k (keys %block_id_excel) {
         # substitute  []:?/\ with ~
-        $block_id_excel{$k} =~ s/[\*\:\[\]\?\\\/]+/~/g;
+        $block_id_excel{$k} =~ s/[\*\:\[\]\?\\\/]/~/g;
         }
 
- print "Excel safe sheet names should only exist now:\n";
- print Dumper (\%block_id_excel);
+# print "Excel safe sheet names should only exist now:\n";
+#  print Dumper (\%block_id_excel);
     #de-ref attribute tags (keys) into @keys
     my @keys = @$att_tags;
 
@@ -888,23 +886,27 @@ sub excel {
                 # if it looks like its a json line { "_id" : "' then process it
 
                 my $line = decode_json($_);
+                my %linehash = %$line;
+    #         foreach (sort keys %linehash) { print "key: $_ value: $linehash{$_}\n";}
+   #           print "   JSON decode line (check the slash content) of $line->{'BLOCKNAME'}:\n";
 
-           # apparently you can use keys direcly on a hash ref after 5.14
+  #            print Dumper (\$line);
+           # apparen\//\//tly you can use keys direcly on a hash ref after 5.14
            # For debug print the hash - its not in order so use keys to preserve
            # CAD order and add any internal fields which need to be visible
            #print "\n json values are:\n\n";
            #foreach my $val (values $line) {
            #print "$val\n";
-           # }
+           # }\//\//
 
                 my $bname = $line->{'BLOCKNAME'};
                 my @block;
-
+                print "BLOCKNAME in excel-string is $bname\n";
                 # use keys to re-create block_id
 
 # TRY TO DO THIS WITHOUT TAKING KEYs as argument, just use the JSON
 # The database has additional keys to the CAD attributes.
-# A leading underscore convention has been used to match mongos field names
+# A leading underscore convention has been used to match mongos field names\//\//
 # _id is the primary key, _whatever is used for fields which we may want in a spread sheet.  There could be a naming clash as CAD will allow a leading underscore so reference is made to the original CAD keys as a filter
 # for remaining keys, i.e. column headings add a tab then the value of the key
                 foreach (@keys) {
