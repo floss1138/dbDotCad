@@ -625,7 +625,7 @@ sub attin {
     my $attfile = $config{ret_dir} . basename($finname);
     $attfile =~ s/\.json/\.txt/;
     print
-"\n   Attin is using $finname, which requires column headings: \n@keys\n   Will create $attfile\n";
+"\nAttin is using $finname, which requires column headings: \n@keys\nand will create $attfile\n";
     foreach (@keys) {
         $attin_string .= "$_\t";
     }
@@ -662,7 +662,8 @@ sub attin {
                 my $bname = $line->{'BLOCKNAME'};
                 my @block;
 
-                print "BLOCKNAME in attin-string is $bname\n";
+               # Enable for debug
+               # print "BLOCKNAME in attin-string is $bname\n";
                 # build attin_string starting with the handel
                 $attin_string .= $1;
 
@@ -714,7 +715,7 @@ sub attin {
 
                     $block_id{$block_ident} = $block[0];
                     print
-"    First sighting of block ident $block_ident\nThis has been set to blockname: $block[0]\n";
+"    First sighting of block ident $block_ident\n    This has been set to blockname: $block[0]\n";
                 }
 
 # There will always be one allowable instance - if more than 1, its best to sort by key for consitency.
@@ -758,10 +759,10 @@ sub attin {
 # foreach my $key_ident ( sort keys %block_id ) {
 #  print "block names for unique attribute tag string: $block_id{$key_ident}\n";
 # }
-
-        foreach my $unique_value ( sort values %block_id ) {
-            print "blocknames for unique attribtue tag string: $unique_value\n";
-        }
+        # For debug print all blocknames for attribute tag string
+      #  foreach my $unique_value ( sort values %block_id ) {
+       #     print "blocknames for unique attribtue tag string: $unique_value\n";
+       # }
 
 # worksheet needs to be identified by using %block_id key and looking up the value
 
@@ -774,7 +775,7 @@ sub attin {
             print "\n  $attfile would not open for writing \n";
         }
         else {
-            print "\n Writing default attin file\n";
+            print "Writing attin file $attfile ...\n";
             print $ATTIN "$attin_string";
 
             close $ATTIN or carp "Unable to close $attfile file";
@@ -786,8 +787,8 @@ sub attin {
 }
 
 ## Create Excel sub
-# A \ IN THE BLOCK NAME OR VALUE DATA IS BEING REMOVED WHEN PRINTED
-# so \\ becomes \ - dumper is OK
+# A \ IN THE BLOCK NAME OR VALUE DATA IS BEING REMOVED WHEN PRINTED/DUMPED
+# so \\ becomes \, its perl delimiting thats to blame.  Print may be differ from Dump. 
 # Take filename, attribute tags and block_id as arguments
 sub excel {
 
@@ -891,22 +892,22 @@ sub excel {
    #           print "   JSON decode line (check the slash content) of $line->{'BLOCKNAME'}:\n";
 
   #            print Dumper (\$line);
-           # apparen\//\//tly you can use keys direcly on a hash ref after 5.14
+           # apparenly you can use keys direcly on a hash ref after 5.14
            # For debug print the hash - its not in order so use keys to preserve
            # CAD order and add any internal fields which need to be visible
            #print "\n json values are:\n\n";
            #foreach my $val (values $line) {
            #print "$val\n";
-           # }\//\//
+           # }
 
                 my $bname = $line->{'BLOCKNAME'};
                 my @block;
-                print "BLOCKNAME in excel-string is $bname\n";
+                # print "BLOCKNAME in excel-string is $bname\n";
                 # use keys to re-create block_id
 
 # TRY TO DO THIS WITHOUT TAKING KEYs as argument, just use the JSON
 # The database has additional keys to the CAD attributes.
-# A leading underscore convention has been used to match mongos field names\//\//
+# A leading underscore convention has been used to match mongos field names
 # _id is the primary key, _whatever is used for fields which we may want in a spread sheet.  There could be a naming clash as CAD will allow a leading underscore so reference is made to the original CAD keys as a filter
 # for remaining keys, i.e. column headings add a tab then the value of the key
                 foreach (@keys) {
@@ -1063,20 +1064,20 @@ while (1) {
                 foreach my $heading_keys (@keys) {
                     print "  $heading_keys";
                 }
-                print "\n\n";
+                print "\n";
 
 # Document TITLE is taken from the filename (or, in later version the TITLE attribute)
 # Extract title based on config file regex here:
                 my $doctitle = 'doc_title_is_undefined';
 
-                print
+         #       print
 "\n File name is $attfile, regex used is $config{doc_title} \n";
                 $attfile =~ /$config{doc_title}/xsm;
                 $doctitle = $1;
 
 # remove leading zero from doctitle as this is used in primary key s1_02-03-2475 should become s1_2-3-2475
 
-                print "\n doctitle is $doctitle\n";
+                print "Filename is $attfile, doctitle is $doctitle from regex $config{doc_title}\n";
 
 # site code is the first nnumber(s) before the first - and should not have a leading 0
 # site code is used to prefix the collection name and may become a site-area code in the future
@@ -1291,10 +1292,11 @@ while (1) {
                     "$config{ddc_dbname}", $collection, \@primkeys );
 
                 # Upload to DB - execute bulkop
+                print "Mongo upload results will be written to: $config{done_dir}$doctitle.attout_result.txt\n";
                 system(
 "mongo < $config{done_dir}$doctitle.attout.js > $config{done_dir}$doctitle.attout_result.txt"
                 );
-
+                print "Mongo query results will be written to: $config{done_dir}$doctitle.attin.json\n";
                 # Query database - based on same primary keys used for bulkop
                 system(
 "mongo < $config{done_dir}$doctitle.attin.js > $config{done_dir}$doctitle.attin.json"
