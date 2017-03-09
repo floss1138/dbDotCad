@@ -888,7 +888,7 @@ sub excel {
 
                 my $line = decode_json($_);
                 my %linehash = %$line;
-    #         foreach (sort keys %linehash) { print "key: $_ value: $linehash{$_}\n";}
+             foreach (sort keys %linehash) { print "linehash contains, key: $_ value: $linehash{$_}\n";}
    #           print "   JSON decode line (check the slash content) of $line->{'BLOCKNAME'}:\n";
 
   #            print Dumper (\$line);
@@ -966,8 +966,29 @@ sub excel {
                     $block_ident );
 
    # $current_sheet->write ( "C$unique_value_count{$worksheet_name}", linedata);
+   # Row number is $unique_value_count{$worksheet_name}
+   # Column letter could use some form of iterator.  Lets limit this to 52 as a spread sheet bigger than that is going to be painful
+   # That becomes A to AZ, create this range in an array @alph
 
-                # Increment the row value, to write datat at for the worksheet
+                my @alph = ('A'..'Z', 'AA'..'AZ');
+                # Remove first element of array as the linehash does not contain HANDEL, thats part of the _id.  
+                # Will need to add any DB fields required in the spread sheet to array col, in the required order here: 
+                my @col = @keys;
+           # strip first element (HANDEL)
+           my $first = shift @col;
+           # replace with _id at beginning of array
+           unshift @col, '_id';
+           push @col, '_title', '_filename', '_errancy';
+                my $alph_offset = '2';
+                    foreach (@col) { 
+                    print "linehash columns for excel with offsets; key: $_ value: $linehash{$_}, offset: $alph_offset, column: $alph[$alph_offset]\n";
+                    $alph_offset ++;
+                    }
+
+
+
+
+                # Increment the row value, to write data at for the worksheet
                 $unique_value_count{$worksheet_name}++;
 
 # print Dumper ( \%unique_value_count );
@@ -989,7 +1010,7 @@ sub excel {
 
     # my $sheet = $workbook->get_worksheet_by_name('BLOCK_NAME');
     # print "\nSheet BLOCK_NAME is called $sheet\n";
-    print "\nUnique_value_count hash contains:\n";
+    print "\nFinal unique_value_count hash contains the count + initial row offset value:\n";
     print Dumper ( \%unique_value_count );
 }
 ## THE PROGRAM
