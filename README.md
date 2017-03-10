@@ -519,6 +519,7 @@ Refefining blocks without changing the blockname or pasting blocks from one draw
 `,BLOCKNAME,tag1,tag4,tag5`   
 Such blocks would impact clean creation of spread sheets.  Beware.   
 
+If block names are to appear as Excel worksheet names, these must match the Excel name space.  There is a 32 character limit and the sheetname cannot contain [ ] : * ? / \.  The same case insensitive name cannot be used.  This script removes these problem characters for spread sheet creation and replaces them with ~.  The database contains the original name.  The block is identified by the attribute tags and different blocks with the same name have the BLOCKNAME changed.  NAME would become NAME(1) NAME(2) etc.  Best practice requires a version number in the name, so avoid putting this in brackets and stick to underscores.  
 
 #### Attributes and nested blocks
 When blocks are nested, clicking on the block only presents attributes for the *parent* block.  Similarly using ATTOUT on a nested block only captures attributes from the *parent* and not the *children* within.
