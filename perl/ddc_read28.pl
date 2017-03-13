@@ -140,6 +140,12 @@ error_dir="/home/alice/dbdotcad/failed/"
 # log_dir="/home/user/log/"
 log_dir="/var/www/ddclog/"
  
+## NAME MAPPING ##
+
+# SOURCE CPS, TO DESTINATION CPD NAMES
+# Space deliminated list or source blocks and corresponding destination blocks
+src_block="PINAR NET1GCPS_V1"
+dst_block="PINAL NET1GCPD_V1"
 
 ## BEHAVIOURS ##
     
