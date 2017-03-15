@@ -144,8 +144,8 @@ log_dir="/var/www/ddclog/"
 
 # SOURCE CPS, TO DESTINATION CPD NAMES
 # Space deliminated list or source blocks and corresponding destination blocks
-src_block="PINAR NET1GCPS_V1"
-dst_block="PINAL NET1GCPD_V1"
+src_block="PINAR Net1G-CPSV1"
+dst_block="PINAL Net1G-CPDV1"
 
 ## BEHAVIOURS ##
     
@@ -961,15 +961,15 @@ sub excel {
                 my $worksheet_name = $block_id_excel{$block_ident};
 #  print "Value for this tag string is the worksheet_name: $block_id_excel{$block_ident} \n and must only contain valid sheet names \n";
 
-                # Current hash ref to sheet $worksheet_name is:
+               # WRITE block_ident into Excel as a test.  Current hash ref to sheet $worksheet_name is $current_sheet, enable these lines for testing:
                 my $current_sheet =
                   $workbook->get_worksheet_by_name($worksheet_name);
 
-                # Write to current sheet here:
-                $current_sheet->write( "C3", $block_ident );
+               # For Excel intital write testing, just write the block_ident to current sheet here:
+               # $current_sheet->write( "C3", $block_ident );
 
-                $current_sheet->write( "C$unique_value_count{$worksheet_name}",
-                    $block_ident );
+               # $current_sheet->write( "C$unique_value_count{$worksheet_name}",
+               #     $block_ident );
 
    # $current_sheet->write ( "C$unique_value_count{$worksheet_name}", linedata);
    # Row number is $unique_value_count{$worksheet_name}
@@ -985,12 +985,22 @@ sub excel {
            # replace with _id at beginning of array
            unshift @col, '_id';
            push @col, '_title', '_filename', '_errancy';
+                # alpha_offset allows for blank column(s) at the left of the spread sheet, like the row offfset allows for blank lines at the top
                 my $alph_offset = '2';
-                    foreach (@col) { 
-                    print "linehash columns for excel with offsets; key: $_ value: $linehash{$_}, offset: $alph_offset, column: $alph[$alph_offset]\n";
+                    # Write column names to spread sheet
+                    foreach(@col) {
+                    $current_sheet->write ("$alph[$alph_offset]3" , $_);
                     $alph_offset ++;
                     }
-
+                    $alph_offset = '2';
+                    foreach (@col) { 
+                    print "linehash columns for excel with offsets; key (col name): $_ value: $linehash{$_}, alpha offset: $alph_offset increments to column: $alph[$alph_offset]\n";
+                    # write line to Excel
+                     $current_sheet->write ("$alph[$alph_offset]$unique_value_count{$worksheet_name}" , $linehash{$_});
+                    # increment alpha_offset i.e column letter
+                    $alph_offset ++;
+                    }
+                    
 
 
 
