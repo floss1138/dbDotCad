@@ -146,32 +146,39 @@ IP information may be needed on a drawing.  In this case CIDR house rules apply 
 
 #### CONNECTIONS FOR NETWORK AND A/V/CONTROL
 
-    <Type description e.g. net>-<Sub Type e.g. ana, dig, 1g>-<Block description e.g. pinsrc, pindst>_<Version e.g. 001>  
+Attribtue tags must be in upper case and cannot contain spaces
+Block names can be in lower case and can contain spaces
+Either may at some point become a worksheet name so keep within Excel namespace.
 
-net-1g-pinsrc_001  
+    <Type description e.g. Net><Sub Type e.g. A (Analogue), D (Digital), 1G, 10G>-<Block description e.g. CPS CPD>_<Version e.g. 1>  
 
-Type:  
+Net1G-CPSV1  Network 1G Connection Point Source V1   
+Net1G-CPDV1  Netwrok 1G Connection Point Destination V1   
 
-tgf = 10G Ethernet over Fibre optic  
-net = Ethernet including iscsi over cat cable, rj45  
-fib = Fibre channel  
-fcl = Fibre channel arbitrated loop  
-tax = Twinax based connection such as Infiniband and UCS intterconnects, ucs, inf  
-vid = Video analogue or digital ana, dig  
-aud = Audio analoghe or digital ana, dig  
-ctl = Control including serial RS422/485/232  
-kvm = Keyboard Mouse & KVM extensions  
-usb = USB direct or extended, 2.0, 3.0  
-dpt = Display port, sub type can be thunderbolt tb_, miN  
-vga = VGA or SCART  
-gpi = GPI  
-pwr = Power DC, AC  
-asi = ASI  
-rf_ = RF  
-dvi = DVI  
-hdm = HDMI  
-tel = Telephone, PSTN  
-opt = optical bundle, number of cores  
+Mixed case makes these easier to read and keeps the block name shorter if used in as a worksheet name.  The Connection Point & version part could be masked in the future to make this easier to present.
+
+Type examples:  
+
+10G = 10G Ethernet or Fibre Channel over Fibre optic  
+Net = Ethernet including iscsi over cat cable, rj45  
+Fib = Fibre channel switched fabric
+Fal = Fibre channel arbitrated loop  
+Tax = Twinax based connection such as Infiniband and UCS intterconnects, ucs, inf  
+Vid = Video analogue or digital ana, dig  
+Aud = Audio analoghe or digital ana, dig  
+Ctl = Control including serial RS422/485/232  
+KVM = Keyboard Mouse & KVM extensions  
+USB = USB direct or extended, 2.0, 3.0  
+DP = Display port, sub type can be thunderbolt tb_, miN  
+VGA = VGA or SCART  
+GPI = GPI  
+Pwr = Power DC, AC  
+ASI = ASI  
+RF = RF  
+DVI = DVI  
+HDMI = HDMI  
+Tel = Telephone, PSTN  
+Opt = optical bundle, number of cores  
 
 Sub Type:  
 
@@ -512,9 +519,9 @@ For now, blocks for site 1 will be in collection 1blocks, for site 002, 2blocks 
 In the future, cable numbers could be subnetted by area code.   
 
 #### Blocknames
-Blocknames cannot be blank and must contain at least one character. 
+Blocknames cannot be blank and must contain at least one character. They can contain spaces but this is best avoided.  Unlike attribute tags, they can be upper and lower case.
 It is wise to add a version number to the block name and change this if tags are added, removed or changed, even if only the tag order is changed. 
-Refefining blocks without changing the blockname or pasting blocks from one drawing to another can result in colliding blocknames with different attribute tag strings.  Handels remain unique to the drawing so attributes will still export and import successfully.  It is possible to check block/tag integrity by filtering the defined attribute tags to create a key string as a block_id:   
+Refefining blocks without changing the blockname or pasting blocks from one drawing to another can result in colliding blocknames with different attribute tag strings.  Handles remain unique to the drawing so attributes will still export and import successfully.  It is possible to check block/tag integrity by filtering the defined attribute tags to create a key string as a block_id:   
 `,BLOCKNAME,tag1,tag2,tag3`   
 `,BLOCKNAME,tag1,tag4,tag5`   
 Such blocks would impact clean creation of spread sheets.  Beware.   
