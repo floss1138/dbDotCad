@@ -720,8 +720,8 @@ sub attin {
                     # Then, change the blockname value if there is a clash
 
                     $block_id{$block_ident} = $block[0];
-                    print
-"    First sighting of block ident $block_ident\n    This has been set to blockname: $block[0]\n";
+# First instance of a particular block ident - print for debug                  
+#  print"    First sighting of block ident $block_ident\n    This has been set to blockname: $block[0]\n";
                 }
 
 # There will always be one allowable instance - if more than 1, its best to sort by key for consitency.
@@ -734,8 +734,8 @@ sub attin {
                         next if ( $_ eq $block_ident );
                         $name_clash++;
                         if ( $name_clash > 0 ) {
-                            print
-"$block_id{$_} value already exists in $_\nas a block name and needs to be changed to $block_id{$_}$name_clash\n";
+#  Block name clash found, print for debug
+#  print "$block_id{$_} value already exists in $_\nas a block name and needs to be changed to $block_id{$_}$name_clash\n";
 
                             $block_id{$_} = $block_id{$_} . "($name_clash)";
                         }
@@ -799,7 +799,7 @@ sub attin {
 sub excel {
 
     # $row is the first row number for attribute data
-    my $row = '4';
+    my $row = '5';
     my ( $finname, $att_tags, $blocknames ) = @_;
     # deref block_id hash to create a worksheet save naming version
     my %block_id_excel = %$blocknames;
@@ -845,23 +845,26 @@ sub excel {
     $worksheet_rm->write( 'B2', "Created by ddc reader $VERSION at $time" )
       ;    #  worksheet created for info, notices & copyright
     $worksheet_rm->write( 'B3',
-"This software is Free - copyright (c) 2017 by Floss (floss1138\@gmail.com) - a PDP project.  All rights reserved."
+"This software is copyright (c) 2017 by Floss (floss1138\@gmail.com) - a dolphin friendly PDP project.  All rights reserved."
     );
     $worksheet_rm->write( 'B4',
 "You are free to use, copy and distribute this software under the same GPL terms as the Perl 5 programming language."
     );
-    $worksheet_rm->write( 'B8', 'Notes:' );
+    $worksheet_rm->write( 'B7', 'Notes:' );
+    $worksheet_rm->write( 'B8', 'This spreadsheet is the result of a database query.  To meet spreadsheet naming convention, some names may have been changed:' );
     $worksheet_rm->write( 'B9',
-'Sheet names cannot contain []:?/\ characters but block names can. If found, these are replaced with ~ (the tilde character).'
-    );
-    $worksheet_rm->write( 'B10',
-'Blocks with different attributes but the same name can be duplicated by copying between drawings.  Hopefully you have a strict naming policy which enforces use of a version number and prohibits use strange charaters in the bblock name.'
+'Worksheet names cannot contain []:?/\ characters but block names can. If found, these are replaced in the spreadsheet with ~ (the tilde character).'
     );
     $worksheet_rm->write( 'B11',
-'Duplicated block names, for example the blocks called NAME, will be renamed as NAME(1), NAME(2) etc.'
+'Blocks with different attributes but the same name can be duplicated by copying between drawings.');
+    $worksheet_rm->write( 'B10', 'Hopefully you have a strict block naming policy which enforces use of a version number, prohibits strange characters including those above and limits the the block name to 30 characters.'
     );
-    $worksheet_rm->write( 'B13',
-'The Attribute sheet first (A = HANDLE) column is intentionally hidden by default'
+    $worksheet_rm->write( 'B12',
+'Duplicated block names, for example those with different attribute tags but all called NAME, will be renamed in the worksheet as NAME(1), NAME(2) etc.'
+    );
+    $worksheet_rm->write( 'B14',
+'The first row and column are left blank as a margin for user notes');
+    $worksheet_rm->write( 'B15', 'Column B containing the Mongo _id is intentionally hidden by default'
     );
 
 # Hash to hold value count used to track which row of which sheet to be updated, starting at row $row
@@ -872,7 +875,7 @@ sub excel {
         $unique_value_count{$unique_value} = $row;
 
         my $worksheet = $workbook->add_worksheet("$unique_value");
-        $worksheet->write( 'B2',
+        $worksheet->write( 'C2',
             "Worksheet for $unique_value, created on $time" );
     }
     print "\n";
@@ -894,7 +897,7 @@ sub excel {
 
                 my $line = decode_json($_);
                 my %linehash = %$line;
-             foreach (sort keys %linehash) { print "linehash contains, key: $_ value: $linehash{$_}\n";}
+       #      foreach (sort keys %linehash) { print "linehash contains, key: $_ value: $linehash{$_}\n";}
    #           print "   JSON decode line (check the slash content) of $line->{'BLOCKNAME'}:\n";
 
   #            print Dumper (\$line);
@@ -977,6 +980,9 @@ sub excel {
    # That becomes A to AZ, create this range in an array @alph
 
                 my @alph = ('A'..'Z', 'AA'..'AZ');
+                # format1 to make heading bold and background yellow
+                my $format1 = $workbook->add_format( bold => 1, bg_color => 'yellow' ); # color => is the font color
+
                 # Remove first element of array as the linehash does not contain HANDEL, thats part of the _id.  
                 # Will need to add any DB fields required in the spread sheet to array col, in the required order here: 
                 my @col = @keys;
@@ -986,15 +992,30 @@ sub excel {
            unshift @col, '_id';
            push @col, '_title', '_filename', '_errancy';
                 # alpha_offset allows for blank column(s) at the left of the spread sheet, like the row offfset allows for blank lines at the top
-                my $alph_offset = '2';
+                my $alph_offset = '1';
+                my $headline = $row-1;
+# print "headline is set to $headline\n";
                     # Write column names to spread sheet
+                    # Format head line as format1,  $headline-1 required as set_row starts from 0 
+                    $current_sheet->set_row( $headline-1 , undef, $format1 );
+
+# Set column width - before hiding as it seems to override
+$current_sheet->set_column('C:AZ', 14);
+# _id needs a wider column even if it is hidden
+ $current_sheet->set_column('B:B', 18); 
+
+# Hide B column which contains the _id
+$current_sheet->set_column( 'B:B' , undef , undef,  1, 0, 0 ); 	# This hides column B to B
+# Set column width
+# $current_sheet->set_column('C:AZ', 15);	
+# print "headline after setting the format is $headline\n";
                     foreach(@col) {
-                    $current_sheet->write ("$alph[$alph_offset]3" , $_);
+                    $current_sheet->write ("$alph[$alph_offset]$headline" , $_);
                     $alph_offset ++;
                     }
-                    $alph_offset = '2';
+                    $alph_offset = '1';
                     foreach (@col) { 
-                    print "linehash columns for excel with offsets; key (col name): $_ value: $linehash{$_}, alpha offset: $alph_offset increments to column: $alph[$alph_offset]\n";
+                    # print "linehash columns for excel with offsets; key (col name): $_ value: $linehash{$_}, alpha offset: $alph_offset increments to column: $alph[$alph_offset]\n";
                     # write line to Excel
                      $current_sheet->write ("$alph[$alph_offset]$unique_value_count{$worksheet_name}" , $linehash{$_});
                     # increment alpha_offset i.e column letter
