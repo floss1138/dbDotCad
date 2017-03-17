@@ -606,7 +606,7 @@ my %block_id;
 # ORIGINAL block name as value that can be UPDATED if duplicated.  Updated names have update number in brackets e.g. NAME(3)
 
 # pass %block_id to Excel routing and make it Excel worksheet safe
-# %block_id_excel
+# as %block_id_excel
 
 ## SUB TO CREATE ATTIN FILE AND EXCEL SHEET FROM MONGO QUEREY
 # Takes filename with path (of json querey result) and turns this into attin.txt for CAD
@@ -863,8 +863,8 @@ sub excel {
 'Duplicated block names, for example those with different attribute tags but all called NAME, will be renamed in the worksheet as NAME(1), NAME(2) etc.'
     );
     $worksheet_rm->write( 'B14',
-'The first row and column are left blank as a margin for user notes');
-    $worksheet_rm->write( 'B15', 'Column B containing the Mongo _id is intentionally hidden by default'
+'The first row and column are margins for notes');
+    $worksheet_rm->write( 'B15', 'Columns B & C containing the Mongo _id are intentionally hidden'
     );
 
 # Hash to hold value count used to track which row of which sheet to be updated, starting at row $row
@@ -875,8 +875,8 @@ sub excel {
         $unique_value_count{$unique_value} = $row;
 
         my $worksheet = $workbook->add_worksheet("$unique_value");
-        $worksheet->write( 'C2',
-            "Worksheet for $unique_value, created on $time" );
+        $worksheet->write( 'A2',
+            "Worksheet for $unique_value blocks, created on $time" );
     }
     print "\n";
 
@@ -1005,7 +1005,7 @@ $current_sheet->set_column('C:AZ', 14);
  $current_sheet->set_column('B:B', 18); 
 
 # Hide B column which contains the _id
-$current_sheet->set_column( 'B:B' , undef , undef,  1, 0, 0 ); 	# This hides column B to B
+$current_sheet->set_column( 'B:C' , undef , undef,  1, 0, 0 ); 	# This hides column B to C which is the _id and BLOCKNAME.  Blockname shoul be teh same on every line.
 # Set column width
 # $current_sheet->set_column('C:AZ', 15);	
 # print "headline after setting the format is $headline\n";
@@ -1379,7 +1379,8 @@ while (1) {
 
         # End of foreach @attfiles
     }
-
+# Clear block_id hash before next run or previous blocks will be added to spread sheet worksheets
+%block_id = ();
     # End of while read loop
     sleep $config{repeat_delay}
 
