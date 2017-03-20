@@ -528,6 +528,22 @@ Such blocks would impact clean creation of spread sheets.  Beware.
 
 If block names are to appear as Excel worksheet names, these must match the Excel name space.  There is a 32 character limit and the sheetname cannot contain [ ] : * ? / \.  The same case insensitive name cannot be used.  This script removes these problem characters for spread sheet creation and replaces them with ~.  The database contains the original name.  The block is identified by the attribute tags and different blocks with the same name have the BLOCKNAME changed.  NAME would become NAME(1) NAME(2) etc.  Best practice requires a version number in the name, so avoid putting this in brackets and stick to underscores.  
 
+#### Wiring scheduels from any pre-defined block names and tags
+It should be possible to define the blocknames and tags to produce a schedlule, even if the block does not contain all the tag information:   
+
+A wiring schedule row concatenates three parts:   
+SCHEDULE = NUM:   
+NUM, CBLTYPE,  CBLCOLOR, BOOT, _LENGTH,  _CUT   
+CPS = PINAR:   
+LOCATION, SYSN, PIN, FROMTO, CONTYPE,   
+CPD = PINAL:   
+LOCATION, SYSN, PIN, FROMTO, CONTYPE, _COMMENTS   
+
+For example the row in the spread sheet becomes:   
+NUM, CBLTYPE,  CBLCOLOR, BOOT, _LENGTH,  _CUT, (CPS:) LOCATION, SYSN, PIN, FROMTO, CONTYPE, (CPS:) LOCATION, SYSN, PIN, FROMTO, CONTYPE; _COMMENTS   
+
+Create this whenever a CPD has a cable number NUM and run a find based on the collection for that site and area code, e.g. `db.s1_2blocks.find({ "NUM" : "V021234"})`   
+
 #### Attributes and nested blocks
 When blocks are nested, clicking on the block only presents attributes for the *parent* block.  Similarly using ATTOUT on a nested block only captures attributes from the *parent* and not the *children* within.
 If the *parent* block is exploded then attributes of the *children* become visible.  Third party routines may exist to extract attributes from nested blocks but it is not possible with Express Tools and a default installation.  
