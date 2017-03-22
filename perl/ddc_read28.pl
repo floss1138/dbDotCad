@@ -138,9 +138,22 @@ error_dir="/home/alice/dbdotcad/failed/"
 # Folder used to hold log files
 # Must be defined ending in a slash to signify a folder and not a file
 # log_dir="/home/user/log/"
-log_dir="/var/www/ddclog/"
+log_dir="/var/www/ddclog/"i
+
+## WIRING SCHEDULE CREATION ##
+# There are 3 groups for schedule spread sheets
+# Common, Source, Destination
+# Enter column tag or other name in presentation order, left to right
+# If there is no matching tag data, the column will be blank
+# As a convention, names with lower case characters are not tags.
+# SCHEDULE COMMON GROUP
+sched_common="NUM, CBLTYPE, CBLCOLOR, BOOT, Length,  Cut"
+# SCHEDULE SOURCE GROUP
+sched_src="LOCATION, SYSN, PIN, FROMTO, CONTYPE"
+# SCHEDULE DESTINATION GROUP
+sched_dst="LOCATION, SYSN, PIN, FROMTO, CONTYPE, Comments"
  
-## NAME MAPPING ##
+## NAME MAPPING ## future use
 
 # SOURCE CPS, TO DESTINATION CPD NAMES
 # Space deliminated list or source blocks and corresponding destination blocks
@@ -810,14 +823,16 @@ sub excel {
    
    # foreach my $wsname (values %block_id_excel) {
     #    if ($wsname =~ m/[\*\:\[\]\?\\\/]/xsm) { 
-     #   print "$wsname  contains a worksheet prohibited character []:?/\\ \n";
+     #   print "$wsname  contains a worksheet prohibited character []*:?/\\ \n";
  #       }
   #  }
 
 
         foreach my $k (keys %block_id_excel) {
-        # substitute  []:?/\ with ~
-        $block_id_excel{$k} =~ s/[\*\:\[\]\?\\\/]/~/g;
+        # substitute  []*:?/\ with ~
+        # $block_id_excel{$k} =~ s/[\*\:\[\]\?\\\/]/~/g;
+        # Translate []:*?/\ to {}.#!><
+          $block_id_excel{$k} =~ tr/[]:*?\/\\/{}.#!></;
         }
 
 # print "Excel safe sheet names should only exist now:\n";
@@ -853,18 +868,18 @@ sub excel {
     $worksheet_rm->write( 'B7', 'Notes:' );
     $worksheet_rm->write( 'B8', 'This spreadsheet is the result of a database query.  To meet spreadsheet naming convention, some names may have been changed:' );
     $worksheet_rm->write( 'B9',
-'Worksheet names cannot contain []:?/\ characters but block names can. If found, these are replaced in the spreadsheet with ~ (the tilde character).'
+'Worksheet names cannot contain []:*?/\ characters but block names can. If found, these are translated as {}.#!><.'
     );
     $worksheet_rm->write( 'B11',
 'Blocks with different attributes but the same name can be duplicated by copying between drawings.');
     $worksheet_rm->write( 'B10', 'Hopefully you have a strict block naming policy which enforces use of a version number, prohibits strange characters including those above and limits the the block name to 30 characters.'
     );
     $worksheet_rm->write( 'B12',
-'Duplicated block names, for example those with different attribute tags but all called NAME, will be renamed in the worksheet as NAME(1), NAME(2) etc.'
+'Duplicated block names, for example those with different attribute tags but all called NAME, will be renamed in the worksheet tab only as NAME(1), NAME(2) etc.'
     );
     $worksheet_rm->write( 'B14',
 'The first row and column are margins for notes');
-    $worksheet_rm->write( 'B15', 'Columns B & C containing the Mongo _id are intentionally hidden'
+    $worksheet_rm->write( 'B15', 'Columns B & C containing the Mongo _id & untranslated block name are intentionally hidden'
     );
 
 # Hash to hold value count used to track which row of which sheet to be updated, starting at row $row
