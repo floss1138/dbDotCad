@@ -896,7 +896,19 @@ sub excel {
     print "Unique value is: ";
     foreach my $unique_value ( sort values %block_id_excel ) {
         print "$unique_value ";
-# for each reserverd source or destination tag name 
+# See if any reserved source or destination tag name has been used
+# Load comma separated list of names into string and separate to array 
+my $source = $config{src_block}; 
+my $dest = $config{dst_block};
+my @src = split (',',$source);
+my @dest = split (',',$dest);
+
+# print "\n Sources are $source, Destinations are $dest\n";
+foreach (@src) { 
+    print "$_ is the source being matched\n";
+    if ($unique_value =~ m/$_/){ 
+        print "$_ matched a unique sheet name\n";} 
+   }
 # if $unique_value =~ 
 # print "CPS or CPD found\n";
         $unique_value_count{$unique_value} = $row;
