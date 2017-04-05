@@ -893,31 +893,56 @@ sub excel {
 
 # Hash to hold value count used to track which row of which sheet to be updated, starting at row $row
     my %unique_value_count;
-    print "Unique value is: ";
-    foreach my $unique_value ( sort values %block_id_excel ) {
-        print "$unique_value ";
+# Array to hold source and destination count (src,dst)
+my @sched_req = (0,0);
+# foreach sheet name, check to see if any of these are defined as sources or destinations, 
+# if so, need to create a schedule if sched_count > 0
+my $sched_count = 0; 
+#    print "Unique value for sheet name is: ";
+   foreach my $unique_value ( sort values %block_id_excel ) {
+#       print "$unique_value ";
+
 # See if any reserved source or destination tag name has been used
-# Load comma separated list of names into string and separate to array 
+# Load comma separated list of tags into string and separate to array 
 my $source = $config{src_block}; 
 my $dest = $config{dst_block};
 my @src = split (',',$source);
-my @dest = split (',',$dest);
+my @dst = split (',',$dest);
+# If a schedule is required set @sched_req (source count, destination count) 
 
 # print "\n Sources are $source, Destinations are $dest\n";
 foreach (@src) { 
-    print "$_ is the source being matched\n";
     if ($unique_value =~ m/$_/){ 
-        print "$_ matched a unique sheet name\n";} 
+        print "\nDestination $_ matched unique sheet name $unique_value\n";
+        $sched_req[0]++;} 
    }
-# if $unique_value =~ 
-# print "CPS or CPD found\n";
+
+foreach (@dst) {
+     if ($unique_value =~ m/$_/){
+         print "\nDestination $_ matched unique sheet name $unique_value\n";
+         $sched_req[1]++;}
+    }
+#if sched_count greater than zero, column required for schedule in spread sheet
+$sched_count = ($sched_req[0] + $sched_req[1]);
+# if ($shed_count gt 0){
+# print "\nCPS or CPD found, CPS = $sched_req[0], CPD = $sched_req[1]\n";}
         $unique_value_count{$unique_value} = $row;
 
         my $worksheet = $workbook->add_worksheet("$unique_value");
         $worksheet->write( 'A2',
             "Worksheet for $unique_value blocks, created on $time" );
     }
-    print "\n";
+# End of foreach unique_value create worksheet and check for defined source and destination being present
+
+# If CPS/CPD match found for block/sheetname then create a schedule tab [in the future there may be a need for multiple schedules]
+if ($sched_count gt 0){
+    print "\nCPS or CPD found, CPS = $sched_req[0], CPD = $sched_req[1], adding schedule worksheet\n";
+    my $schedule = $workbook->add_worksheet("Schedule");
+    $schedule->write( 'A2',
+             "Worksheet for schedule, created on $time" );
+
+
+   } 
 
 # print Dumper ( \%unique_value_count );
 # worksheet needs to be identified by using %block_id key and looking up the value
@@ -1175,12 +1200,12 @@ while (1) {
                 # skip if file is empty or invalid
                 next if ( $keys[0] eq 0 | $keys[0] eq 1 );
 
-                # enable for debug
-                print "  \n Column headings are:\n";
-                foreach my $heading_keys (@keys) {
-                    print "  $heading_keys";
-                }
-                print "\n";
+                # enable for debug to list column headings
+                # print "  \n Column headings are:\n";
+                # foreach my $heading_keys (@keys) {
+                #    print "  $heading_keys";
+                # }
+                # print "\n";
 
 # Document TITLE is taken from the filename (or, in later version the TITLE attribute)
 # Extract title based on config file regex here:
