@@ -1086,13 +1086,16 @@ if ($sched_count gt 0){
                 # Set column width
                 # $current_sheet->set_column('C:AZ', 15);
                 # print "headline after setting the format is $headline\n";
-                # Column names needs to match the sheet name columns here FIXTHIS
-                print "\nblock_id hash still contains the columns per sheet for sheet, $worksheet_name\n";
-                # print Dumper ( \%block_id );
-                print "block_id is same as block_id_excel at this point?\n";
-                print Dumper ( \%block_id_excel);
+                # Column names needs to match the sheet name columns here FIXTHIS by using $worksheet_name to lookup up columns instead of @col
+                # need to reverse the block_id_excel hash, to access via worksheet as the value
+                my %excel_cols = reverse %block_id_excel;
+                # block_id is same as block_id_excel - its just been passed to this subroutine
+                # print Dumper ( \%block_id_excel);
+                # print "\n*** $worksheet_name: $excel_cols{$worksheet_name}***\n";
+                my @cols = split( ',', $excel_cols{$worksheet_name});    # split on comma
 
-                foreach (@col) {
+               print "\n Worksheet columns: @cols\n col is: @col";
+                 foreach (@col) {
                     $current_sheet->write( "$alph[$alph_offset]$headline", $_ );
                     $alph_offset++;
                 }
