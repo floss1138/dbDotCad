@@ -1055,14 +1055,14 @@ if ($sched_count gt 0){
 
 # Remove first element of array as the linehash does not contain HANDEL, thats part of the _id.
 # Will need to add any DB fields required in the spread sheet to array col, in the required order here:
-                my @col = @keys;
+#                my @col = @keys;
 
                 # strip first element (HANDEL)
-                my $first = shift @col;
+ #               my $first = shift @col;
 
                 # replace with _id at beginning of array
-                unshift @col, '_id';
-                push @col, '_title', '_filename', '_errancy';
+  #              unshift @col, '_id';
+   #             push @col, '_title', '_filename', '_errancy';
 
 # alpha_offset allows for blank column(s) at the left of the spread sheet, like the row offfset allows for blank lines at the top
                 my $alph_offset = '1';
@@ -1091,16 +1091,20 @@ if ($sched_count gt 0){
                 my %excel_cols = reverse %block_id_excel;
                 # block_id is same as block_id_excel - its just been passed to this subroutine
                 # print Dumper ( \%block_id_excel);
-                # print "\n*** $worksheet_name: $excel_cols{$worksheet_name}***\n";
                 my @cols = split( ',', $excel_cols{$worksheet_name});    # split on comma
 
-               print "\n Worksheet columns: @cols\n col is: @col";
-                 foreach (@col) {
+# splice off the first two element (the blank and the  blockname value) and replace with _id, so the array begins _id BLOCKNAME
+splice @cols, 0, 2; 
+unshift @cols, '_id';
+# Add houskeeping columns, so the array ends in _title, _filename & _errancy
+push @cols, '_title', '_filename', '_errancy';
+# print "\n Worksheet, $worksheet_name has columns: @cols\n";
+                 foreach (@cols) {
                     $current_sheet->write( "$alph[$alph_offset]$headline", $_ );
                     $alph_offset++;
                 }
                 $alph_offset = '1';
-                foreach (@col) {
+                foreach (@cols) {
 
 # print "linehash columns for excel with offsets; key (col name): $_ value: $linehash{$_}, alpha offset: $alph_offset increments to column: $alph[$alph_offset]\n";
 # write line to Excel
