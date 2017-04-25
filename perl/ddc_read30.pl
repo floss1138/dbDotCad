@@ -1397,12 +1397,14 @@ while (1) {
 
                     for ( my $i = 1 ; $i < $column_count ; $i++ ) {
 
-# Add key to string bassed on column number
+# Add key to string based on column number
 # but only if the value is not <> i.e. AutoKAD attout value was empty as this key does not appear in the block
 # Will throw use of uninitialised value if value of key is empty as is the case
-#   if (!defined $hof_blocks{$_}[$i]){
-#   print "\n Row $_, key $keys[$i] had an undefined element $i if last array element is missing \n";
-#                                    }
+   if (!defined $hof_blocks{$_}[$i]){
+   print " Attout: Row $_, key(TAG) $keys[$i] had an undefined element in colunm $i when creating json string, setting this to EMPTY in script at ",__LINE__,"\n";
+                                    $hof_blocks{$_}[$i]=$EMPTY;
+                                    
+                                    }
                         if ( $hof_blocks{$_}[$i] ne '<>' ) {
                             $jstring .= ", \"$keys[$i]\" : ";
 
