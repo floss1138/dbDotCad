@@ -360,7 +360,7 @@ DDC adopts this method and requires a strict naming standard as above.
 
 The first row in the file contains column headers that identify the data to ATTIN. 
 The first two columns are always labelled HANDLE and BLOCKNAME as exported by ATTOUT (and required by the dxf standard).
-DDC requires the next attribute to be TITLE and to identify the document.  
+DDC would like the next attribute to be TITLE and to identify the document; however if a TITLE tag cannot be found then the filename of the attout file will be the same name as the drawing but with a .txt extension and could be used as a fall back name.  
 
 The remaining columns in the file are labelled with attribute tags as they appear in the drawing. 
 Numbers are added to duplicate attribute tags to ensure that they are unique. 
@@ -369,6 +369,8 @@ It is useful (best practice) to make one of attributes the drawing identifier an
 The header row in a file created by ATTOUT would look like this if a badly designed block used the TITLE tag twice:
 
 HANDLE BLOCKNAME TITLE ATTRIBUTE1 ATTRIBUTE2 TITLE(1)
+
+It is possible to duplicate tag names in the same block but this is not valid formatting and duplicate tag strings appear red in the block attribute manager.
 
 Each field (attribute/key name) is separated by a tab.  There is a column for each attribute from all selected blocks; 
 data under each attribute/key that do not apply to a specific BLOCKNAME are indicated with 
@@ -410,7 +412,7 @@ Obviously, a single drawing has no way of knowing the handles used for other dra
 For migration into a database, some additional data identifying the (uniquely named) drawing file is necessary.  
 This can be the file name (or part thereof) and/or the drawing title.  In our examples the sN_N-N-N part of the title and/or file name will be used.   
 The attout handle always starts apostrophe and has a 3 digit or larger hex value.  As the apostrophe is a useful chek, dbDotCad preserves this as part of the database_id.  The appended document identifier is added after the handle using a + character as a separator so the MongoDB primary key _id becomes 'handle_drawingnumber e.g. '12BFE_s1_123-23-1234  
-This will be know as the **block_id** and becomes the primary key for the database.  Mongo allows the apostrophe (single quote character) in an id but not the double quote that would need delimiting when used in JSON.
+This will be know as the **block_id** and becomes the primary key for the database.  Mongo allows the apostrophe (single quote character) in an id but not the double quote that would need delimiting when used in JSON.  Note that mongo field names cannot contain a period character (in our case this is the tag name) and needs replacing with the unicode equivalent \UFF0E   
 
 
 ### RELEVANT AUTOKAD COMMANDS 
