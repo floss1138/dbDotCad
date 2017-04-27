@@ -1140,7 +1140,8 @@ push @cols, '_title', '_filename', '_errancy';
     # my $sheet = $workbook->get_worksheet_by_name('BLOCK_NAME');
     # print "\nSheet BLOCK_NAME is called $sheet\n";
     print
-"\nFinal unique_value_count hash contains the count + initial row offset value:\n";
+"\nFinal unique_value_count hash at line ",__LINE__," contains the count + initial row offset value:\n";
+# send this to a log for the spread sheet summary
     print Dumper ( \%unique_value_count );
 }
 
@@ -1395,6 +1396,8 @@ while (1) {
 
                     my $column_count = @keys;
 
+# print "\n keys @keys cannot contain period .. characters, replace with \\uFF0E\n";
+
                     for ( my $i = 1 ; $i < $column_count ; $i++ ) {
 
 # Add key to string based on column number
@@ -1402,6 +1405,7 @@ while (1) {
 # Will throw use of uninitialised value if value of key is empty as is the case
    if (!defined $hof_blocks{$_}[$i]){
    print " Attout: Row $_, key(TAG) $keys[$i] had an undefined element in colunm $i when creating json string, setting this to EMPTY in script at ",__LINE__,"\n";
+# Send this to a file for the spread sheet summary
                                     $hof_blocks{$_}[$i]=$EMPTY;
                                     
                                     }
@@ -1553,3 +1557,6 @@ For each key/cable number, query database for same site and area as the CAD docu
 
 Parse JSON from cable number querey to populate spread sheet based on config files column names for each schedule group (general, source, destination)
 
+TODO
+1399 replace . with \uff0e so .. becomes \uffoe\uffoe
+i407 and 1143 need writing to a log for including in spread sheet summary
