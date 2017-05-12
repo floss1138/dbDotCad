@@ -475,6 +475,8 @@ Open drawings or block library drawings can be used to add blocks to new drawing
 `ADCENTER`   
 Select from the Folder or Open Drawings tab.
 
+Note that it is possible to have constant values in attributes and these do not export.  In AutoKAD AcDbBlockTableRecord owns all attribtue definitions.  AcDbBlockReference owns all the non-constant attributes (updated when inserting a block).  For constant vaues iterate AcDbBlockTableRecord.  For data to appear in the database, do not use constand values in the block.  Reserve constant vaules for blocks which are static and play not part in providing external metadata.       
+
 #### Attribute HANDLE & Databases
 The HANDLE is not sufficiently unique to identify the block within a database.  HANDLE and TITLE can be concatenated to create a unique primary key,  _id.  For ease of reading, an underscore _ character is used as the separator between the handle and title fields.  As an additional aid to identification, the leading apostrophe created by attout is retained.  For example _id will become, 'HANDLE_TITLE and will look something like this: '35068_s1_12-5678-9012   
 If drawing title or file name was not included in the block attributes then the relevant part of the file name (which includes the document title) can be extracted from the attout.txt file name. Typically, the columns as seen by the database then become:  
