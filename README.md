@@ -341,6 +341,17 @@ Block identifying information will be unique so file revision data is not needed
 Block attribute data (meta data) is independent of the drawing.  
 Block definitions/revisions and tracking drawing changes are handled separately.
 
+#### CREATING MONGO COLLECTIONS 
+
+The prefix inter– means between or among.  
+The prefix intra- means within.  
+
+The database is intended to be split into collections for each area code of a site or by site wide collections in the case of inter-area connections. Separate drawings could be used for inter-site connection but any connection has to originate in one area and may land in a different area. If drawings are by area, this may be present on a different drawing. It must be easy to search the database for all connection information.   
+
+For example site 1, area 20 will have blocks in the collection s1_20.  Inter-area connections (going between areas, could be considered Intra-site) need to be separated out into a different collections, with the collection name sx_intra where x is the site number. For example site 1 inter area connections will be in collection s1_intra. Inter-area/Intra-site blocks will create a referred documents ID in a separate collection. This is because Mongo will not search between collections.
+
+s0 is reserved for all sites, so for inter site connections, s0_inter collection could be used. To span collections for searching, there is a choice to be made between using multiple collections with id_ references or embedded documents. As the block attributes are to be a id_referened document separated by area code into collections then intra-area connections (connections within the same area) will be in the same collection.  Mongos $lookup (new in 3.2) performs a left-outer join with another collection. This creates new documents which contain everything from the previous stage but augmented with data from any document from the second collection containing a match BUT the 'from' collection cannot be sharded. To avoid issues where sharding may be deployed this approach was avoided.
+
 #### FILE NAME V TITLE NAME
 
 Many drawing and office applications allow the use of a document title.  
