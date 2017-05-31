@@ -305,14 +305,14 @@ Where A is an upper case alpha, one or more letters, no spaces.  This revision i
 The hyphens and underscore must be present and are used as part of a file/title name integrity check.   
 Typical use for each field is:   
 
-`Lowercase alpha``NUMERIC SITE CODE`_`NUMERIC AREA CODE`-`NUMERIC DOC TYPE GENERAL`-`NUMERIC DOC TYPE SPECIFIC`-`ALPHA REVISION`_`FILE IDENTIFIER`.`FILE EXTENSION   
-`s1_` added for site 1 releated data    
-`x1_` added for cross site or site wide data for site 1, for example, inter-area cables    
-`e1_` added for enterprise wide data for enterprise 1, for example, host names    
-`t1_` templates for site 1, or `t0` for global templates with 0 for area code   
-`h1_` hostnames for site 1, or `h0` for global hostnames with 0 for area code  
+`Lowercase alpha immediately followed by NUMERIC SITE CODE`_`NUMERIC AREA CODE`-`NUMERIC DOC TYPE GENERAL`-`NUMERIC DOC TYPE SPECIFIC`-`ALPHA REVISION`_`FILE IDENTIFIER`.`FILE EXTENSION`      
+Start with `s1_` for site 1 releated data     
+Start with `x1_` added for cross site or site wide data for site 1, for example, inter-area cables    
+Start with `e1_` added for enterprise wide data for enterprise 1, for example, host names     
+Start with `t1_` templates for site 1, or `t0` for global templates with 0 for area code    
+Start with `h1_` hostnames for site 1, or `h0` for global hostnames with 0 for area code   
 
-The title will be checked with the regex ^s\d+_[0-9]+-[0-9]+-[0-9]+-[A-Z]+_.* or more concisely ^s+_([0-9]+-){3}[A-Z]+_.*   
+The title will be checked with the regex ^(s|x|t|h)\d+_[0-9]+-[0-9]+-[0-9]+-[A-Z]+_.* or more concisely ^(s|x|t|h)\d+_([0-9]+-){3}[A-Z]+_.*   
 The configuration file will allow 3 different regex matches to be used in cases where multiple naming conventions may exist.  ddc has to cope with a use case where existing naming had insufficient provision for the site code and different databases were used for different sites.  If the site code is missing (i.e the title is N-N-N-A not sN_N-N-N-A) the site code will be assumed to be s1_ by default.
 
 The descriptive part of the name and the revision will not be used by the database for identification as part of a primary key.  This is only for by humans who sometimes use white space in file names.
@@ -348,7 +348,7 @@ The prefix intra- means within.
 
 The database is intended to be split into collections for each area code of a site or by site wide collections in the case of inter-area connections. Separate drawings could be used for inter-site connection but any connection has to originate in one area and may land in a different area. If drawings are by area, this may be present on a different drawing. It must be easy to search the database for all connection information.   
 
-For example site 1, area 20 will have blocks in the collection s1_20.  Inter-area connections (going between areas, could be considered Intra-site) need to be separated out into a different collections, with the collection name sx_intra where x is the site number. For example site 1 inter area connections will be in collection s1_intra. Inter-area/Intra-site blocks will create a referred documents ID in a separate collection. This is because Mongo will not search between collections.
+For example site 1, area 20 will have blocks in the collection s1_20.  Inter-area connections (going between areas, could be considered Intra-site) need to be separated out into a different collections. The collection name becomes xN_0 where x is fixed to designate cross site, N is the site number. The area code is set to zero or could be used for different cross site collection on the same site. For example site 1 inter area connections will be in collection x1_0. Inter-area/Intra-site blocks will create a referred documents ID in a separate collection. These are then used to check data such as cable nubers as Mongo will not search between collections.
 
 s0 is reserved for all sites, so for inter site connections, s0_inter collection could be used. To span collections for searching, there is a choice to be made between using multiple collections with id_ references or embedded documents. As the block attributes are to be a id_referened document separated by area code into collections then intra-area connections (connections within the same area) will be in the same collection.  Mongos $lookup (new in 3.2) performs a left-outer join with another collection. This creates new documents which contain everything from the previous stage but augmented with data from any document from the second collection containing a match BUT the 'from' collection cannot be sharded. To avoid issues where sharding may be deployed this approach was avoided.
 
