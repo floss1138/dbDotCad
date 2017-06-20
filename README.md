@@ -312,7 +312,7 @@ Start with `e1_` added for enterprise wide data for enterprise 1, for example, h
 Start with `t1_` templates for site 1, or `t0` for global templates with 0 for area code    
 Start with `h1_` hostnames for site 1, or `h0` for global hostnames with 0 for area code   
 
-The title will be checked with the regex ^(s|x|t|h)\d+_[0-9]+-[0-9]+-[0-9]+-[A-Z]+_.* or more concisely ^(s|x|t|h)\d+_([0-9]+-){3}[A-Z]+_.*   
+The title will be checked with the regex ^(s|x|t|h)\d+_[0-9]+-[0-9]+-[0-9]+-[A-Z]+_.* or more concisely ^[sxth]\d+_([0-9]+-){3}[A-Z]+_.*   
 The configuration file will allow 3 different regex matches to be used in cases where multiple naming conventions may exist.  ddc has to cope with a use case where existing naming had insufficient provision for the site code and different databases were used for different sites.  If the site code is missing (i.e the title is N-N-N-A not sN_N-N-N-A) the site code will be assumed to be s1_ by default.
 
 The descriptive part of the name and the revision will not be used by the database for identification as part of a primary key.  This is only for by humans who sometimes use white space in file names.
@@ -423,7 +423,7 @@ Obviously, a single drawing has no way of knowing the handles used for other dra
 For migration into a database, some additional data identifying the (uniquely named) drawing file is necessary.  
 This can be the file name (or part thereof) and/or the drawing title.  In our examples the sN_N-N-N part of the title and/or file name will be used.   
 The attout handle always starts apostrophe and has a 3 digit or larger hex value.  As the apostrophe is a useful chek, dbDotCad preserves this as part of the database_id.  The appended document identifier is added after the handle using a + character as a separator so the MongoDB primary key _id becomes 'handle_drawingnumber e.g. '12BFE_s1_123-23-1234  
-This will be know as the **block_id** and becomes the primary key for the database.  Mongo allows the apostrophe (single quote character) in an id but not the double quote that would need delimiting when used in JSON.  Note that mongo field names cannot contain a period character (in our case this is the tag name) and needs replacing with the unicode equivalent \UFF0E   
+This will be know as the **block_id** and becomes the primary key for the database.  Mongo allows the apostrophe (single quote character) in an id but not the double quote that would need delimiting when used in JSON.  Note that mongo field names cannot contain a period character (in our case this is the tag name) and needs replacing with the unicode equivalent \uFF0E   
 
 
 ### RELEVANT AUTOKAD COMMANDS 
@@ -541,7 +541,7 @@ Refefining blocks without changing the blockname or pasting blocks from one draw
 `,BLOCKNAME,tag1,tag4,tag5`   
 Such blocks would impact clean creation of spread sheets.  Beware.   
 
-If block names are to appear as Excel worksheet names, these must match the Excel name space.  There is a 32 character limit and the sheetname cannot contain [ ] : * ? / \.  The same case insensitive name cannot be used.  This script removes these problem characters for spread sheet creation and replaces them a close alternative, { } . # > < respectively.  The database contains the original name.  The block is identified by the attribute tags and different blocks with the same name have the BLOCKNAME changed.  NAME would become NAME(1) NAME(2) etc.  Best practice requires a version number in the name, so avoid putting this in brackets and stick to underscores.  
+If block names are to appear as Excel worksheet names, these must match the Excel name space.  There is a 31 character limit and the sheetname cannot contain [ ] : * ? / \.  The same case insensitive name cannot be used.  This script removes these problem characters for spread sheet creation and replaces them a close alternative, { } . # > < respectively.  Sheetnames are truncated to 31 characters if necessary.  The database contains the original name.  The block is identified by the attribute tags and different blocks with the same name have the BLOCKNAME changed.  NAME would become NAME(1) NAME(2) etc.  Best practice requires a version number in the name, so avoid putting this in brackets and stick to underscores.  
 
 #### Wiring scheduels from any pre-defined block names and tags
 It should be possible to define the blocknames and tags to produce a schedlule, even if the block does not contain all the tag information:   
