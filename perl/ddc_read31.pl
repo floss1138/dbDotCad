@@ -523,13 +523,15 @@ sub statnseek {
 
 }
 
-# Sub to read (first)  HANDEL line in attout and return keys:
+# Sub to read (first)  HANDEL line in attout and return an array of keys:
 # Take filename (with path) as argument
 # Confirm attout format by checking first line starts with HANDEL
 # Return array of Key names
 
 # array @keys to hold attribute tag keys in CAD required order
-my @keys = ();
+# my @keys = (); should not be global
+# array to hold mongo safe keys that do not contain periods (or anything else we find that upsets MongoDB)
+# my @mongo_keys = (); should not be global
 
 sub readHANDLEline {
     my ($att_file_name) = @_;
@@ -1236,11 +1238,20 @@ while (1) {
 
 # mongo keys cannot contan . char but can be replaced with the \uFF0E unicode equivalent
 # if ( $_ =~ s/\./\\uFF0E/xsmg) could be used to created safe @keys_mongo
+# json string is created with the key/column name - this will fail to be used as a mongo key if there is a period char
+
+my @mongo_keys = @keys;
+
+# create mongo safe verson of @keys
+foreach (@mongo_keys) {
+                      $_ =~ s/\./\\uFF0E/xsmg;
+                      }
+
 
 foreach (@keys){ 
              if ( $_ =~ /\./xsm) 
                 {
-                  print "\n Warning, Mongo keys cannot contain period characters, replace with \\uFF0E\n Key found is $_\n";
+                  print "\n Warning, Mongo keys cannot contain period characters, replace with \\uFF0E\n Offending key found is $_, cleaned array is:\n @mongo_keys\n\n";
                  }
  }
 
@@ -1437,7 +1448,7 @@ foreach (@keys){
 " Attout: Row $_, key(TAG) $keys[$i] had an undefined element in colunm $i when creating json string, setting this to EMPTY in script at ",
                               __LINE__, "\n";
 
-                            # Send this to a file for the spread sheet summary
+                            # Send warning above to a file for the spread sheet summary
                             $hof_blocks{$_}[$i] = $EMPTY;
 
                         }
