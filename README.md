@@ -515,7 +515,7 @@ The attout format can easily be modified to comply with bulk import function.  F
 If the modified attout.txt is saved as a new file, typically with a .js extension this can be passed to the mongo client:
 `mongo bulkinsert_example.js`
 
-It is possible to script the find command to produce clean json by addin a forEach(prinjson) loop, for example:   
+It is possible to script the find command to produce clean json by adding a forEach(printjson) loop, for example:   
 `db.s1_2blocks.find ({"_id" : "'30C91_s1_02-20-3023"}).forEach(printjson);`   
 
 js scripts can be run without specifying the database name if they contain the getSiblingDB definition, for example:  
@@ -525,6 +525,15 @@ If you need to see the db selection and other commands execute, direct the scrip
 
 mongoDB will automatically reject a duplicate _id.  This is not an error and for this application is the desired behaviour.  UnorderedBulkOp will not stop on error but the ordered output command will.   
 The first import will succeed and can be used to initially populate or seed desired fields.  From this point onwards it is necessary to manipulate the data from within the database itself.  The databases is King and should always be this way.  Future attout operations will provide the _id for a query but only new _ids will add data to the database. 
+
+###Querey via js
+Another js file is created by the script - not that fields with periods in the database appear corretly when viewd by the client but have the unicode \uFF0E in the json output
+
+`// block querey //`     
+     
+`db = db.getSiblingDB('BLOCKS');`   
+`db.s1_10blocks.find ({"_id" : "'7D0D_t1_10-40-9956"});`   
+`db.s1_10blocks.find ({"_id" : "'7D08_t1_10-40-9956"});`  
 
 #### Collection names
 The existing application has cable number collections which are site wide. 
