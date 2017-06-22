@@ -649,6 +649,9 @@ sub attin {
 "\nAttin is using $finname, which requires column headings: \n@keys\nand will create $attfile\n";
     foreach (@keys) {
         $attin_string .= "$_\t";
+    if ($attin_string =~m/\\uFF0E/xsm) { print "attin has unicode for period, so changing this back to text\n";
+                                       $attin_string =~ s/\\uFF0E/\./xsm; 
+                                       }
     }
 
 # This created column headings followed by a tab, so remove last tab and replace with Windows line end
@@ -886,13 +889,13 @@ sub excel {
 'This spreadsheet is the result of a database query.  To meet spreadsheet naming convention, some names may have been changed:'
     );
     $worksheet_rm->write( 'B9',
-'Worksheet names cannot contain []:*?/\ characters but block names can. If found, these are translated as {}.#!><.'
+'Worksheet names cannot contain []:*?/\ characters but block names can. If found, these are translated as {}.#!><. Worksheet names are truncated to the 1st 31 characters.'
     );
     $worksheet_rm->write( 'B11',
-'Blocks with different attributes but the same name can be duplicated by copying between drawings.'
+'Blocks with different attributes but the same name can be duplicated by copying between drawings and will appear as NAME(1), NAME(2) etc.'
     );
     $worksheet_rm->write( 'B10',
-'Hopefully you have a strict block naming policy which enforces use of a version number, prohibits strange characters including those above and limits the the block name to 30 characters.'
+'Hopefully you have a strict block naming policy which enforces use of a version number, prohibits strange characters including those above and limits the the block name to 31 characters.'
     );
     $worksheet_rm->write( 'B12',
 'Duplicated block names, for example those with different attribute tags but all called NAME, will be renamed in the worksheet tab only as NAME(1), NAME(2) etc.'
@@ -983,6 +986,8 @@ sub excel {
                 # if it looks like its a json line { "_id" : "' then process it
 
                 my $line     = decode_json($_);
+                # look for \uFF0E as this needs translating back to a period 
+                if ($line =~ m/\\uFF0E/xms) { print "\n decode_json contains unicode for period\n";}
                 my %linehash = %$line;
 
 #      foreach (sort keys %linehash) { print "linehash contains, key: $_ value: $linehash{$_}\n";}
@@ -1524,7 +1529,7 @@ while (1) {
                 attin( "$config{done_dir}$doctitle.attin.json",
                     \@keys, \%blocks );
 
-# create xlsx from json.  Use %block_id created during attin creation to map tag identifier to a unique name. Pass json mongo result, attribute keys arran and block_id has to sub
+# create xlsx from json.  Use %block_id created during attin creation to map tag identifier to a unique name. Pass json mongo result, attribute keys arrany and block_id has to sub
                 excel( "$config{done_dir}$doctitle.attin.json",
                     \@keys, \%block_id );
 
@@ -1607,5 +1612,5 @@ For each key/cable number, query database for same site and area as the CAD docu
 Parse JSON from cable number querey to populate spread sheet based on config files column names for each schedule group (general, source, destination)
 
 TODO
-\uFF0E is used in the json to put period char into Mongo key field but it queries out as the unicode so attin.txt need a bit of translation
+\uFF0E is used in the json to put period char into Mongo key field but it queries out as the unicode - still not appearing in excel
 1407 and 1143 need writing to a log for including in spread sheet summary
