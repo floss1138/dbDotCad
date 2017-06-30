@@ -423,7 +423,7 @@ Obviously, a single drawing has no way of knowing the handles used for other dra
 For migration into a database, some additional data identifying the (uniquely named) drawing file is necessary.  
 This can be the file name (or part thereof) and/or the drawing title.  In our examples the sN_N-N-N part of the title and/or file name will be used.   
 The attout handle always starts apostrophe and has a 3 digit or larger hex value.  As the apostrophe is a useful chek, dbDotCad preserves this as part of the database_id.  The appended document identifier is added after the handle using a + character as a separator so the MongoDB primary key _id becomes 'handle_drawingnumber e.g. '12BFE_s1_123-23-1234  
-This will be know as the **block_id** and becomes the primary key for the database.  Mongo allows the apostrophe (single quote character) in an id but not the double quote that would need delimiting when used in JSON.  Note that mongo field names cannot contain a period character (in our case this is the tag name) and needs replacing with the unicode equivalent \uFF0E   
+This will be know as the **block_id** and becomes the primary key for the database.  Mongo allows the apostrophe (single quote character) in an id but not the double quote that would need delimiting when used in JSON.  Note that mongo field names cannot contain a period character (in our case this is the tag name) and needs replacing with the unicode equivalent \uFF0E.  Unicode is then saved in the database but perls json decode correctly creates a hash with perl \x{ff0e} escaping.  Key matching requires substitution s/\\uFFOE/\x{ff0e}/.  Note that perl sees \x as the escape so its not necessary to \\x in the substitution.     
 
 
 ### RELEVANT AUTOKAD COMMANDS 
