@@ -858,7 +858,7 @@ sub excel {
 #  print Dumper (\%block_id_excel);
 #de-ref attribute tags (keys) into @keys
     my @keys = @$att_tags;
-
+    
     my $xlsxout = $config{excel_dir} . basename($finname);
     $xlsxout =~ s/\.json/\.xlsx/;
     print "\nxlsx output file will be called $xlsxout \n";
@@ -987,7 +987,7 @@ sub excel {
 
                 my $line     = decode_json($_);
                 # look for \uFF0E as this needs translating back to a period 
-                if ($line =~ m/\\uFF0E/xms) { print "\n decode_json contains unicode for period\n";}
+        #       print "$line is a pointer to the hash so %\$line is the hash\n";
                 my %linehash = %$line;
 
 #      foreach (sort keys %linehash) { print "linehash contains, key: $_ value: $linehash{$_}\n";}
@@ -1014,10 +1014,25 @@ sub excel {
 # _id is the primary key, _whatever is used for fields which we may want in a spread sheet.  There could be a naming clash as CAD will allow a leading underscore so reference is made to the original CAD keys as a filter
 # for remaining keys, i.e. column headings add a tab then the value of the key
                 foreach (@keys) {
+                    if ($_ =~ m/\\uFF0E/xms)
+                    { # print "Key tag used in excel creation has JS escaped unicode \uFF0E to match period, convert this to perl \x{ff0e}  or it key wont match the column name in the hash\n";
+                      # $_ =~ s/\\uFF0E/\./xmsg;
+                     # $line uses \x{ff0e} in the key field as this was already converted to perl escape by teh json decode module 
+                      print " tag field before subsitution is $_\n";
+                       # my $period = "\x{ff0e}";
+                       # escaped unicode only works if the variable is interpolated "";
+                       $_ =~ s/\\uFF0E/\x{ff0e}/xmsg;
+                       # JS unicode backslash needs escaping in substitution i.e. \\ but \x{} seems to be recognised by perl so the slash is already part of a known escape 
+                       print " key tag is now $_, blockname is: $line->{'BLOCKNAME'} tag value is: $line->{$_}\n";
+                      # my $match4 = $line->{'x{ff0e}x{ff0e}'};
+                      # print "m1 = $match1, m4 = $match4\n";
+                        print Dumper (\$line);
+                       } 
                     my $next = $line->{$_};
                     if ( defined $next ) {
 
-                        # print "$bname uses key: $_\n";
+                        # print " blockname $bname uses pointer $_ \n";
+                        # print Dumper (\$line);
                         push @block, "$_";
                     }
                 }
@@ -1041,28 +1056,30 @@ sub excel {
 # This ,blockname,attribute_tag1,attribute_tag2,etc (in order) will identify duplicated block names - unshift adds blockname to @block as first element
                 unshift @block, ($bname);
                 foreach my $column (@block) {
-
-# A block name with a leading or trailing space will be treated as a different name so trim spaces
+                # print "Column is $column\n";
+# unicode in here may fail the block_ident match giving an empty worksheet name and in turn an empty sheet name and sheet creation will bail
+#nd  A block name with a leading or trailing space will be treated as a different name so trim spaces
 #As attin is dealing with database content it should be clean unless manually edited
                     $column =~ s/^\s+|\s+$//g;
                     $block_ident .= ",$column";
                     $block[0] =~ s/^\s+|\s+$//g;
-
+                  #  print "block ident is $block_ident\n";
                     # also performed on block[0] just to be safe
                 }    # end of foreach block
 
                 # print "block_ident for excel is $block_ident\n";
                 # see if this checks out in %block_id here ..
-                # print Dumper ( \%block_id );
+               # print "Dumping block_id, worksheet name cannot be empty, block ident is $block_ident \n"; 
+               # print Dumper ( \%block_id );
                 # Current worksheet name at this point in loop is:
                 my $worksheet_name = $block_id_excel{$block_ident};
 
-#  print "Value for this tag string is the worksheet_name: $block_id_excel{$block_ident} \n and must only contain valid sheet names \n";
+#  print "Value for this tag string is the worksheet_name: $block_id_excel{$block_ident} \n and must only contain valid sheet names, accessed by $block_ident \n";
 
 # WRITE block_ident into Excel as a test.  Current hash ref to sheet $worksheet_name is $current_sheet, enable these lines for testing:
                 my $current_sheet =
                   $workbook->get_worksheet_by_name($worksheet_name);
-
+                # print "Current sheet is $current_sheet\n";
 # For Excel intital write testing, just write the block_ident to current sheet here:
 # $current_sheet->write( "C3", $block_ident );
 
@@ -1532,7 +1549,7 @@ while (1) {
 # create xlsx from json.  Use %block_id created during attin creation to map tag identifier to a unique name. Pass json mongo result, attribute keys arrany and block_id has to sub
                 excel( "$config{done_dir}$doctitle.attin.json",
                     \@keys, \%block_id );
-
+            print " keys passed to excel sub contain @keys\n";
             }
 
             # End of isitgrowing
@@ -1612,5 +1629,5 @@ For each key/cable number, query database for same site and area as the CAD docu
 Parse JSON from cable number querey to populate spread sheet based on config files column names for each schedule group (general, source, destination)
 
 TODO
-\uFF0E is used in the json to put period char into Mongo key field but it queries out as the unicode - still not appearing in excel
+1060 unicode here fails block_ident match and may need to be converted back to a sting
 1407 and 1143 need writing to a log for including in spread sheet summary
