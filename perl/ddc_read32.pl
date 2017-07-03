@@ -29,7 +29,7 @@ use Data::Dumper;    # Enable for debug
 
 # use Regexp::Debugger; # Enable for debug
 
-our $VERSION = '0.0.31';    # Version number of this script
+our $VERSION = '0.0.32';    # Version number of this script
 
 ##  DEFINE FILENAMES FOR CONF AND LOG FILES HERE ##
 
@@ -653,6 +653,8 @@ sub attin {
                                        $attin_string =~ s/\\uFF0E/\./xsm; 
                                        }
     }
+print
+  "\nAttin is using $attin_string (with any unicode correction applie\n";
 
 # This created column headings followed by a tab, so remove last tab and replace with Windows line end
     $attin_string =~ s/\t$/\r\n/;
@@ -678,7 +680,8 @@ sub attin {
 
                 my $line = decode_json($_);
 
-                #  print $line->{'_id'} . " is the primary key\n";
+                print $line->{'_id'} . " is the primary key, dumping the decode_jason hash\n";
+                print Dumper (\%$line);
                 my $pkey = $line->{'_id'};
                 $pkey =~ /('[0-9A-F]+)/;
 
@@ -693,16 +696,21 @@ sub attin {
 
   # for remaining keys, i.e. column headings add a tab then the value of the key
                 foreach (@keys) {
+# print " checking attin key, currently $_ ...\n";
+                if ($_ =~m/\\uFF0E/xsm) { print "attin key is currently $_ and has JS unicode for period, so changing this to perl escaped format so decode_json in hash will match";
+                                        $_ =~ s/\\uFF0E/\x{ff0e}/xsm;
+                                          print " as, $_\n";
+                                        }
+
                     my $next = $line->{$_};
                     if ( defined $next ) {
 
-                        # print "$bname uses $_\n";
+                         print "atting $bname uses $_ and this is defined as $line->{$_}\n";
                         push @block, "$_";
                     }
-
 # If undefined then CAD data had no value for this key and attout packs (no) value with <>, //= is the assignment opertor of // logical defined-or operator
                     $next //= '<>';
-
+print " attin next variable is $next.  This will be <> in the case of no match\n";
                     #   print "\n key is $_, value is $next\n";
                     $attin_string .= "\t$next";
                 }
@@ -827,8 +835,8 @@ sub excel {
     # deref block_id hash to create a worksheet safe naming version
     my %block_id_excel = %$blocknames;
 
-    # print "block id hash passed to excel sub is:\n";
-    # print Dumper (\$blocknames);
+     print "block id hash passed to excel sub is:\n";
+     print Dumper (\$blocknames);
     # same thing but the order will vary...
     # print Dumper (\%block_id_excel);
 
@@ -1058,8 +1066,8 @@ sub excel {
                 foreach my $column (@block) {
                 # print "Column is $column\n";
 # unicode in here may fail the block_ident match giving an empty worksheet name and in turn an empty sheet name and sheet creation will bail
-#nd  A block name with a leading or trailing space will be treated as a different name so trim spaces
-#As attin is dealing with database content it should be clean unless manually edited
+# A block name with a leading or trailing space will be treated as a different name so trim spaces
+# As attin is dealing with database content it should be clean unless manually edited
                     $column =~ s/^\s+|\s+$//g;
                     $block_ident .= ",$column";
                     $block[0] =~ s/^\s+|\s+$//g;
@@ -1069,8 +1077,8 @@ sub excel {
 
                 # print "block_ident for excel is $block_ident\n";
                 # see if this checks out in %block_id here ..
-               # print "Dumping block_id, worksheet name cannot be empty, block ident is $block_ident \n"; 
-               # print Dumper ( \%block_id );
+                print "Dumping block_id, worksheet name cannot be empty, block ident is $block_ident, block id for excel is:\n"; 
+                print Dumper ( \%block_id_excel );
                 # Current worksheet name at this point in loop is:
                 my $worksheet_name = $block_id_excel{$block_ident};
 
@@ -1547,9 +1555,9 @@ while (1) {
                     \@keys, \%blocks );
 
 # create xlsx from json.  Use %block_id created during attin creation to map tag identifier to a unique name. Pass json mongo result, attribute keys arrany and block_id has to sub
-                excel( "$config{done_dir}$doctitle.attin.json",
+            print " *** EXCEL CALL *** Keys passed to excel sub contain @keys\n";
+                    excel( "$config{done_dir}$doctitle.attin.json",
                     \@keys, \%block_id );
-            print " keys passed to excel sub contain @keys\n";
             }
 
             # End of isitgrowing
