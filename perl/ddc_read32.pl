@@ -627,7 +627,7 @@ my %block_id;
 ## SUB TO CREATE ATTIN FILE AND EXCEL SHEET FROM MONGO QUEREY
 # Takes filename with path (of json querey result) and turns this into attin.txt for CAD
 # First argument is json filename with path, then the \@keys (column headings) required (in order) by CAD
-# Blocknames are required to create spreadsheet (for each tab), third argument is \@blocks
+# Blocknames are required to create spreadsheet (for each tab), third argument is \@blocks previously created for attin sub, so if excel fails check the attin creation is clean
 sub attin {
     my $attin_string;
 
@@ -698,6 +698,7 @@ print
                 foreach (@keys) {
 # print " checking attin key, currently $_ ...\n";
                 if ($_ =~m/\\uFF0E/xsm) { print "attin key is currently $_ and has JS unicode for period, so changing this to perl escaped format so decode_json in hash will match";
+# THIS FIXED THE SPREAD SHEET CREATION WHICH FAILED DUE TO EMPTY VALUES WHEN PERIOD IN TAG CANNOT MATCH THE VALUE
                                         $_ =~ s/\\uFF0E/\x{ff0e}/xsm;
                                           print " as, $_\n";
                                         }
@@ -1155,8 +1156,9 @@ sub excel {
     # Add houskeeping columns, so the array ends in _title, _filename & _errancy
                 push @cols, '_title', '_filename', '_errancy';
 
-                # print "\n Worksheet, $worksheet_name has columns: @cols\n";
+                print "\n Worksheet, $worksheet_name has columns: @cols\n";
                 foreach (@cols) {
+                    if ($_ =~ m/\x{ff0e}/xms) { print " unicode for period in column name, replace with text or it prints with space after .\n" }
                     $current_sheet->write( "$alph[$alph_offset]$headline", $_ );
                     $alph_offset++;
                 }
@@ -1197,7 +1199,7 @@ sub excel {
     # my $sheet = $workbook->get_worksheet_by_name('BLOCK_NAME');
     # print "\nSheet BLOCK_NAME is called $sheet\n";
     print "\nFinal unique_value_count hash at line ", __LINE__,
-      " contains the count + initial row offset value:\n";
+      " contains the count + initial row offset value (send this to excel as a log page:\n";
 
     # send this to a log for the spread sheet summary
     print Dumper ( \%unique_value_count );
