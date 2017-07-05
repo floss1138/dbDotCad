@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+# use utf8;
 
 use POSIX qw( strftime );
 
@@ -1158,7 +1159,12 @@ sub excel {
 
                 print "\n Worksheet, $worksheet_name has columns: @cols\n";
                 foreach (@cols) {
-                    if ($_ =~ m/\x{ff0e}/xms) { print " unicode for period in column name, replace with text or it prints with space after .\n" }
+# If printed unicode period replced here the match will fail
+                 #   if ($_ =~ m/\x{ff0e}/xms) { 
+                 #   print " unicode for period in column name, replace with text or it prints with gap included after period\n"; 
+                 #   $_ =~ s/\x{ff0e}/\./xsm;
+                 #   print " tag with period is now between pipes, |$_|\n";
+                 #    }
                     $current_sheet->write( "$alph[$alph_offset]$headline", $_ );
                     $alph_offset++;
                 }
@@ -1167,6 +1173,7 @@ sub excel {
 
 # print "linehash columns for excel with offsets; key (col name): $_ value: $linehash{$_}, alpha offset: $alph_offset increments to column: $alph[$alph_offset]\n";
 # write line to Excel
+
                     $current_sheet->write(
 "$alph[$alph_offset]$unique_value_count{$worksheet_name}",
                         $linehash{$_}
