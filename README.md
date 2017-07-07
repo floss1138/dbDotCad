@@ -43,7 +43,9 @@ Oh, what a dull name - at the time of writing dbdotcad had no match in Google.
 **Why MongoDB?** 
 
 Well matched for document orientated data storage.  
-Easy to deploy/develop.  
+Easy to deploy/develop. 
+Easy to build and query database.  This simply requires the CAD export to be turned into json, sent to Mongo.  
+The keys (attribute tags) in the export file can then be used to querey the database and creating an attin import file after converting back from json.
 Makes the developer learn a bit of JavaScript.
 
 **Why not use CouchDB?**
@@ -423,8 +425,14 @@ Obviously, a single drawing has no way of knowing the handles used for other dra
 For migration into a database, some additional data identifying the (uniquely named) drawing file is necessary.  
 This can be the file name (or part thereof) and/or the drawing title.  In our examples the sN_N-N-N part of the title and/or file name will be used.   
 The attout handle always starts apostrophe and has a 3 digit or larger hex value.  As the apostrophe is a useful chek, dbDotCad preserves this as part of the database_id.  The appended document identifier is added after the handle using a + character as a separator so the MongoDB primary key _id becomes 'handle_drawingnumber e.g. '12BFE_s1_123-23-1234  
-This will be know as the **block_id** and becomes the primary key for the database.  Mongo allows the apostrophe (single quote character) in an id but not the double quote that would need delimiting when used in JSON.  Note that mongo field names cannot contain a period character (in our case this is the tag name) and needs replacing with the unicode equivalent \uFF0E.  Unicode is then saved in the database but perls json decode correctly creates a hash with perl \x{ff0e} escaping.  Key matching requires substitution s/\\uFFOE/\x{ff0e}/.  Note that perl sees \x as the escape so its not necessary to \\x in the substitution.     
+This will be know as the **block_id** and becomes the primary key for the database.  Mongo allows the apostrophe (single quote character) in an id but not the double quote that would need delimiting when used in JSON.  
 
+### The period problem
+Note that mongo field names cannot contain a period character (in our case this is the tag name used as a key in block documents) and needs replacing with the unicode equivalent \uFF0E.  
+Unicode is then used used in json, saved in the database and retained in the queries.  Perl's json decode correctly creates a hash with perl \x{ff0e} escaping.  
+Key matching requires from a hash requires substitution s/\\uFFOE/\x{ff0e}/.  Note that perl sees \x as the escape so its not necessary to \\x in such a substitution. 
+The unicode works in the attin and Excel sheets but displays with a gap to the right of the period.  This looks like an unwanted character space.  
+Keeping unicode within the attin files also makes comparison tests using diff with the original attout fail.  For these reasons the unicod is substituted back to ascii.     
 
 ### RELEVANT AUTOKAD COMMANDS 
 
@@ -471,15 +479,16 @@ From model space, (if not in model space the command is `MS`) it is also possibl
 From the Object type, select Block Reference. Leave 'Apply to:' as Entire drawing. Click OK.
 
 #### Extracting Block Attributes
-Select the required blocks (Ctrl + A selects all)
+Note that it is necessary to have the full version of AutoKAD
+In model space (unless you need blocks in the viewport), select the required blocks (Ctrl + A selects all)
 `ATTOUT`
 Edit the file name and location as desired.
 Click Save.    
-This is also accessible from the toolbar as, Express > Blocks > Export Attribute Information.
+This is also accessible from the menu bar as, Express > Blocks > Export Attribute Information.  To see the menu bar set MENUBAR to 1 or 0 to hide.
 
 `ATTOUT` is a LISP express tool installed by default with AutoKAD 2008 upwards to export the attributes of selected blocks.
-`ATTIN` performs the opposite function.   
-This is also accessible from the toolbar as, Express > Blocks > Import Attribute Information.
+`ATTIN`   
+This is also accessible from the menu bar as, Express > Blocks > Import Attribute Information.
 
 For repeated use of a block, create a drawing with just the blocks (known as a block library drawing).
 Open drawings or block library drawings can be used to add blocks to new drawings via the AutoKAD DesignCentre   
