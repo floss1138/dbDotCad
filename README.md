@@ -430,9 +430,9 @@ This will be know as the **block_id** and becomes the primary key for the databa
 ### The period problem
 Note that mongo field names cannot contain a period character (in our case this is the tag name used as a key in block documents) and needs replacing with the unicode equivalent \uFF0E.  
 Unicode is then used used in json, saved in the database and retained in the queries.  Perl's json decode correctly creates a hash with perl \x{ff0e} escaping.  
-Key matching requires from a hash requires substitution s/\\uFFOE/\x{ff0e}/.  Note that perl sees \x as the escape so its not necessary to \\x in such a substitution. 
+Key matching from a hash requires substitution s/\\uFFOE/\x{ff0e}/.  Note that perl sees \x as the escape so its not necessary to \\x in such a substitution. 
 The unicode works in the attin and Excel sheets but displays with a gap to the right of the period.  This looks like an unwanted character space.  
-Keeping unicode within the attin files also makes comparison tests using diff with the original attout fail.  For these reasons the unicod is substituted back to ascii.     
+Keeping unicode within the attin files makes comparison tests using diff with the originating attout fail.  For these reasons the unicode is substituted back to ascii.     
 
 ### RELEVANT AUTOKAD COMMANDS 
 
