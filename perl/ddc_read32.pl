@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+# TRY TO DO THIS WITHOUT TAKING KEYs as argument, just use the JSON
 
 use strict;
 use warnings;
@@ -650,7 +651,9 @@ sub attin {
 "\nAttin is using $finname, which requires column headings: \n@keys\nand will create $attfile\n";
     foreach (@keys) {
         $attin_string .= "$_\t";
-    if ($attin_string =~m/\\uFF0E/xsm) { print "attin has unicode for period, so changing this back to text\n";
+    if ($attin_string =~m/\\uFF0E/xsm) { 
+                                       # print "attin has unicode for period, so changing this back to text\n";
+                                       # This makes the text display correctly and makes the attin file match the attout format if checking with diff
                                        $attin_string =~ s/\\uFF0E/\./xsm; 
                                        }
     }
@@ -681,8 +684,8 @@ print
 
                 my $line = decode_json($_);
 
-                print $line->{'_id'} . " is the primary key, dumping the decode_jason hash\n";
-                print Dumper (\%$line);
+               # print $line->{'_id'} . " is the primary key, dumping the decode_jason hash\n";
+               # print Dumper (\%$line);
                 my $pkey = $line->{'_id'};
                 $pkey =~ /('[0-9A-F]+)/;
 
@@ -698,21 +701,22 @@ print
   # for remaining keys, i.e. column headings add a tab then the value of the key
                 foreach (@keys) {
 # print " checking attin key, currently $_ ...\n";
-                if ($_ =~m/\\uFF0E/xsm) { print "attin key is currently $_ and has JS unicode for period, so changing this to perl escaped format so decode_json in hash will match";
+                if ($_ =~m/\\uFF0E/xsm) { 
+# print "attin key is currently $_ and has JS unicode for period, so changing this to perl escaped format so decode_json in hash will match";
 # THIS FIXED THE SPREAD SHEET CREATION WHICH FAILED DUE TO EMPTY VALUES WHEN PERIOD IN TAG CANNOT MATCH THE VALUE
                                         $_ =~ s/\\uFF0E/\x{ff0e}/xsm;
-                                          print " as, $_\n";
+#                                          print " as, $_\n";
                                         }
 
                     my $next = $line->{$_};
                     if ( defined $next ) {
 
-                         print "atting $bname uses $_ and this is defined as $line->{$_}\n";
+                       #  print "attin bname $bname uses $_ and this is defined as $line->{$_}\n";
                         push @block, "$_";
                     }
 # If undefined then CAD data had no value for this key and attout packs (no) value with <>, //= is the assignment opertor of // logical defined-or operator
                     $next //= '<>';
-print " attin next variable is $next.  This will be <> in the case of no match\n";
+# print " attin next variable is $next.  This will be <> in the case of no match\n";
                     #   print "\n key is $_, value is $next\n";
                     $attin_string .= "\t$next";
                 }
@@ -837,8 +841,8 @@ sub excel {
     # deref block_id hash to create a worksheet safe naming version
     my %block_id_excel = %$blocknames;
 
-     print "block id hash passed to excel sub is:\n";
-     print Dumper (\$blocknames);
+     # print "block id hash passed to excel sub is:\n";
+     # print Dumper (\$blocknames);
     # same thing but the order will vary...
     # print Dumper (\%block_id_excel);
 
@@ -906,9 +910,6 @@ sub excel {
     );
     $worksheet_rm->write( 'B10',
 'Hopefully you have a strict block naming policy which enforces use of a version number, prohibits strange characters including those above and limits the the block name to 31 characters.'
-    );
-    $worksheet_rm->write( 'B12',
-'Duplicated block names, for example those with different attribute tags but all called NAME, will be renamed in the worksheet tab only as NAME(1), NAME(2) etc.'
     );
     $worksheet_rm->write( 'B14',
         'The first row and column are margins for notes' );
@@ -1018,25 +1019,23 @@ sub excel {
                 # print "BLOCKNAME in excel-string is $bname\n";
                 # use keys to re-create block_id
 
-# TRY TO DO THIS WITHOUT TAKING KEYs as argument, just use the JSON
 # The database has additional keys to the CAD attributes.
 # A leading underscore convention has been used to match mongos field names
 # _id is the primary key, _whatever is used for fields which we may want in a spread sheet.  There could be a naming clash as CAD will allow a leading underscore so reference is made to the original CAD keys as a filter
-# for remaining keys, i.e. column headings add a tab then the value of the key
+# for remaining keys, i.e. column headings add a tab then the value of the key and also replce any periods with unicode so . in a tag will still go into mongo
                 foreach (@keys) {
                     if ($_ =~ m/\\uFF0E/xms)
                     { # print "Key tag used in excel creation has JS escaped unicode \uFF0E to match period, convert this to perl \x{ff0e}  or it key wont match the column name in the hash\n";
                       # $_ =~ s/\\uFF0E/\./xmsg;
-                     # $line uses \x{ff0e} in the key field as this was already converted to perl escape by teh json decode module 
-                      print " tag field before subsitution is $_\n";
-                       # my $period = "\x{ff0e}";
-                       # escaped unicode only works if the variable is interpolated "";
+                     # $line uses \x{ff0e} in the key field as this was already converted to perl escape by the json decode module 
+                     # print " tag field before subsitution is $_\n";
+                     
+                       # escaped unicode only works if the variable is interpolated "", my $period = "\x{ff0e}"
                        $_ =~ s/\\uFF0E/\x{ff0e}/xmsg;
+#@keys now uses unicode for a period.
                        # JS unicode backslash needs escaping in substitution i.e. \\ but \x{} seems to be recognised by perl so the slash is already part of a known escape 
-                       print " key tag is now $_, blockname is: $line->{'BLOCKNAME'} tag value is: $line->{$_}\n";
-                      # my $match4 = $line->{'x{ff0e}x{ff0e}'};
-                      # print "m1 = $match1, m4 = $match4\n";
-                        print Dumper (\$line);
+                      # print " key tag is now $_, blockname is: $line->{'BLOCKNAME'} tag value is: $line->{$_}\n";
+                      #  print Dumper (\$line);
                        } 
                     my $next = $line->{$_};
                     if ( defined $next ) {
@@ -1078,9 +1077,8 @@ sub excel {
                 }    # end of foreach block
 
                 # print "block_ident for excel is $block_ident\n";
-                # see if this checks out in %block_id here ..
-                print "Dumping block_id, worksheet name cannot be empty, block ident is $block_ident, block id for excel is:\n"; 
-                print Dumper ( \%block_id_excel );
+                # print "Dumping block_id, worksheet name cannot be empty, block ident is $block_ident, block id for excel is:\n"; 
+                # print Dumper ( \%block_id_excel );
                 # Current worksheet name at this point in loop is:
                 my $worksheet_name = $block_id_excel{$block_ident};
 
@@ -1108,17 +1106,6 @@ sub excel {
                   $workbook->add_format( bold => 1, bg_color => 'yellow' )
                   ;    # color => is the font color
 
-# Remove first element of array as the linehash does not contain HANDEL, thats part of the _id.
-# Will need to add any DB fields required in the spread sheet to array col, in the required order here:
-#                my @col = @keys;
-
-                # strip first element (HANDEL)
-                #               my $first = shift @col;
-
-                # replace with _id at beginning of array
-                #              unshift @col, '_id';
-                #             push @col, '_title', '_filename', '_errancy';
-
 # alpha_offset allows for blank column(s) at the left of the spread sheet, like the row offfset allows for blank lines at the top
                 my $alph_offset = '1';
                 my $headline    = $row - 1;
@@ -1127,7 +1114,7 @@ sub excel {
    # Write column names to spread sheet
    # Format head line as format1,  $headline-1 required as set_row starts from 0
                 $current_sheet->set_row( $headline - 1, undef, $format1 );
-
+# If there is a missing sheet name then what came back from the database may have missing data or was not updated in some way
                 # Set column width - before hiding as it seems to override
                 $current_sheet->set_column( 'C:AZ', 14 );
 
@@ -1157,14 +1144,16 @@ sub excel {
     # Add houskeeping columns, so the array ends in _title, _filename & _errancy
                 push @cols, '_title', '_filename', '_errancy';
 
-                print "\n Worksheet, $worksheet_name has columns: @cols\n";
-                foreach (@cols) {
-# If printed unicode period replced here the match will fail
-                 #   if ($_ =~ m/\x{ff0e}/xms) { 
-                 #   print " unicode for period in column name, replace with text or it prints with gap included after period\n"; 
-                 #   $_ =~ s/\x{ff0e}/\./xsm;
-                 #   print " tag with period is now between pipes, |$_|\n";
-                 #    }
+               # print "\n Worksheet, $worksheet_name has columns: @cols\n";
+    # replace unicode period with ascii period so that it displays nicely in excel.
+    # This is only for the column headings which are actually CAD tags which form mongo keys
+    my @ascii_cols = @cols;
+    # @cols needs to remain unchanged to match the required data value so created an ascii version for the column headings only
+    # This is to remove the cosmetic gap after the unicode period by replacing this with the origianl ascii period
+    
+                foreach (@ascii_cols) {
+                    $_ =~ s/\x{ff0e}/\./xsm;
+                 #   print " tag is now between pipes, |$_|\n";
                     $current_sheet->write( "$alph[$alph_offset]$headline", $_ );
                     $alph_offset++;
                 }
@@ -1172,8 +1161,9 @@ sub excel {
                 foreach (@cols) {
 
 # print "linehash columns for excel with offsets; key (col name): $_ value: $linehash{$_}, alpha offset: $alph_offset increments to column: $alph[$alph_offset]\n";
-# write line to Excel
 
+# write line to Excel
+# print " Using $_ to access $linehash{$_} for excel value\n";
                     $current_sheet->write(
 "$alph[$alph_offset]$unique_value_count{$worksheet_name}",
                         $linehash{$_}
@@ -1188,7 +1178,6 @@ sub excel {
 
 # print Dumper ( \%unique_value_count );
 # Insert row based on worksheet and next available row number
-# my $current_worksheet = $workbook->add_worksheet($worksheet_name);
 # Its necessary to rationalise blockname to match excel sheet names
 # No more than 32 characters, 29 allowing for (x),
 # or contain []:*?/\  and its case insensitive, CAD is uppercase only for block names
@@ -1206,7 +1195,7 @@ sub excel {
     # my $sheet = $workbook->get_worksheet_by_name('BLOCK_NAME');
     # print "\nSheet BLOCK_NAME is called $sheet\n";
     print "\nFinal unique_value_count hash at line ", __LINE__,
-      " contains the count + initial row offset value (send this to excel as a log page:\n";
+      " contains the count + initial row offset value (send this to excel as a log page:)\n";
 
     # send this to a log for the spread sheet summary
     print Dumper ( \%unique_value_count );
@@ -1483,9 +1472,9 @@ while (1) {
 # but only if the value is not <> i.e. AutoKAD attout value was empty as this key does not appear in the block
 # Will throw use of uninitialised value if value of key is empty as is the case
                         if ( !defined $hof_blocks{$_}[$i] ) {
-                            print
-" Attout: Row $_, key(TAG) $keys[$i] had an undefined element in colunm $i when creating json string, setting this to EMPTY in script at ",
-                              __LINE__, "\n";
+#                            print
+#" Attout: Row $_, key(TAG) $keys[$i] had an undefined element in colunm $i when creating json string, setting this to EMPTY in script at ",
+#                              __LINE__, "\n";
 
                      # Send warning above to a file for the spread sheet summary
                             $hof_blocks{$_}[$i] = $EMPTY;
@@ -1493,9 +1482,9 @@ while (1) {
                         }
                        # if value is <> i.e. no value from this key from CAD add this to database by writing key tag, and later the value
                         if ( $hof_blocks{$_}[$i] ne '<>' ) {
-                       # if tag contains period, replace with \uFFOE unicode as key fields in Mongo cannot contain periods 
+                       # if tag contains period, replace with \uFF0E unicode as key fields in Mongo cannot contain periods 
                         if ( $keys[$i] =~ m/\./xsm ) {  
-                                                       print "Attout tag, $keys[$i], contains periods, replacing with \\uFF0E\n"; 
+                                                       # print "Attout tag, $keys[$i], contains periods, replacing with \\uFF0E\n"; 
                                                        $keys[$i] =~ s/\./\\uFF0E/xsmg;
                                                        }
                            $jstring .= ", \"$keys[$i]\" : ";
@@ -1564,7 +1553,7 @@ while (1) {
                     \@keys, \%blocks );
 
 # create xlsx from json.  Use %block_id created during attin creation to map tag identifier to a unique name. Pass json mongo result, attribute keys arrany and block_id has to sub
-            print " *** EXCEL CALL *** Keys passed to excel sub contain @keys\n";
+           # print " *** EXCEL CALL *** Keys passed to excel sub contain @keys\n";
                     excel( "$config{done_dir}$doctitle.attin.json",
                     \@keys, \%block_id );
             }
@@ -1646,5 +1635,5 @@ For each key/cable number, query database for same site and area as the CAD docu
 Parse JSON from cable number querey to populate spread sheet based on config files column names for each schedule group (general, source, destination)
 
 TODO
-1060 unicode here fails block_ident match and may need to be converted back to a sting
 1407 and 1143 need writing to a log for including in spread sheet summary
+_user_time to become _usrt_app by including a username, timestamp and approval number if used. <user><date><time><approval number> 
