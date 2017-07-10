@@ -148,6 +148,9 @@ log_dir="/var/www/ddclog/"
 # Enter column tag or other name in presentation order, left to right
 # If there is no matching tag data, the column will be blank
 # As a convention, names with lower case characters are not tags.
+# The script needs to know if a cable number is present
+# CABLE NUMBER TAG NAME
+sched_cnum="NUM"
 # SCHEDULE COMMON GROUP
 sched_common="NUM,CBLTYPE,CBLCOLOR,BOOT,Length,Cut"
 # SCHEDULE SOURCE GROUP
@@ -927,25 +930,33 @@ sub excel {
 # if so, need to create a schedule if sched_count > 0
     my $sched_count = 0;
 
+ # Load comma separated list of tags into string and separate to array
+        # my $source = $config{src_block};
+        # my $dest   = $config{dst_block};
+         my @src    = split( ',', $config{src_block});
+         my @dst    = split( ',', $config{dst_block});
+
+
+# Load TAG name for cable number into $cnum_name and comma separated list of source, common & destination tags into arrays:
+
+        my $cnum_name  = $config{sched_cnum};
+        my @scom    = split ( ',',$config{sched_common});
+        my @ssrc    = split ( ',',$config{sched_src});
+        my @sdst    = split ( ',',$config{sched_dst});
+        my @shead   = (@ssrc,@scom,@sdst);
+
     #    print "Unique value for sheet name is: ";
     foreach my $unique_value ( sort values %block_id_excel ) {
 
         #       print "$unique_value ";
 
-        # See if any reserved source or destination tag name has been used
-        # Load comma separated list of tags into string and separate to array
-        my $source = $config{src_block};
-        my $dest   = $config{dst_block};
-        my @src    = split( ',', $source );
-        my @dst    = split( ',', $dest );
-
     # If a schedule is required set @sched_req (source count, destination count)
 
-        # print "\n Sources are $source, Destinations are $dest\n";
+       #  print "\n Sources are @src, Destinations are @dst\n  source fields: @ssrc\n  common fields: @scom\n  destination fields: @sdst\n  cable number field: $cnum_name\n";
         foreach (@src) {
             if ( $unique_value =~ m/$_/ ) {
                 print
-                  "\nDestination $_ matched unique sheet name $unique_value\n";
+                  "\nSource $_ matched unique sheet name $unique_value\n";
                 $sched_req[0]++;
             }
         }
@@ -970,15 +981,27 @@ sub excel {
             "Worksheet for $unique_value blocks, created on $time" );
     }
 
+
+
 # End of foreach unique_value create worksheet and check for defined source and destination being present
 
 # If CPS/CPD match found for block/sheetname then create a schedule tab [in the future there may be a need for multiple schedules]
     if ( $sched_count gt 0 ) {
         print
-"\nCPS or CPD found, CPS = $sched_req[0], CPD = $sched_req[1], adding schedule worksheet\n";
-        my $schedule = $workbook->add_worksheet("Schedule");
-        $schedule->write( 'A2', "Worksheet for schedule, created on $time" );
+"\nCPS or CPD found, CPS = $sched_req[0], CPD = $sched_req[1], adding schedule worksheet\nSchedule headings are:@shead\n";
+        my $sources = $sched_req[0];
+        while ($sources ne 0)
+           {
+           # create a schedule for each source group 
+        my $schedule = $workbook->add_worksheet("Schedule($sources)");
+        $schedule->write( 'A2', "Worksheet for $src[($sources - 1)] schedule, created on $time" );
 
+
+    my $sformat =  $workbook->add_format( bold => 1, bg_color => 'silver' );
+    # Format head line, set_row starts from 0
+                 $schedule->set_row( 3, undef, $sformat );
+         $sources --;
+          }
     }
 
 # print Dumper ( \%unique_value_count );
@@ -1004,7 +1027,7 @@ sub excel {
 #      foreach (sort keys %linehash) { print "linehash contains, key: $_ value: $linehash{$_}\n";}
 #           print "   JSON decode line (check the slash content) of $line->{'BLOCKNAME'}:\n";
 
-           #            print Dumper (\$line);
+           #            print Dumper (\$line)ched_req[0]
            # apparenly you can use keys direcly on a hash ref after 5.14
            # For debug print the hash - its not in order so use keys to preserve
            # CAD order and add any internal fields which need to be visible
@@ -1195,7 +1218,7 @@ sub excel {
     # my $sheet = $workbook->get_worksheet_by_name('BLOCK_NAME');
     # print "\nSheet BLOCK_NAME is called $sheet\n";
     print "\nFinal unique_value_count hash at line ", __LINE__,
-      " contains the count + initial row offset value (send this to excel as a log page:)\n";
+      " contains the count + offset value to next free row:\n";
 
     # send this to a log for the spread sheet summary
     print Dumper ( \%unique_value_count );
