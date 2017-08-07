@@ -1,5 +1,5 @@
 ﻿## dbDotCad
-An experiment with MongoDB using CAD attributes as the data set
+A proof of concept experiment with MongoDB using CAD attributes as the data set
 
 use strict;   
 \# X-Clacks-Overhead: GNU Terry Pratchett  
@@ -45,7 +45,7 @@ Oh, what a dull name - at the time of writing dbdotcad had no match in Google.
 Well matched for document orientated data storage.  
 Easy to deploy/develop. 
 Easy to build and query database.  This simply requires the CAD export to be turned into json, sent to Mongo.  
-The keys (attribute tags) in the export file can then be used to querey the database and creating an attin import file after converting back from json.
+The keys (attribute tags) in the export file can then be used to query the database and creating an attin import file after converting back from json.
 Makes the developer learn a bit of JavaScript.
 
 **Why not use CouchDB?**
@@ -104,11 +104,11 @@ The pre-amp output is the Source to a power amp.
 The power amp is the Source to the speaker.  
 As a convention to defining connectivity **the Source will always be defined first** & matched to the Destination.
 
-Any connection usually involves two parts.  Typically, some form of plug and some form of socket. It has been known for wring systems to cheat a little here and assume equipment has the appropriate connection and the drawing simply defines the required interconnection without the ability to ensure the equipment block and the connection match.  In this case the connecting association is with the equipment block and not individual connecting points on the block.  Both approaches should be supported.  Note that wiring schedules should always be from the perspective of the cable.  If a male connector is defined in a schedule, this implies male end on cable and not a male on the equipment which would require human interpretation to fit the correct connector.
+Any connection usually involves two parts.  Typically, some form of plug and some form of socket. It has been known for wring systems to cheat a little here and assume equipment has the appropriate connection and the drawing simply defines the required interconnection without the ability to ensure the equipment block and the connection match.  In this case the connecting association is with the equipment block and not individual connecting points on the block.  Both approaches should be supported.  Note that wiring schedules should always be from the perspective of the cable.  If a male connector is defined in a schedule, this implies male end on cable and not a male on the equipment.
 
 The Database can be used to provide next in sequence numbers/names by keeping track of the next in sequence running number.  
 It should also be possible to 'seed' the provided sequence (at the expanse of redundant number space).
-Further development could allow 'subnetting' of number space.  
+Further development could allow 'sub-netting' of number space.  
 Humanly readable and memorable conventions are preferable.
 
 #### DbDotCad CONNECTION DEFINITIONS AND HOUSE RULES
@@ -130,7 +130,7 @@ USUALLY INVISIBLE ATTRIBUTE NAMES
 **COLSLEEVE** = Sleeve colour if used
 **
 
-OPTIONALLY VISIBLE ATTRUBUTES  NAMES   
+OPTIONALLY VISIBLE ATTRIBUTES  NAMES   
 **CSI** = Connection Segment Identifier (cable number).  
 **NI** = Node Identifier (equipment).  
 **STATUS** = Status.   A single character only. X for not connected, ! for faulty or out of service.  
@@ -139,7 +139,7 @@ OPTIONALLY VISIBLE ATTRUBUTES  NAMES
 
 
 Node is from the Latin nodus, meaning 'knot'.
-When a drawing is created, the Connection Point Source/Destination (CPS or CPD) will be a block with a unique database name and associated attributes as meta data.  Connections may have a mass of configuration information (Configuration Items) that would not normally be visible on a drawing and will be handled independantly within the database.  Drawing block attributes are limited to only those which may need to be visible or used to identify the block to the database.  The connection point will use arrows to represent the signal direction or flow.  Simplex connections will have a single arrow.  Duplex connections will be represented by two way arrows.  Connections forming part of a loop will have double arrows in the appropriate direction.  In the case of simplex connections, these typically 'enter' on the left and 'exit' on the right of a node.  Jackfields traditionally have outputs (sources) above inputs (destinations).
+When a drawing is created, the Connection Point Source/Destination (CPS or CPD) will be a block with a unique database name and associated attributes as meta data.  Connections may have a mass of configuration information (Configuration Items) that would not normally be visible on a drawing and will be handled independently within the database.  Drawing block attributes are limited to only those which may need to be visible or used to identify the block to the database.  The connection point will use arrows to represent the signal direction or flow.  Simplex connections will have a single arrow.  Duplex connections will be represented by two way arrows.  Connections forming part of a loop will have double arrows in the appropriate direction.  In the case of simplex connections, these typically 'enter' on the left and 'exit' on the right of a node.  Jackfields traditionally have outputs (sources) above inputs (destinations).
 Each Connection Point will have the Connection Segment Identifier (CSI), typically a cable number, as an attribute. This would normally be visible on the drawing.
 Items of equipment form nodes. Each node requires a unique database name, the Node Identifier (NI) and will be a nested block with BLOCKNAME = ND_<NODENAME> containing the connections.  CPS/CPD blocks are used as part of the Node block.
 All blocks will contain keys for HANDLE (automatically added by AutoKAD), BLOCKNAME, then TITLE and FNAME followed by attributes specific to the block.  
@@ -148,14 +148,14 @@ IP information may be needed on a drawing.  In this case CIDR house rules apply 
 
 #### CONNECTIONS FOR NETWORK AND A/V/CONTROL
 
-Attribtue tags must be in upper case and cannot contain spaces
+Attribute tags must be in upper case and cannot contain spaces
 Block names can be in lower case and can contain spaces
 Either may at some point become a worksheet name so keep within Excel namespace.
 
     <Type description e.g. Net><Sub Type e.g. A (Analogue), D (Digital), 1G, 10G>-<Block description e.g. CPS CPD>_<Version e.g. 1>  
 
 Net1G-CPSV1  Network 1G Connection Point Source V1   
-Net1G-CPDV1  Netwrok 1G Connection Point Destination V1   
+Net1G-CPDV1  Network 1G Connection Point Destination V1   
 
 Mixed case makes these easier to read and keeps the block name shorter if used in as a worksheet name.  The Connection Point & version part could be masked in the future to make this easier to present.
 
@@ -165,9 +165,9 @@ Type examples:
 Net = Ethernet including iscsi over cat cable, rj45  
 Fib = Fibre channel switched fabric
 Fal = Fibre channel arbitrated loop  
-Tax = Twinax based connection such as Infiniband and UCS intterconnects, ucs, inf  
+Tax = Twinax based connection such as Infiniband and UCS interconnects, ucs, inf  
 Vid = Video analogue or digital ana, dig  
-Aud = Audio analoghe or digital ana, dig  
+Aud = Audio analogue or digital ana, dig  
 Ctl = Control including serial RS422/485/232  
 KVM = Keyboard Mouse & KVM extensions  
 USB = USB direct or extended, 2.0, 3.0  
@@ -242,7 +242,7 @@ It is easy to use the bitnami image https://bitnami.com/stack/dreamfactory/insta
 The ddc install script downloads this, chmod 755s the image and runs the install. 
 For now there will be two instances of Mongo to play with. 
 Change the DreamFactory web port to 8080 and Mongo to 27080 (as 80 and 27017 are already in use by ddc). 
-For DreamFactory Mongo, installs to installs by defautl to: /opt/dreamfactory-<version.number>/mongodb/bin 
+For DreamFactory Mongo, installs to installs by default to: /opt/dreamfactory-<version.number>/mongodb/bin 
 but it is possible to specify the install path (/opt/dreamfactory seems sensible).    
 Files are also accessible via the API.  Path to New_Folder on server becomes:   
 `/opt/dreamfactory/apps/dreamfactory/htdocs/storage/app/New_Folder`   
@@ -308,12 +308,14 @@ The hyphens and underscore must be present and are used as part of a file/title 
 Typical use for each field is:   
 
 `Lowercase alpha immediately followed by NUMERIC SITE CODE`_`NUMERIC AREA CODE`-`NUMERIC DOC TYPE GENERAL`-`NUMERIC DOC TYPE SPECIFIC`-`ALPHA REVISION`_`FILE IDENTIFIER`.`FILE EXTENSION`      
-Start with `s1_` for site 1 releated data     
+Start with `s1_` for site 1 related data     
 Start with `x1_` added for cross site or site wide data for site 1, for example, inter-area cables    
 Start with `e1_` added for enterprise wide data for enterprise 1, for example, host names     
 Start with `t1_` templates for site 1, or `t0` for global templates with 0 for area code    
 Start with `h1_` hostnames for site 1, or `h0` for global hostnames with 0 for area code   
-
+Continue as necessary ...   
+Start with `v1_` for virtual area1 (possibly within an existing area), or `v0` for global virtual areas   
+ 
 The title will be checked with the regex ^(s|x|t|h)\d+_[0-9]+-[0-9]+-[0-9]+-[A-Z]+_.* or more concisely ^[sxth]\d+_([0-9]+-){3}[A-Z]+_.*   
 The configuration file will allow 3 different regex matches to be used in cases where multiple naming conventions may exist.  ddc has to cope with a use case where existing naming had insufficient provision for the site code and different databases were used for different sites.  If the site code is missing (i.e the title is N-N-N-A not sN_N-N-N-A) the site code will be assumed to be s1_ by default.
 
@@ -325,7 +327,7 @@ For example:
 `s1_123-23-1234_C My Ace Design.dwg` for site 1
 `s2_456-078-4567-AD_new_office_fist_floor.dwg` for site 2.   
 The entry will become `s1_33-078-4567-AD_new_office_fist_floor.dwg` after processing.   
-The `s1_33-078-4567` part will form the database key once concatonated with the block handle.
+The `s1_33-078-4567` part will form the database key once concatenated with the block handle.
 
 Note that CAD drawings must have a unique master name.  
 i.e. the sN_N-N-N part MUST be unique.  The alpha revision identifier should be in UPPER CASE.
@@ -350,9 +352,9 @@ The prefix intra- means within.
 
 The database is intended to be split into collections for each area code of a site or by site wide collections in the case of inter-area connections. Separate drawings could be used for inter-site connection but any connection has to originate in one area and may land in a different area. If drawings are by area, this may be present on a different drawing. It must be easy to search the database for all connection information.   
 
-For example site 1, area 20 will have blocks in the collection s1_20.  Inter-area connections (going between areas, could be considered Intra-site) need to be separated out into a different collections. The collection name becomes xN_0 where x is fixed to designate cross site, N is the site number. The area code is set to zero or could be used for different cross site collection on the same site. For example site 1 inter area connections will be in collection x1_0. Inter-area/Intra-site blocks will create a referred documents ID in a separate collection. These are then used to check data such as cable nubers as Mongo will not search between collections.
+For example site 1, area 20 will have blocks in the collection s1_20.  Inter-area connections (going between areas, could be considered Intra-site) need to be separated out into a different collections. The collection name becomes xN_0 where x is fixed to designate cross site, N is the site number. The area code is set to zero or could be used for different cross site collection on the same site. For example site 1 inter area connections will be in collection x1_0. Inter-area/Intra-site blocks will create a referred documents ID in a separate collection. These are then used to check data such as cable numbers as Mongo will not search between collections.
 
-s0 is reserved for all sites, so for inter site connections, s0_inter collection could be used. To span collections for searching, there is a choice to be made between using multiple collections with id_ references or embedded documents. As the block attributes are to be a id_referened document separated by area code into collections then intra-area connections (connections within the same area) will be in the same collection.  Mongos $lookup (new in 3.2) performs a left-outer join with another collection. This creates new documents which contain everything from the previous stage but augmented with data from any document from the second collection containing a match BUT the 'from' collection cannot be sharded. To avoid issues where sharding may be deployed this approach was avoided.
+s0 is reserved for all sites, so for inter site connections, s0_inter collection could be used. To span collections for searching, there is a choice to be made between using multiple collections with id_ references or embedded documents. As the block attributes are to be a id_referenced document separated by area code into collections then intra-area connections (connections within the same area) will be in the same collection.  Mongos $lookup (new in 3.2) performs a left-outer join with another collection. This creates new documents which contain everything from the previous stage but augmented with data from any document from the second collection containing a match BUT the 'from' collection cannot be sharded. To avoid issues where sharding may be deployed this approach was avoided.
 
 #### FILE NAME V TITLE NAME
 
@@ -392,7 +394,7 @@ in the cells that do not apply.  If the entry for the tag value is empty then da
 
 The handle is an id automatically generated and unique to each block, ONLY FOR THE ORIGINATING DRAWING.  
 The `ATTOUT` command adds a preceding apostrophe/single quote character to the HANDLE data which can be a useful validity check.
-Within AutoKAD it is possible to view the HANDLE data using LISP to show entity values for a selected object. Turn on the command line dispaly (ctrl+9) if this is not showing.  ctrl+9 will turn it off again.   
+Within AutoKAD it is possible to view the HANDLE data using LISP to show entity values for a selected object. Turn on the command line display (ctrl+9) if this is not showing.  ctrl+9 will turn it off again.   
 Command:  `(entget (car (entsel)))`
 car returns first item in the list, group 5 is the handle.  
 For example  
@@ -410,13 +412,13 @@ key HANDLE, value `'12BFE`
 The Entity handle is a text string of up to 16 hexadecimal digits.  For [more information of group codes] (http://www.autodesk.com/techpubs/autocad/acad2000/dxf/group_codes_in_numerical_order_dxf_01.htm) just Google for `dxf group codes`.   
     
 It is possible to select or zoom to an entity (block) by using the HANDLE identifier.   
-Issue the command SLELECT or ZOOM (_SELECT or _ZOOM if not using an English version of AutoKad). If zooming, first select O for object, then enter `(HANDENT "1234")` where 1234 is the HANDLE identification, without the apostrophe added by the ATTOUT command. Enter to take the HANDENT entry and Enter again to perform the zoom or selection.  
+Issue the command SELECT or ZOOM (_SELECT or _ZOOM if not using an English version of AutoKad). If zooming, first select O for object, then enter `(HANDENT "1234")` where 1234 is the HANDLE identification, without the apostrophe added by the ATTOUT command. Enter to take the HANDENT entry and Enter again to perform the zoom or selection.  
     
 It is planned to separate out all the BLOCKNAMES found onto a different spreadsheet tabs.  BLOCKNAMES will be trimmed to remove leading or trailing spaces.   
 A current implementation has only limited blocks which will be treated as special cases, these are:   
 NAME (the default if the block is not named)  
-PINL   
-PINR   
+PINAL   
+PINAR   
 Other blocks used in surrounds need no special attention.
 
 
@@ -424,7 +426,7 @@ Other blocks used in surrounds need no special attention.
 Obviously, a single drawing has no way of knowing the handles used for other drawings.  
 For migration into a database, some additional data identifying the (uniquely named) drawing file is necessary.  
 This can be the file name (or part thereof) and/or the drawing title.  In our examples the sN_N-N-N part of the title and/or file name will be used.   
-The attout handle always starts apostrophe and has a 3 digit or larger hex value.  As the apostrophe is a useful chek, dbDotCad preserves this as part of the database_id.  The appended document identifier is added after the handle using a + character as a separator so the MongoDB primary key _id becomes 'handle_drawingnumber e.g. '12BFE_s1_123-23-1234  
+The attout handle always starts apostrophe and has a 3 digit or larger hex value.  As the apostrophe is a useful check, dbDotCad preserves this as part of the database_id.  The appended document identifier is added after the handle using a + character as a separator so the MongoDB primary key _id becomes 'handle_drawingnumber e.g. '12BFE_s1_123-23-1234  
 This will be know as the **block_id** and becomes the primary key for the database.  Mongo allows the apostrophe (single quote character) in an id but not the double quote that would need delimiting when used in JSON.  
 
 ### The period problem
@@ -444,7 +446,7 @@ Open a drawing or drawing template, then define the Document Title in
 or File -> Drawing Properties... Summary tab
 
 #### Creating a block
-By creating an identification block with a Title, and optionally Subject and Filename attributes, this can be picked up during an export in cases where the existing blocks have not included this information (as is best practice).  The HANDLE is automatically created and populated.  The block name is also mandatory with the reserved name of BLOCKNAME.  The value is a user choice but another best practice is to incude a version number after the name.
+By creating an identification block with a Title, and optionally Subject and Filename attributes, this can be picked up during an export in cases where the existing blocks have not included this information (as is best practice).  The HANDLE is automatically created and populated.  The block name is also mandatory with the reserved name of BLOCKNAME.  The value is a user choice but another best practice is to include a version number after the name.
 
 `BEDIT`
 In the block to create or edit field, give the block a name 'DDC_ID_V1'
@@ -495,7 +497,7 @@ Open drawings or block library drawings can be used to add blocks to new drawing
 `ADCENTER`   
 Select from the Folder or Open Drawings tab.
 
-Note that it is possible to have constant values in attributes and these do not export.  In AutoKAD AcDbBlockTableRecord owns all attribtue definitions.  AcDbBlockReference owns all the non-constant attributes (updated when inserting a block).  For constant vaues iterate AcDbBlockTableRecord.  For data to appear in the database, do not use constand values in the block.  Reserve constant vaules for blocks which are static and play not part in providing external metadata.       
+Note that it is possible to have constant values in attributes and these do not export.  In AutoKAD AcDbBlockTableRecord owns all attribute definitions.  AcDbBlockReference owns all the non-constant attributes (updated when inserting a block).  For constant values iterate AcDbBlockTableRecord.  For data to appear in the database, do not use constant values in the block.  Reserve constant values for blocks which are static and play not part in providing external metadata.       
 
 #### Attribute HANDLE & Databases
 The HANDLE is not sufficiently unique to identify the block within a database.  HANDLE and TITLE can be concatenated to create a unique primary key,  _id.  For ease of reading, an underscore _ character is used as the separator between the handle and title fields.  As an additional aid to identification, the leading apostrophe created by attout is retained.  For example _id will become, 'HANDLE_TITLE and will look something like this: '35068_s1_12-5678-9012   
@@ -535,10 +537,10 @@ If you need to see the db selection and other commands execute, direct the scrip
 mongoDB will automatically reject a duplicate _id.  This is not an error and for this application is the desired behaviour.  UnorderedBulkOp will not stop on error but the ordered output command will.   
 The first import will succeed and can be used to initially populate or seed desired fields.  From this point onwards it is necessary to manipulate the data from within the database itself.  The databases is King and should always be this way.  Future attout operations will provide the _id for a query but only new _ids will add data to the database. 
 
-###Querey via js
-Another js file is created by the script - not that fields with periods in the database appear corretly when viewd by the client but have the unicode \uFF0E in the json output
+###Query via js
+Another js file is created by the script - not that fields with periods in the database appear correctly when viewed by the client but have the unicode \uFF0E in the json output
 
-`// block querey //`     
+`// block query //`     
      
 `db = db.getSiblingDB('BLOCKS');`   
 `db.s1_10blocks.find ({"_id" : "'7D0D_t1_10-40-9956"});`   
@@ -549,23 +551,23 @@ The existing application has cable number collections which are site wide.
 In the future it would be sensible to limit this to site-area, with inter area cable numbers in a separate collection. 
 Enterprise wide data such as hostnames, should be in a separate database. 
 For now, blocks for site 1 will be in collection 1blocks, for site 002, 2blocks etc. Leading zeros will be removed.  Hyphens will be removed.
-In the future, cable numbers could be subnetted by area code.   
+In the future, cable numbers could be sub-netted by area code.   
 
 #### Blocknames
 Blocknames cannot be blank and must contain at least one character. They can contain spaces but this is best avoided.  Unlike attribute tags, they can be upper and lower case.
 It is wise to add a version number to the block name and change this if tags are added, removed or changed, even if only the tag order is changed. 
-Refefining blocks without changing the blockname or pasting blocks from one drawing to another can result in colliding blocknames with different attribute tag strings.  Handles remain unique to the drawing so attributes will still export and import successfully.  It is possible to check block/tag integrity by filtering the defined attribute tags to create a key string as a block_id:   
+Redefining blocks without changing the blockname or pasting blocks from one drawing to another can result in colliding blocknames with different attribute tag strings.  Handles remain unique to the drawing so attributes will still export and import successfully.  It is possible to check block/tag integrity by filtering the defined attribute tags to create a key string as a block_id:   
 `,BLOCKNAME,tag1,tag2,tag3`   
 `,BLOCKNAME,tag1,tag4,tag5`   
 Such blocks would impact clean creation of spread sheets.  Beware.   
 
 If block names are to appear as Excel worksheet names, these must match the Excel name space.  There is a 31 character limit and the sheetname cannot contain [ ] : * ? / \.  The same case insensitive name cannot be used.  This script removes these problem characters for spread sheet creation and replaces them a close alternative, { } . # > < respectively.  Sheetnames are truncated to 31 characters if necessary.  The database contains the original name.  The block is identified by the attribute tags and different blocks with the same name have the BLOCKNAME changed.  NAME would become NAME(1) NAME(2) etc.  Best practice requires a version number in the name, so avoid putting this in brackets and stick to underscores.  
 
-#### Wiring scheduels from any pre-defined block names and tags
-It should be possible to define the blocknames and tags to produce a schedlule, even if the block does not contain all the tag information:   
+#### Wiring schedules from any pre-defined block names and tags
+It should be possible to define the blocknames and tags to produce a schedule, even if the block does not contain all the tag information:   
 
 A wiring schedule row concatenates three parts:   
-A general group based on the cable number, cable type, cable colour etc.  The database lookup is a find on the cable number.   
+A general group based on the cable number, cable type, cable colour etc.  The database lookup is a find on the cable number so this tag field name also needs to be defined in the configuration.   
 Friendly fields such as a cut column is added to provide a blank column for ticking off completed cables. 
 As tags must be uppercase, fields not populated by the block attributes can contain lower case.   
 NUM, CBLTYPE,  CBLCOLOR, BOOT, Lenght,  Cut   
@@ -583,12 +585,14 @@ Create this whenever a CPD has a cable number NUM and run a find based on the co
 When blocks are nested, clicking on the block only presents attributes for the *parent* block.  Similarly using ATTOUT on a nested block only captures attributes from the *parent* and not the *children* within.
 If the *parent* block is exploded then attributes of the *children* become visible.  Third party routines may exist to extract attributes from nested blocks but it is not possible with Express Tools and a default installation.  
 
+If a block is exploded (command EXPLODE), the TAG (key) names of the attributes become visible.  If the block is burst (command BURST) then the values of the TAG (key) are turned into drawing text an will not change if the attribute values are different when imported.    
+
 For nested blocks containing other blocks defining connection points, it is possible to make a filtered selection of these within a drawing and then EXPLODE prior to using ATTOUT.  In this case consider defining colours BYBLOCK.
 
 See also, third party lisp routines from:   
 http://www.lee-mac.com/macatt.html   
 http://www.lee-mac.com/attributecolour.html   
-and check out the standard AppLoad and AttCol commands
+and check out the APPLOAD command
 
 
 #### Final thoughts 
