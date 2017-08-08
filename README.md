@@ -315,6 +315,7 @@ Start with `t1_` templates for site 1, or `t0` for global templates with 0 for a
 Start with `h1_` hostnames for site 1, or `h0` for global hostnames with 0 for area code   
 Continue as necessary ...   
 Start with `v1_` for virtual area1 (possibly within an existing area), or `v0` for global virtual areas   
+Areas can be added for development/design d1_ d2_ d3_ and once the design is finalised, change the name to that of the production area s1_ s2_   
  
 The title will be checked with the regex ^(s|x|t|h)\d+_[0-9]+-[0-9]+-[0-9]+-[A-Z]+_.* or more concisely ^[sxth]\d+_([0-9]+-){3}[A-Z]+_.*   
 The configuration file will allow 3 different regex matches to be used in cases where multiple naming conventions may exist.  ddc has to cope with a use case where existing naming had insufficient provision for the site code and different databases were used for different sites.  If the site code is missing (i.e the title is N-N-N-A not sN_N-N-N-A) the site code will be assumed to be s1_ by default.
@@ -368,7 +369,7 @@ Ideally every block definition should contain the title (and possibly file name)
 
 ### ATTRIBUTE DATA FORMAT
 
-The file written by ATTOUT is tab-delimited ASCII. These only include blocks with attributes.  In the following notes, assume that the term block refers to blocks with attribute data.      
+The file written by ATTOUT is tab-delimited ASCII. These only include blocks with attributes.  In the following notes, assume that the term block refers to blocks with attribute data.  ATTOUT (and ATTIN) are Express Tools available in full AutoKAD from 2004, also accessible via Express > Blocks > Export Attribute Information (or Import Attribute Information in the case of ATTIN).  Express Tools installed by default from 2008 but were optional before then.        
 The ATTOUT filename is the drawing file name with a .txt extension (but can be changed before saving).
 Some file naming standards require the document title to be in the file name, this can be a useful cross check.   
 DDC adopts this method and requires a strict naming standard as above.
@@ -585,7 +586,7 @@ Create this whenever a CPD has a cable number NUM and run a find based on the co
 When blocks are nested, clicking on the block only presents attributes for the *parent* block.  Similarly using ATTOUT on a nested block only captures attributes from the *parent* and not the *children* within.
 If the *parent* block is exploded then attributes of the *children* become visible.  Third party routines may exist to extract attributes from nested blocks but it is not possible with Express Tools and a default installation.  
 
-If a block is exploded (command EXPLODE), the TAG (key) names of the attributes become visible.  If the block is burst (command BURST) then the values of the TAG (key) are turned into drawing text an will not change if the attribute values are different when imported.    
+If a block is exploded (command EXPLODE), the TAG (key) names of the attributes become visible.  If the block is burst (command BURST, or Express > Blocaks > Explode Attributes to Text) then the values of the TAG (key) are turned into drawing text an will not change if the attribute values change when imported i.e. the drawing text is now no longer metadata and is fixed as part of the drawing.       
 
 For nested blocks containing other blocks defining connection points, it is possible to make a filtered selection of these within a drawing and then EXPLODE prior to using ATTOUT.  In this case consider defining colours BYBLOCK.
 
