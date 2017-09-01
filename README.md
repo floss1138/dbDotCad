@@ -547,10 +547,13 @@ Another js file is created by the script - not that fields with periods in the d
 `db.s1_10blocks.find ({"_id" : "'7D0D_t1_10-40-9956"});`   
 `db.s1_10blocks.find ({"_id" : "'7D08_t1_10-40-9956"});`  
 
-#### Collection names
+#### Collection names & areas
 The existing application has cable number collections which are site wide. 
-In the future it would be sensible to limit this to site-area, with inter area cable numbers in a separate collection. 
-Enterprise wide data such as hostnames, should be in a separate database. 
+In the future it would be sensible to limit this to site-area, with inter area cable numbers in a separate collection.
+It is a common practice to prefix cable numbers with an alpha character or alpha characters, denoting the signal or service type.  
+Another common practice is to begin the number with the source and destination area codes.  Moving the alpha character after the area code makes the ident more recognisable as an inter-area label.
+For example, area 123 to 078, cable number 2021, type T (telecoms), becomes 123078T2021.     
+Enterprise wide data such as hostnames, should be in a separate collection or database. 
 For now, blocks for site 1 will be in collection 1blocks, for site 002, 2blocks etc. Leading zeros will be removed.  Hyphens will be removed.
 In the future, cable numbers could be sub-netted by area code.   
 
