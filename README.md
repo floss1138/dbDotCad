@@ -367,6 +367,72 @@ When first creating a drawing, ALWAYS define the Document Title using `dwgprops`
 and ensure this contains the unique document reference (N-N-N-N part of the file name) detailed above. 
 Ideally every block definition should contain the title (and possibly file name) as attributes.  Although this is easy to do (see creating a block below), existing blocks may not follow this convention.  To make an existing document comply with the use of document titles, a single (possibly invisible) block can be added which simply contains just the title, file name and subject fields.  This will be captured if 'select all' is used before the attributes are exported and will be handled as an exception case where the document title is enforced but not contained in the existing blocks.
 
+### DXX & DXF FORMAT
+
+DXX is a subset of DWG (without the  9, $ACADVER identifier).  From the DXF ref manual some significant group codes, visible with getent are:   
+0 Text string indicating the entity type (fixed)   
+1 Primary text value for an entity   
+2 Name attribute tag, block name, etc   
+5 Entity handle. Text string of up to 16 hexadecimal digits (fixed)   
+9 DXF: variable name identifier (used only in HEADER section of the DXF file)   
+66 “Entities follow” flag (fixed)   
+100 Subclass data marker (with derived class name as a string). Required for all objects and entity classes that are derived from another concrete class   
+   
+DXX can be selected from a drawing with ATTEXT (or DDATTEXT in older versions of AutoKAD or ProgKAD, current versions take both).  
+Where a carriage return is represented by a comma, the droids we are looking for are:
+0, INSERT, (DOUBLE SPACE) 5, <BLOCK ENTITY HANDLE>,   
+100, AcDbBlockReference, (DOUBLE SPACE) 2, <BLOCKNAME>,   
+100, AcDbAttribute, (DOUBLE SPACE) 1, <TAG VALUE>, (DOUBLE SPACE) 2, <KEY TAG NAME>,    
+
+The order of object properties, in this case Tag Name and Tag Value are not consistent between vendors.  Data other than attribute text (as the DDATTEXT command would suggest) may be present.  End of group codes such as  AcDbSequenceEnd are optional so cannot be relied upon. Note that the attribute also has a handle ATTRIB, <DOUBLE SPACE) 5, <ATTRIBUTE HANDLE> - for nested blocks with would be needed. 	
+
+Some examples...   
+
+Block Handle Entity is a table 5 INSERT which may follow a sequence end:   
+`  0`   
+`INSERT`   
+`  5`   
+`D1CD1`   
+
+Block Name:   
+`100`   
+`AcDbBlockReference`   
+`  2`   
+`PINAR`   
+   
+Tag Value 1 and Tag Name 2:   
+`AcDbEntity`   
+`  8`   
+`NUM`   
+`100`      
+`AcDbAttribute`   
+`  1`   
+`V0299055`   
+`  2`  
+`NUM`  
+
+The AcDbEntity will vary for example it could be 8,TEXT_HIDDEN
+
+DFX Header:  
+`  0`   
+`SECTION`   
+`  2`   
+`HEADER`   
+`  9`   
+`$ACADVER`   
+`  1`   
+`AC1024`   
+
+$ACADVER variables are:   
+AC1006 = R10;   
+AC1009 = R11 and R12;   
+AC1012 = R13; AC1014 = R14;   
+AC1015 = AutoCAD 2000;   
+AC1018 = AutoCAD 2004;   
+AC1021 = AutoCAD 2007;   
+AC1024 = AutoCAD 2010;   
+AC1027 = AutoCAD 2013;   
+
 ### ATTRIBUTE DATA FORMAT
 
 The file written by ATTOUT is tab-delimited ASCII. These only include blocks with attributes.  In the following notes, assume that the term block refers to blocks with attribute data.  ATTOUT (and ATTIN) are Express Tools available in full AutoKAD from 2004, also accessible via Express > Blocks > Export Attribute Information (or Import Attribute Information in the case of ATTIN).  Express Tools installed by default from 2008 but were optional before then.        
@@ -553,7 +619,8 @@ In the future it would be sensible to limit this to site-area, with inter area c
 It is a common practice to prefix cable numbers with an alpha character or alpha characters, denoting the signal or service type.  
 Another common practice is to begin the number with the source and destination area codes.  Moving the alpha character after the area code makes the ident more recognisable as an inter-area label.
 For example, area 123 to 078, cable number 2021, type T (telecoms), becomes 123078T2021.     
-Enterprise wide data such as hostnames, should be in a separate collection or database. 
+Enterprise wide data such as hostnames, should be in a separate collection or database.  h1_ was suggested for hostname on site 1, h0_ for enterprise wide host name collection.
+As 00 may have been used as an area code, cross site inter-area collections with x1_ for site 1 can be used with an area code set to zero 
 For now, blocks for site 1 will be in collection 1blocks, for site 002, 2blocks etc. Leading zeros will be removed.  Hyphens will be removed.
 In the future, cable numbers could be sub-netted by area code.   
 
