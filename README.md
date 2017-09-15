@@ -432,6 +432,15 @@ AC1018 = AutoCAD 2004;
 AC1021 = AutoCAD 2007;   
 AC1024 = AutoCAD 2010;   
 AC1027 = AutoCAD 2013;   
+AC1032 = AutoCAD 2018;
+
+AutoKAD is fussy about DXF (more fussy than ProgKAD).  It may save a dxf but wont load what it just saved.  Press F2 to see the errors.  
+Load the original dwg again, AUDIT and save may fix the issue.   
+Use the AUDIT command (or form the Application Menu, the big A or P > Drawing Utilities, select Audit) to fix before saving.
+AUDIT places error objects from current space into the previous selection set. 
+If AUDITCTL system variable is set to 1, a text file with an ADT file extension is created logging the activity. 
+If a drawing contains errors that AUDIT cannot fix, use RECOVER (also in Drawing Utilities) to possibly retrieve the drawing and correct its errors.  
+Also try PURGE or OVERKILL to remove unwanted components.   
 
 ### ATTRIBUTE DATA FORMAT
 
@@ -476,7 +485,7 @@ Command: `(setq handle-circle (cdr (assoc 5 (entget ename-circle))))`
 
 When exported from AutoKAD, the block above would have   
 key HANDLE, value `'12BFE`    
-The Entity handle is a text string of up to 16 hexadecimal digits.  For [more information of group codes] (http://www.autodesk.com/techpubs/autocad/acad2000/dxf/group_codes_in_numerical_order_dxf_01.htm) just Google for `dxf group codes`.   
+The Entity handle is a text string of up to 16 hexadecimal digits.  For [more information of group codes] (http://www.autodesk.com/techpubs/autocad/acad20/
     
 It is possible to select or zoom to an entity (block) by using the HANDLE identifier.   
 Issue the command SELECT or ZOOM (_SELECT or _ZOOM if not using an English version of AutoKad). If zooming, first select O for object, then enter `(HANDENT "1234")` where 1234 is the HANDLE identification, without the apostrophe added by the ATTOUT command. Enter to take the HANDENT entry and Enter again to perform the zoom or selection.  
