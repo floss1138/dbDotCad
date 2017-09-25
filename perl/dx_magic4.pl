@@ -10,7 +10,7 @@ use English qw(-no_match_vars);
 use File::stat;
 use File::Basename;
 
-our $VERSION = '0.0.3';    # version of this script
+our $VERSION = '0.0.4';    # version of this script
 
 ##  Custom variables go here:
 
@@ -46,14 +46,15 @@ my @folders = ( $dx_watch, $dx_pass, $dx_fail, $dx_attout );
 
 # Print welcome message & check folders exist
 
-print "***  X File Magic $0 version $VERSION  ***\n";
+print "***  X File Magic $PROGRAM_NAME version $VERSION  ***\n";
 
 # create folders if they do not exist
 foreach (@folders) {
     print "  Checking $_ exists";
-#    mkdir($_) unless ( -d $_ );
-     if (! -d) { print " - not found, so creating ...\n"; mkdir; }
-    else { print " - OK\n"; }
+
+    #    mkdir($_) unless ( -d $_ );
+    if ( !-d ) { print " - not found, so creating ...\n"; mkdir; }
+    else       { print " - OK\n"; }
 }
 
 # Sub to read watch folder passed as argument to read_dx_atch
@@ -76,7 +77,7 @@ sub read_dx_watch {
     # foreach (@candidates) {
     #  print "  Candidate file name:>$_< found with grep $watch_folder$match\n";
     #  }
-    if (! @candidates) { print "  No candidate files found\n"; }
+    if ( !@candidates ) { print "  No candidate files found\n"; }
     return @candidates_withpath;
 }
 
@@ -135,24 +136,67 @@ sub statnseek {
         return 2;
     }
 
-}
+}    # End of statnseek
 
+# xparser sub routine
+
+# Takes approved candidate filename + path as argument and looks for:
+# (DOUBLE SPACE) 0, INSERT, (DOUBLE SPACE) 5, <HANDLE ENTITY> ,
+# 100, AcDbBlockReference, (DOUBLE SPACE) 2, <BLOCKNAME> ,
+# 100, AcDbAttribute, (DOUBLE SPACE) 1,<TAG VALUE> , (DOUBLE SPACE) 2, <TAG KEY>,
+# (DOUBLE SPACE) 9, $ACADVER, <VERSION CODE>,
+
+sub xparser {
+    my ($xfile) = @_;
+    print "  Going to parse $xfile\n";
+    my @handle;
+    my @blockname;
+    my @tag;
+    my @version;
+
+}    # End of xparser
 
 ## The Program ##
 
-# Read watch folder
+# Read watch folder, looking for correctly named files
 my @dx_files = read_dx_watch($dx_watch);
+
 # print "  Candidates files for parsing are @dx_files\n";
 
-# process candidate files
+# check candidate files are static and have expected header
 
 foreach (@dx_files) {
     print "  Checking $_ is static ...";
     my $stat1 = statnseek($_);
     sleep 1;
     my $stat2 = statnseek($_);
+
+    # If file is static stat check will be the same string
     if ( $stat1 eq $stat2 ) {
         print "  passed.\n";
+
+        # If static, open file and check 1st line is acceptabale format
+        if ( !open my $XFILE, '<', $_ ) {
+            print "\n  failed to open $_\n";
+        }
+        else {
+            my $line = <$XFILE>;
+
+# Test files created in Linux have \n, Windows needs \r\n, just matching to end $ also depends on newline, hence \r?\n
+            if ( $line =~ /^[ ]{2}0\r?\n/ ) {
+                print "  $_ header looks OK, lets dig deeper\n";
+                close $XFILE or carp "Unable to close $_ file";
+
+                # parse file
+                xparser($_);
+            }
+            else {
+                print "  $_ has the wrong header for an X file\n";
+                close $XFILE or carp "Unable to close $_ file";
+            }
+
+        }
+
     }
 }
 
