@@ -379,7 +379,7 @@ DXX is a subset of DWG (without the  9, $ACADVER identifier).  From the DXF ref 
 100 Subclass data marker (with derived class name as a string). Required for all objects and entity classes that are derived from another concrete class   
    
 DXX can be selected from a drawing with ATTEXT (or DDATTEXT in older versions of AutoKAD or ProgKAD, current versions take both).  
-Where a carriage return is represented by a comma, the droids we are looking for are:
+Where a carriage return is represented by a comma, the droids we are looking for are:    
 `(DOUBLE SPACE) 0, INSERT, (DOUBLE SPACE) 5, <BLOCK ENTITY HANDLE>,`   
 `100, AcDbBlockReference, (DOUBLE SPACE) 2, <BLOCKNAME>,`   
 `100, AcDbAttribute, (DOUBLE SPACE) 1, <TAG VALUE>, (DOUBLE SPACE) 2, <TAG KEY NAME>,`    
