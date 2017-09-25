@@ -380,47 +380,48 @@ DXX is a subset of DWG (without the  9, $ACADVER identifier).  From the DXF ref 
    
 DXX can be selected from a drawing with ATTEXT (or DDATTEXT in older versions of AutoKAD or ProgKAD, current versions take both).  
 Where a carriage return is represented by a comma, the droids we are looking for are:
-0, INSERT, (DOUBLE SPACE) 5, <BLOCK ENTITY HANDLE>,   
-100, AcDbBlockReference, (DOUBLE SPACE) 2, <BLOCKNAME>,   
-100, AcDbAttribute, (DOUBLE SPACE) 1, <TAG VALUE>, (DOUBLE SPACE) 2, <KEY TAG NAME>,    
+`(DOUBLE SPACE) 0, INSERT, (DOUBLE SPACE) 5, <BLOCK ENTITY HANDLE>,`   
+`100, AcDbBlockReference, (DOUBLE SPACE) 2, <BLOCKNAME>,`   
+`100, AcDbAttribute, (DOUBLE SPACE) 1, <TAG VALUE>, (DOUBLE SPACE) 2, <TAG KEY NAME>,`    
+`(DOUBLE SPACE) 9, $ACADVER, (DOUBLE SPACE) 1, <VERSION>,`
 
 The order of object properties, in this case Tag Name and Tag Value are not consistent between vendors.  Data other than attribute text (as the DDATTEXT command would suggest) may be present.  End of group codes such as  AcDbSequenceEnd are optional so cannot be relied upon. Note that the attribute also has a handle ATTRIB, <DOUBLE SPACE) 5, <ATTRIBUTE HANDLE> - for nested blocks with would be needed. 	
 
-Some examples...   
+Some examples, with padded spacing shown with a period character:      
 
 Block Handle Entity is a table 5 INSERT which may follow a sequence end:   
-`  0`   
+`..0`   
 `INSERT`   
-`  5`   
+`..5`   
 `D1CD1`   
 
 Block Name:   
 `100`   
 `AcDbBlockReference`   
-`  2`   
+`..2`   
 `PINAR`   
    
 Tag Value 1 and Tag Name 2:   
 `AcDbEntity`   
-`  8`   
+`..8`   
 `NUM`   
 `100`      
 `AcDbAttribute`   
-`  1`   
+`..1`   
 `V0299055`   
-`  2`  
+`..2`  
 `NUM`  
 
 The AcDbEntity will vary for example it could be 8,TEXT_HIDDEN
 
 DFX Header:  
-`  0`   
+`..0`   
 `SECTION`   
-`  2`   
+`..2`   
 `HEADER`   
-`  9`   
+`..9`   
 `$ACADVER`   
-`  1`   
+`..1`   
 `AC1024`   
 
 $ACADVER variables are:   
