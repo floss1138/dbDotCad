@@ -140,19 +140,49 @@ sub statnseek {
 
 # xparser sub routine
 
-# Takes approved candidate filename + path as argument and looks for:
-# (DOUBLE SPACE) 0, INSERT, (DOUBLE SPACE) 5, <HANDLE ENTITY> ,
-# 100, AcDbBlockReference, (DOUBLE SPACE) 2, <BLOCKNAME> ,
-# 100, AcDbAttribute, (DOUBLE SPACE) 1,<TAG VALUE> , (DOUBLE SPACE) 2, <TAG KEY>,
-# (DOUBLE SPACE) 9, $ACADVER, <VERSION CODE>,
+# Takes approved candidate filename + path as argument  where a comma is a new line
+# ignoring 0 & 100 code and in this order of precedence
+# HANDLE: (DOUBLE SPACE) 0, INSERT, (DOUBLE SPACE) 5, <HANDLE ENTITY H_xxxx>,
+# BLOCKNAME: 100, AcDbBlockReference, (DOUBLE SPACE) 2, <BLOCKNAME> ,
+# TAGS: 100, AcDbAttribute, (DOUBLE SPACE) 1,<TAG VALUE> , (DOUBLE SPACE) 2, <TAG KEY>,
+# Only capturing one value, key pair so far ... use $ state to specifiy the actual match variable next required.
+
+# Not looking for this yet
+# VERSION:  (DOUBLE SPACE) 9, $ACADVER, <VERSION CODE>,
 
 sub xparser {
     my ($xfile) = @_;
     print "  Going to parse $xfile\n";
-    my @handle;
-    my @blockname;
-    my @tag;
-    my @version;
+    my $handle; # Handle entity found when sequence 0INSERT5 found
+    my $blockname;
+    my $tagvalue;
+    my $tagkey;
+    my $version;
+    my $state = 'X'; # State is X unless sequence in progress, H_xxxx if handle found
+
+open (my $X_FILE, '<', $xfile) or die "$xfile would not open";
+    while (<$X_FILE>) {
+    my $line = $_;
+
+        for ($line) {
+           
+        if ($line =~ /^INSERT\r?\n/) { $state = 'INSERT';}
+        elsif ($state eq 'INSERT' && $line =~/[ ]{2}5\r?\n/) { $state = 'INSERT5';}
+	elsif ($state eq 'INSERT5') { $line =~ s/\r?\n$//; $handle = $line; $state = "H_$handle".'_';  print "State now $state, Entity handle: $handle\n";}
+        elsif ($state =~ /^H_.*_/ && $line =~ /^AcDbBlockReference/) { $state = $state.'AcDbBlock'; }
+        elsif ($state =~ /^H_.*AcDbBlock/ && $line =~ /[ ]{2}2\r?\n/) { $state = $state.'2'; }
+        elsif ($state =~ /^H_.*AcDbBlock2/) { $line =~ s/\r?\n$//; $blockname = $line; $state = 'BLOCKNAME'; print "Blockname for $handle is $blockname\n"; }
+        elsif ($state eq 'BLOCKNAME' && $line =~ /^AcDbAttribute/) { $state = 'ATTRIBUTE'; }
+        elsif ($state eq 'ATTRIBUTE' && $line =~/[ ]{2}1\r?\n/) { $state = 'VALUE'; } 
+        elsif ($state eq 'VALUE') { $state = 'TAGVALUE'; $line =~ s/\r?\n$//; $tagvalue = $line; }
+        elsif ($state eq 'TAGVALUE' && $line =~/[ ]{2}2\r?\n/) { $state = 'KEY';}
+        elsif ($state eq 'KEY') { $state = 'END'; $line =~ s/\r?\n$//; $tagkey = $line; print "Key is $line Value is $tagvalue\n";}
+
+        #   else  {print "State is still $state\n"; }
+
+        }	
+    }
+
 
 }    # End of xparser
 
