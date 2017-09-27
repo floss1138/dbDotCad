@@ -150,6 +150,9 @@ sub statnseek {
 # Not looking for this yet
 # VERSION:  (DOUBLE SPACE) 9, $ACADVER, <VERSION CODE>,
 
+# AcDbField is a default constructor in dxf with ..1 ..2 coded content that is not attribute releated, 
+# set state to FIELD to prevent further processing until next INSERT
+
 sub xparser {
     my ($xfile) = @_;
     print "  Going to parse $xfile\n";
@@ -157,32 +160,41 @@ sub xparser {
     my $blockname;
     my $tagvalue;
     my $tagkey;
-    my $version;
-    my $state = 'X'; # State is X unless sequence in progress, H_xxxx if handle found
+    my $version = 'DXX of unknown version';
+    my $state = 'X'; # State is X unless sequence in progress, H_xxxx if handle found, then process state
 
 open (my $X_FILE, '<', $xfile) or die "$xfile would not open";
     while (<$X_FILE>) {
     my $line = $_;
 
         for ($line) {
-           
+
+        # Check for $ACADVER, if this is present its a DXF, not a DXX
+        if ($line =~ /\$ACADVER/) {$state = 'ACADVER';}
+        elsif ($state eq 'ACADVER') { $state = 'ACADVER1';}
+        elsif ($state eq 'ACADVER1') { $state = 'DXF'; $line =~ s/\r?\n$//; $version = "DXF, $line";}
+        
+        # Look for group 5 INSERT and then extract attribute metadata
         if ($line =~ /^INSERT\r?\n/) { $state = 'INSERT';}
-        elsif ($state eq 'INSERT' && $line =~/[ ]{2}5\r?\n/) { $state = 'INSERT5';}
-	elsif ($state eq 'INSERT5') { $line =~ s/\r?\n$//; $handle = $line; $state = "H_$handle".'_';  print "State now $state, Entity handle: $handle\n";}
+        elsif ($state eq 'INSERT' && $line =~/^[ ]{2}5\r?\n/) { $state = 'INSERT5';}
+	elsif ($state eq 'INSERT5') { $line =~ s/\r?\n$//; $handle = $line; $state = "H_$handle".'_';  print "State is $state,";}
         elsif ($state =~ /^H_.*_/ && $line =~ /^AcDbBlockReference/) { $state = $state.'AcDbBlock'; }
-        elsif ($state =~ /^H_.*AcDbBlock/ && $line =~ /[ ]{2}2\r?\n/) { $state = $state.'2'; }
-        elsif ($state =~ /^H_.*AcDbBlock2/) { $line =~ s/\r?\n$//; $blockname = $line; $state = 'BLOCKNAME'; print "Blockname for $handle is $blockname\n"; }
+        elsif ($state =~ /^H_.*AcDbBlock/ && $line =~ /^[ ]{2}2\r?\n/) { $state = $state.'2'; }
+        elsif ($state =~ /^H_.*AcDbBlock2/) { $line =~ s/\r?\n$//; $blockname = $line; $state = 'BLOCKNAME'; print " blockname for $handle is $blockname\n"; }
         elsif ($state eq 'BLOCKNAME' && $line =~ /^AcDbAttribute/) { $state = 'ATTRIBUTE'; }
-        elsif ($state eq 'ATTRIBUTE' && $line =~/[ ]{2}1\r?\n/) { $state = 'VALUE'; } 
+        # Once looking for attributes there may be AcDbFields which need to be ignored until next INSERT sequence so set state to FIELD if AcDBField found
+        elsif ($state eq 'ATTRIBUTE' && $line =~ /^AcDbField/) { $state = 'FIELD';}
+        elsif ($state eq 'ATTRIBUTE' && $line =~/^[ ]{2}1\r?\n/) { $state = 'VALUE'; } 
         elsif ($state eq 'VALUE') { $state = 'TAGVALUE'; $line =~ s/\r?\n$//; $tagvalue = $line; }
-        elsif ($state eq 'TAGVALUE' && $line =~/[ ]{2}2\r?\n/) { $state = 'KEY';}
-        elsif ($state eq 'KEY') { $state = 'END'; $line =~ s/\r?\n$//; $tagkey = $line; print "Key is $line Value is $tagvalue\n";}
+        elsif ($state eq 'TAGVALUE' && $line =~/^[ ]{2}2\r?\n/) { $state = 'KEY';}
+        # Keep looking for more attributes by setting state to ATTRIBUTE
+        elsif ($state eq 'KEY') { $state = 'ATTRIBUTE'; $line =~ s/\r?\n$//; $tagkey = $line; print "Key is $line Value is $tagvalue\n";}
 
         #   else  {print "State is still $state\n"; }
 
         }	
     }
-
+    print "\n  End of $xfile - $version\n";
 
 }    # End of xparser
 
