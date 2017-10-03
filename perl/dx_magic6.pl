@@ -11,7 +11,7 @@ use File::stat;
 use File::Basename;
 use Data::Dumper;
 
-our $VERSION = '0.0.5';    # version of this script
+our $VERSION = '0.0.6';    # version of this script
 
 ##  Custom variables go here:
 
@@ -49,7 +49,7 @@ my @folders = ( $dx_watch, $dx_pass, $dx_fail, $dx_attout );
 
 # Print welcome message & check folders exist
 
-print "***  X File Magic $PROGRAM_NAME version $VERSION  ***\n";
+print "\n ***  X File Magic $PROGRAM_NAME version $VERSION  ***\n";
 
 # create folders if they do not exist
 foreach (@folders) {
@@ -279,11 +279,11 @@ sub xparser {
 
     # At end of file parsing, print name and version if found
     if ( exists( $cadvintage{$version} ) ) {
-        print "\n  End of $xfile (DXF file from $cadvintage{$version})\n";
+        print "\n Finished parsing $xfile\n (DXF file from $cadvintage{$version})\n";
     }
     else {
-        print
-"\n End of $xfile (DXX file or DXF of unknown version)\n Tags are: @tags\n\n";
+    print
+"\n Finished parsing $xfile \n (DXX file or DXF of unknown version)\n\n";
     }
 
 # Retrun pointer to hash of block hashes, and array of tag (key) names in CAD order of discovery
@@ -328,15 +328,23 @@ foreach (@dx_files) {
                 # deref the retuned address for hash of blocks and tag names
                 my %hofblocks = %$hofblocksref;
                 my @tagnames  = @$tagnameref;
-                print " $dx contained:\n";
 
                 # print Dumper (\%hofblocks);
-                print " Tag names: @tagnames\n";
+                # print " Tag names: @tagnames\n";
+                attout ($dx,\@tagnames);
                 foreach my $HANDLE ( sort keys %hofblocks ) {
                     print " HANDLE: $HANDLE ";
+                  # Add handle to values array as first element
+                  my @values = ($HANDLE); 
+                 #   attout ($dx,\@values);
                     foreach my $TAG ( keys %{ $hofblocks{$HANDLE} } ) {
+                        push @values, $hofblocks{$HANDLE}{$TAG};                 
                         print " $TAG: $hofblocks{$HANDLE}{$TAG} ";
                     }
+                    # write next line of handle, value, value ...
+                    ## TODO THESE NEED SORTING INTO TAG ORDER HERE
+                    ## IF NO MATCH VALUE IN <>
+                    attout ($dx,\@values);
                     print "\n";
                 }
             }
@@ -350,4 +358,20 @@ foreach (@dx_files) {
     }
 }
 
+# attout sub takes 'filename with path' and 'array of elements reference'
+# as the next line to write to 
+# the attout file renamed in the attout dir with a .txt extension
+sub attout {
+my @name_elements = @_;
+my $pathandname = $name_elements[0];
+my $attout_nameandpath = $dx_attout.basename($pathandname);
+$attout_nameandpath =~ s/\.dx.$/\.txt/;
+my $elements = $name_elements[1];
+print " Attout filename will be, $attout_nameandpath,\n tags are @$elements\n";
+open( my $ATTOUT, '>>', $attout_nameandpath ) or die "$attout_nameandpath would not open";
+# elements need to be tab deliminated
+print $ATTOUT join("\t",@$elements),"\r\n";
+close ($ATTOUT) or carp "Cannot close $attout_nameandpath\n";
+
+}  # End of attout sub
 exit 0;
