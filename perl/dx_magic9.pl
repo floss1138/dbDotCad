@@ -9,9 +9,10 @@ use POSIX qw( strftime );
 use English qw(-no_match_vars);
 use File::stat;
 use File::Basename;
+use File::Path 'rmtree';    # Exported by default
 use Data::Dumper;
 
-our $VERSION = '0.0.9';    # version of this script
+our $VERSION = '0.0.9';     # version of this script
 
 ##  Custom variables go here:
 
@@ -293,6 +294,9 @@ sub xparser {
 "\n Finished parsing $xfile \n (DXX file or DXF of unknown version)\n\n";
     }
 
+    # Clear tagcheck before next run of xparser
+    %tagcheck = ();
+
 # Retrun pointer to hash of block hashes, and array of tag (key) names in CAD order of discovery
     return ( \%hof_blocks, \@tags );
 }    # End of xparser
@@ -337,8 +341,20 @@ foreach (@dx_files) {
                 my @tagnames  = @$tagnameref;
 
                 # print Dumper (\%hofblocks);
-                # print " Tag names: @tagnames\n";
-                attout( $dx, \@tagnames );
+                print " Tag names: @tagnames\n";
+
+                #  attout file name with path will be $atto
+                my $atto = $dx_attout . basename($dx);
+                $atto =~ s/\.dx.$/\.txt/;
+
+                print "  Looking for existing attout file, \n  $atto\n";
+                if ( -e "$atto" ) {
+                    print
+"  Old $atto already exists, \n  ... so its going to be deleted!\n";
+
+                    unlink $atto or warn "  Could not delete $atto";
+                }
+                attout( $atto, \@tagnames );
                 foreach my $HANDLE ( sort keys %hofblocks ) {
 
                     # DEBUG foreach print " HANDLE: $HANDLE ";
@@ -354,8 +370,6 @@ foreach (@dx_files) {
                     #     print " $TAG: $hofblocks{$HANDLE}{$TAG} ";
                     # }
                     # write next line of handle, value, value ...
-                    ## TODO THESE NEED SORTING INTO TAG ORDER HERE
-                    ## IF NO MATCH VALUE IN <>
                     foreach (@tagnames) {
                         my $Tag = $_;
                         next if $_ =~ /^HANDLE$/;
@@ -367,7 +381,9 @@ foreach (@dx_files) {
                         else { push @values, '<>'; }
                     }    # end of foreach tagnames
 
-                    attout( $dx, \@values );
+                 # attout writes current line to attout.txt,
+                 # takes attout filename and ref to array of values as arguments
+                    attout( $atto, \@values );
 
                     # DEBUG foreach  print "\n";
                 }    # end of for each HANDLE
@@ -383,17 +399,14 @@ foreach (@dx_files) {
 
 }    # end of foreach dx_file
 
-# attout sub takes 'filename with path' and 'array of elements reference'
+# attout sub takes 'attout filename with path' and 'array of elements reference'
 # as the next line to write  (append)
-# the attout file renamed in the attout dir with a .txt extension
+# the attout file shuould have the same name as the dx but with a txt extensions
 sub attout {
-    my @name_elements      = @_;
-    my $pathandname        = $name_elements[0];
-    my $attout_nameandpath = $dx_attout . basename($pathandname);
-    $attout_nameandpath =~ s/\.dx.$/\.txt/;
-    my $elements = $name_elements[1];
+    my @attout_elements    = @_;
+    my $attout_nameandpath = $attout_elements[0];
+    my $elements           = $attout_elements[1];
 
-# TO DO check if file exists and modify file name if necessary or this will append to existing file
 #  print "\n Attout filename will be, $attout_nameandpath,\n tags values are @$elements\n";
     open( my $ATTOUT, '>>', $attout_nameandpath )
       or die "$attout_nameandpath would not open";
@@ -407,4 +420,4 @@ exit 0;
 
 __END__
 
-Second file to be parsed is incorrect - check all vars are cleared before next run
+
