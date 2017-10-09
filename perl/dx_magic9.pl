@@ -9,6 +9,7 @@ use POSIX qw( strftime );
 use English qw(-no_match_vars);
 use File::stat;
 use File::Basename;
+use File::Copy; 
 use File::Path 'rmtree';    # Exported by default
 use Data::Dumper;
 
@@ -389,8 +390,12 @@ foreach (@dx_files) {
                 }    # end of for each HANDLE
             }    # end of if $line header looks OK
             else {
-                print "  $_ has the wrong header for an X file\n";
+                print "  $_ has the wrong header for a dx file, moving to $dx_fail\n";
                 close $XFILE or carp "Unable to close $_ file";
+                # Move bad dx file to fail directory
+                # Take filename and change the path to the fail directory
+                my $failed = $dx_fail . basename($_);
+                move ($_, $failed) or croak "move of $_ failed"; 
             }
 
         }    # end of <$XFILE> processing
