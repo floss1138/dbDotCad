@@ -170,8 +170,11 @@ sub statnseek {
 # AUTO TAGS: 100, AcDbAttribute, (DOUBLE SPACE) 1,<TAG VALUE>,  (DOUBLE SPACE) 2, <TAG KEY>,
 # PROG TAGS: (DOUBLE SPACE) 1,<TAG VALUE>,  100, AcDbAttribute, (DOUBLE SPACE) 2, <TAG KEY>, 
 
-#TODO  process BLOCK (DS)5, AcDbBlockBegin or set state higher for AcDbBlockBegin and others ...  
+# TODOs #  process BLOCK (DS)5, AcDbBlockBegin or set state higher for AcDbBlockBegin and others ...  
 # set state to something higher (try BLOCKNAME) for AcDblockBegin, AcDbBlockTableRecord, AcDbDimStyleTableRecord, AcDbSymbolTableRecord preceed (DS)2
+# use ATTRIB, (DS)5, instead of AcDbAttribute & allow for TAG before VALUE by having a $state VALUE OR $state TAG condition
+# Capture Document $TITLE, (DS)1, <Drawing Tilte>
+# Capture layout (viewport) tabs LAYOUT, (DS)5, AcDbLayout, (DS)1, <Layout Tag name>
 
 # Only capturing one value, key pair so far ... use $ state to specifiy the actual match variable next required.
 
