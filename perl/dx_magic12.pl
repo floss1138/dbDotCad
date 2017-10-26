@@ -184,9 +184,12 @@ sub statnseek {
 # VERSION:  (DOUBLE SPACE) 9, $ACADVER, <VERSION CODE>,
 
 # THINGS TO IGNORE:
+# AcDb* (anything other than AcDbBlockReference), (DS) 2 may be problematic
+# AcDbBlockBegin, (DS) 2,  DONT TAKE THIS VALUE
+# BLOCK_RECORD, (DS), (DS) 5, This is followed by group codes for graphical block entities that can be ingnored, earler in file along with AcDbBlockTableRecord
 # AcDbField is a default constructor in dxf with ..1 ..2 coded content that is not attribute releated,
 # set state to FIELD to prevent further processing until next INSERT
-# AcDbBlockBegin, (DOUBLE SPACE), 2,
+# AcDbBlockBegin, (DOUBLE SPACE), 2, can be blockname or *Model_Space or *Paper_Space, then there is a (DS) 1 before the next INSERT, so dont start INSERT before -- wait for INSERT ... do this first
 # AcDbBlockTableRecord, (DOUBLE SPACE) 2,
 # AcDbDimStyleTableRecord, (DOUBLE SPACE) 2,
 # AcDbSymbolTableRecord, (DOUBLE SPACE) 2,
@@ -276,12 +279,20 @@ sub xparser {
                 $blockname = $line;
                 $state     = 'BLOCKNAME';
 
-                # Add blockname to hof_blocks
-                $hof_blocks{"$handle"}{"BLOCKNAME"} = "$blockname";
+                # Add blockname to hof_blocks but after ATTRIB,  5 may be better ...
+               # $hof_blocks{"$handle"}{"BLOCKNAME"} = "$blockname";
 
 #  print " BLOCKNAME: blockname for $handle is $blockname, state is $state, line is $line\n";
             }
             
+#  BLOCK_RECORD field appears in dxf files at the start, this is just to check the stage = DXF at this point
+#            elsif ( $line =~ /^BLOCK_RECORD/ ) {
+#                    print "  BLOCK_RECORD found while state = $state\n"; 
+#                  }
+
+
+
+
            elsif ( $state eq 'BLOCKNAME' && $line =~ /^ATTRIB/ ) {
                  $state = 'ATTRIB';
                  }
@@ -291,6 +302,9 @@ sub xparser {
                   $state = 'ATTRIB5';
                   $attrib5_count ++;
                   # print "ATTRIB5: blockname for $handle is $blockname, state is $state, line is $line\n";
+                  # Add blockname to hof_blocks but only after an ATTRIB, (DS)5, as other AcDbBlockReferences, not Attribute related may occur
+                  $hof_blocks{"$handle"}{"BLOCKNAME"} = "$blockname";
+
                   }
 
 
