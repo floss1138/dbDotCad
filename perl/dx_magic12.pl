@@ -12,6 +12,7 @@ use File::Basename;
 use File::Copy;
 use File::Path 'rmtree';    # Exported by default
 use Data::Dumper;
+use Excel::Writer::XLSX;
 
 our $VERSION = '0.0.12';    # version of this script
 
@@ -32,6 +33,9 @@ my $dx_attout = '/home/user1/dx_attout/';
 # dx merge folder [dxf file for metadata replacement ]
 my $dx_merge = '/home/user1/dx_merge/';
 
+# dx Excel folder [Excel, .xlxs format version of the attout file]
+my $dx_xlsx = '/home/user1/dx_xlsx/';
+
 # Program variables go here:
 
 # CAD version lookup table
@@ -50,7 +54,11 @@ my %cadvintage = (
 
 # print Dumper (\%cadvintage);
 
-my @folders = ( $dx_watch, $dx_pass, $dx_fail, $dx_attout, $dx_merge );
+my @folders = ( $dx_watch, $dx_pass, $dx_fail, $dx_attout, $dx_merge, $dx_xlsx );
+
+# atto variable will hold the output attout file name also sued to create an excel version
+
+our $atto; 
 
 # Print welcome message & check folders exist
 
@@ -380,6 +388,77 @@ sub xparser {
     return ( \%hof_blocks, \@tags );
 }    # End of xparser
 
+## Sub to create Excel version of attout file
+
+# Take attout filename with and excel file path as arguments
+sub excelout {
+
+# Limit columns to  52 as a spread sheet bigger than that is going to be painful
+# This becomes A to AZ, created range in an @alph
+
+my @alph = ( 'A' .. 'Z', 'AA' .. 'AZ' );
+
+
+    # $row is the first row number for attribute data
+    my $row = '5';
+    my ( $attout, $excelpath ) = @_;
+    my $attout_basename = basename($attout);
+    # substitute xlsx extension
+    my $excel = $attout_basename;
+    $excel =~ s/\.txt/\.xlsx/;
+
+    my $excel_withpath = $excelpath.$excel;
+
+    print "  Reading attout_basename $attout_basename and creating $excel_withpath\n";
+
+    my $workbook = Excel::Writer::XLSX->new("$excel_withpath");
+
+    $workbook->set_properties(
+        title  => "Attribute data from $attout_basename",
+        author => 'DeeV',
+        comments =>
+'Support cross platform Open Source solutions.  Respect CC & GPL Licenses',
+    );    # This might not be visible from Open Office
+
+    my $worksheet_rm = $workbook->add_worksheet('Readme');
+    $worksheet_rm->write( 'B2', "Created by dx_magic reader $VERSION" )
+      ;    #  worksheet created for info, notices & copyright
+    $worksheet_rm->write( 'B3',
+"This software is free but copyright (c) 2017 by Floss (floss1138\@gmail.com) - a dolphin friendly PDP project.  All rights reserved. XLSX by John McNamara."
+    );
+$worksheet_rm->write( 'B4',
+"You are free to use, copy and distribute this software under the same GPL terms as the Perl 5 programming language."
+    );
+    $worksheet_rm->write( 'B6',
+'Hopefully you have a strict block naming policy which enforces use of a version number, prohibits strange characters and limits the the block name to 31 characters?'
+    );
+$worksheet_rm->write( 'B7',
+'As there are name restictions in Excel that do not apply to CAD block data; plan block data to migrate easily into spread sheets.'
+    );
+
+   $worksheet_rm->write( 'B7',
+'Your blocks include the document title from the document title properties field?  Dont think about putting this in a database without referencing the originating document.'
+   );
+
+ my $worksheet_attout = $workbook->add_worksheet('attout');
+      #  create attout data worksheet with formatting
+
+
+my $format =
+              $workbook->add_format( bold => 1, bg_color => 'yellow' );
+
+            # Format head line, set_row starts from 0
+            $worksheet_attout->set_row( 3, undef, $format );
+
+# open attout here and read into attout worksheet
+
+
+return 0;
+}
+
+
+
+
 ### The Program ###
 
 # loop forever with a 1 second pause between runs
@@ -426,7 +505,7 @@ while ( sleep 1 ) {
                     print " Tag names: @tagnames\n";
 
                     #  attout file name with path will be $atto
-                    my $atto = $dx_attout . basename($dx);
+                    $atto = $dx_attout . basename($dx);
                     $atto =~ s/\.dx.$/\.txt/;
 
                     print "  Looking for existing attout file, \n  $atto\n";
@@ -485,10 +564,17 @@ while ( sleep 1 ) {
 
         }    # if static
 
+        print "  Excel version of $atto about to be created ...\n";
+        excelout ($atto, $dx_xlsx);
+
     }    # end of foreach dx_file
 
     print
-" \nEnd of processing, lets check the watchfolder again for anything new ...\n";
+" \nEnd of processing, lets check the watchfolders again...\n";
+
+
+
+
 }    # end of while (sleep 1)
 
 # attout sub takes 'attout filename with path' and 'array of elements reference'
