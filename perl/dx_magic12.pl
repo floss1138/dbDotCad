@@ -400,7 +400,7 @@ my @alph = ( 'A' .. 'Z', 'AA' .. 'AZ' );
 
 
     # $row is the first row number for attribute data
-    my $row = '5';
+    my $row = '3';
     my ( $attout, $excelpath ) = @_;
     my $attout_basename = basename($attout);
     # substitute xlsx extension
@@ -448,9 +448,63 @@ my $format =
               $workbook->add_format( bold => 1, bg_color => 'yellow' );
 
             # Format head line, set_row starts from 0
-            $worksheet_attout->set_row( 3, undef, $format );
+            $worksheet_attout->set_row( 2, undef, $format );
 
-# open attout here and read into attout worksheet
+    #  Set column width for attout sheet
+    $worksheet_attout->set_column( 'B:AZ', 15 );
+
+
+# open attout here and read into attout worksheet (needs to be separated into another script so any attout file can be dropped into the folder)
+
+    print " Opening $attout\n";
+    open( my $AOUT, '<', $attout ) or croak "$attout would not open";
+        while (<$AOUT>) {
+        my $linecount = 1;
+        # chomp for Win or Lin
+        $_ =~ s/\r?\n$//;
+ 
+        my $line = $_;
+ 
+        my @split_line  = split( /\t/, $_ );    # split on tab
+            if ($linecount eq 1) {
+            # check first line starts with HANDLE
+                if ($line =~ /^HANDLE/) {
+                
+                my $alph_offset = 1;
+                # column number is incremented by incrementing the alpha_offset
+                
+                print "  Valid attout found, writing headings to $alph[$alph_offset]$row\n";
+                    foreach (@split_line) {
+                
+                    $worksheet_attout->write( "$alph[$alph_offset]$row", $_);
+                    $alph_offset ++;
+              
+                    } # end of first line
+                    # increment line count as 1st line was successful
+                    $linecount ++;
+                    $row++;
+                                     
+               } # end of if line begins with HANDLE
+            else { 
+                 print "  Invalid attout file - skipping\n";
+                 last; }
+                       
+            } # end of if line count = 1
+                 print " now on line $linecount\n";
+                  
+                 # $alph_offset should be visible here and no need for my BUGGED at this point
+                 my $alph_offset = 1;
+                 # column number is incremented by incrementing the alpha_offset
+                     foreach (@split_line) {
+ 
+                     $worksheet_attout->write( "$alph[$alph_offset]$row", $_);
+                     $alph_offset ++;
+                    
+                     }
+                     $linecount++;
+                     $row++;
+        }  # end of while AOUT
+
 
 
 return 0;
@@ -501,7 +555,8 @@ while ( sleep 1 ) {
                     my %hofblocks = %$hofblocksref;
                     my @tagnames  = @$tagnameref;
 
-                    # print Dumper (\%hofblocks);
+                     print "  Hash of blocks contains:\n";
+                     # print Dumper (\%hofblocks);
                     print " Tag names: @tagnames\n";
 
                     #  attout file name with path will be $atto
