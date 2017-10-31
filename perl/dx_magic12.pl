@@ -56,7 +56,7 @@ my %cadvintage = (
 
 my @folders = ( $dx_watch, $dx_pass, $dx_fail, $dx_attout, $dx_merge, $dx_xlsx );
 
-# atto variable will hold the output attout file name also sued to create an excel version
+# atto variable will hold the output attout file name also used to create an excel version
 
 our $atto; 
 
@@ -384,8 +384,8 @@ sub xparser {
     $seqend_count        = 0;    # count for SEQEND
     $acdbend_count       = 0;    # count for AcDbSequenceEnd
 
-# Retrun pointer to hash of block hashes, and array of tag (key) names in CAD order of discovery
-    return ( \%hof_blocks, \@tags );
+# Retrun pointer to hash of block hashes, and array of tag (key) names in CAD order of discovery and filename and path of successfully parsed file
+    return ( \%hof_blocks, \@tags, $passed );
 }    # End of xparser
 
 ## Sub to create Excel version of attout file
@@ -424,21 +424,30 @@ my @alph = ( 'A' .. 'Z', 'AA' .. 'AZ' );
     $worksheet_rm->write( 'B2', "Created by dx_magic reader $VERSION" )
       ;    #  worksheet created for info, notices & copyright
     $worksheet_rm->write( 'B3',
-"This software is free but copyright (c) 2017 by Floss (floss1138\@gmail.com) - a dolphin friendly PDP project.  All rights reserved. XLSX by John McNamara."
+"This software is free but copyright (c) 2017 by Floss (floss1138\@gmail.com) - another dolphin friendly PDP project.  All rights reserved. XLSX by John McNamara."
     );
 $worksheet_rm->write( 'B4',
 "You are free to use, copy and distribute this software under the same GPL terms as the Perl 5 programming language."
     );
-    $worksheet_rm->write( 'B6',
-'Hopefully you have a strict block naming policy which enforces use of a version number, prohibits strange characters and limits the the block name to 31 characters?'
+    $worksheet_rm->write( 'B7',
+'Hopefully you have a strict block naming policy which includes a version number, embraces the concept of classes, prohibits strange characters and has a 31 character limit?'
     );
-$worksheet_rm->write( 'B7',
-'As there are name restictions in Excel that do not apply to CAD block data; plan block data to migrate easily into spread sheets.'
+$worksheet_rm->write( 'B6',
+'Name restrictions in Excel do not apply to CAD block data; plan ahead and adopt block & tag names to embrace spread sheet friendly migration.'
     );
 
-   $worksheet_rm->write( 'B7',
-'Your blocks include the document title from the document title properties field?  Dont think about putting this in a database without referencing the originating document.'
+ $worksheet_rm->write( 'B8',
+ 'Worksheet names cannot contain []*:?/\ characters.  Avoid periods, slashes and quotation marks within block or tag names. Avoid spaces in filenames'
+     );
+
+   $worksheet_rm->write( 'B9',
+'Your blocks include the document title from the document title properties field?  Always create database entries referencing the originating document and the block handle.'
    );
+
+   $worksheet_rm->write( 'B11',
+'The attout tab show data from a CAD attout file in spread sheet form.  Blank fields simply contain no data, i.e. they are empty.  Fields containing <> are not valid for that column.'
+   );
+
 
  my $worksheet_attout = $workbook->add_worksheet('attout');
       #  create attout data worksheet with formatting
@@ -451,12 +460,15 @@ my $format =
             $worksheet_attout->set_row( 2, undef, $format );
 
     #  Set column width for attout sheet
-    $worksheet_attout->set_column( 'B:AZ', 15 );
+    $worksheet_attout->set_column( 'B:AZ', 14 );
+
+    #  Freeze heading row
+    $worksheet_attout->freeze_panes ( 3 , 0 );
 
 
 # open attout here and read into attout worksheet (needs to be separated into another script so any attout file can be dropped into the folder)
 
-    print " Opening $attout\n";
+
     open( my $AOUT, '<', $attout ) or croak "$attout would not open";
         while (<$AOUT>) {
         my $linecount = 1;
@@ -466,43 +478,29 @@ my $format =
         my $line = $_;
  
         my @split_line  = split( /\t/, $_ );    # split on tab
-            if ($linecount eq 1) {
-            # check first line starts with HANDLE
-                if ($line =~ /^HANDLE/) {
+            
+            # check first line starts with HANDLE or 'Char or its not a valid attout file
+                if ($line =~ /^HANDLE/xsm || $line =~ /^'[0-9A-F]/xsm ){
                 
                 my $alph_offset = 1;
                 # column number is incremented by incrementing the alpha_offset
                 
-                print "  Valid attout found, writing headings to $alph[$alph_offset]$row\n";
+        #        print "  Valid attout found, writing headings to $alph[$alph_offset]$row\n";
                     foreach (@split_line) {
                 
                     $worksheet_attout->write( "$alph[$alph_offset]$row", $_);
+                    # move to next column
                     $alph_offset ++;
               
-                    } # end of first line
-                    # increment line count as 1st line was successful
-                    $linecount ++;
-                    $row++;
-                                     
-               } # end of if line begins with HANDLE
+                   } 
+                     # move onto next row
+                      $row++;              
+               } # end of if line begins with HANDLE or 'Char
             else { 
                  print "  Invalid attout file - skipping\n";
                  last; }
                        
-            } # end of if line count = 1
-                 print " now on line $linecount\n";
-                  
-                 # $alph_offset should be visible here and no need for my BUGGED at this point
-                 my $alph_offset = 1;
-                 # column number is incremented by incrementing the alpha_offset
-                     foreach (@split_line) {
- 
-                     $worksheet_attout->write( "$alph[$alph_offset]$row", $_);
-                     $alph_offset ++;
-                    
-                     }
-                     $linecount++;
-                     $row++;
+            
         }  # end of while AOUT
 
 
@@ -514,7 +512,8 @@ return 0;
 
 
 ### The Program ###
-
+my $dx_state = 0;  # set to non-zero if at any point dx_file is considered invalid
+ 
 # loop forever with a 1 second pause between runs
 while ( sleep 1 ) {
 
@@ -526,6 +525,7 @@ while ( sleep 1 ) {
     # check candidate files are static and have expected header
 
     foreach (@dx_files) {
+        $dx_state = 0;
         my $dx = $_;
         print "  Checking $dx is static ...";
         my $stat1 = statnseek($dx);
@@ -548,8 +548,8 @@ while ( sleep 1 ) {
                     print "  $_ header looks OK, lets dig deeper\n";
                     close $XFILE or carp "Unable to close $dx file";
 
-              # parse file $dx, return refs to hash of blocks and tagnames array
-                    my ( $hofblocksref, $tagnameref ) = xparser($dx);
+              # parse file $dx, return refs to hash of blocks and tagnames array, 
+                   my ( $hofblocksref, $tagnameref ) = xparser($dx);
 
                     # deref the retuned address for hash of blocks and tag names
                     my %hofblocks = %$hofblocksref;
@@ -613,14 +613,19 @@ while ( sleep 1 ) {
                     # Take filename and change the path to the fail directory
                     my $failed = $dx_fail . basename($_);
                     move( $_, $failed ) or croak "move of $_ failed";
+                    $dx_state = 1;
                 }
 
             }    # end of <$XFILE> processing
 
         }    # if static
 
-        print "  Excel version of $atto about to be created ...\n";
-        excelout ($atto, $dx_xlsx);
+       # Create .xlsx version of attout.txt file
+       # print "  Excel version of $atto about to be created ...\n";
+       # excelout takes attout filename and path from passed directory and required xlsx filename and path as arguments 
+    print " Attout file for excel creation is $atto state of file is $dx_state\n";  
+    if ( $dx_state  eq 0) {   excelout ($atto, $dx_xlsx);}
+    else { print " State was $dx_state, dx file was invalid so skipping excel creation\n";}
 
     }    # end of foreach dx_file
 
@@ -634,7 +639,7 @@ while ( sleep 1 ) {
 
 # attout sub takes 'attout filename with path' and 'array of elements reference'
 # as the next line to write  (append)
-# the attout file shuould have the same name as the dx but with a txt extensions
+# the attout file should have the same name as the dx but with a txt extensions
 sub attout {
     my @attout_elements    = @_;
     my $attout_nameandpath = $attout_elements[0];
