@@ -393,10 +393,10 @@ sub xparser {
 # Take attout filename with and excel file path as arguments
 sub excelout {
 
-# Limit columns to  52 as a spread sheet bigger than that is going to be painful
+# 52 columns (AZ) was not enough ...
 # This becomes A to AZ, created range in an @alph
 
-my @alph = ( 'A' .. 'Z', 'AA' .. 'AZ' );
+my @alph = ( 'A' .. 'Z', 'AA' .. 'AZ', 'BA' .. 'BZ' );
 
 
     # $row is the first row number for attribute data
@@ -487,12 +487,14 @@ my $format =
                 
         #        print "  Valid attout found, writing headings to $alph[$alph_offset]$row\n";
                     foreach (@split_line) {
-                
                     $worksheet_attout->write( "$alph[$alph_offset]$row", $_);
                     # move to next column
+                   # print "  line is: $_, alph_offset is $alph_offset\n";
                     $alph_offset ++;
               
                    } 
+                   # foreach appears to ignore empty elements at end of array - makes not odds here as cell is still empty either way
+                   # print "  Line hast ".scalar(@split_line)." elements, last alph offset is $alph_offset\n";
                      # move onto next row
                       $row++;              
                } # end of if line begins with HANDLE or 'Char
@@ -621,10 +623,13 @@ while ( sleep 1 ) {
         }    # if static
 
        # Create .xlsx version of attout.txt file
-       # print "  Excel version of $atto about to be created ...\n";
+       # Ideally needs to be a separate script with watch folder but handy in here for now ...
        # excelout takes attout filename and path from passed directory and required xlsx filename and path as arguments 
-    print " Attout file for excel creation is $atto state of file is $dx_state\n";  
-    if ( $dx_state  eq 0) {   excelout ($atto, $dx_xlsx);}
+     
+    if ( $dx_state  eq 0) {   
+         excelout ($atto, $dx_xlsx);
+       print " Attout file for excel creation is $atto state of file is $dx_state\n";
+        }
     else { print " State was $dx_state, dx file was invalid so skipping excel creation\n";}
 
     }    # end of foreach dx_file
