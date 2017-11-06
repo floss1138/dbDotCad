@@ -4,6 +4,7 @@ use warnings;
 use Carp;
 
 ## dx_magic parser for dxx and dxf format files ##
+# to become dxmagic_extract
 
 use POSIX qw( strftime );
 use English qw(-no_match_vars);
@@ -18,7 +19,7 @@ our $VERSION = '0.0.14';    # version of this script
 
 ##  Custom variables go here:
 
-# dx watch folder [files for parsing]
+# dx watch folder [dxx and dxf files for parsing]
 my $dx_watch = '/home/user1/dx_watch/';
 
 # dx pass folder [processed files]
@@ -30,8 +31,8 @@ my $dx_fail = '/home/user1/dx_fail/';
 # dx attout folder [dx files conveted to attout format
 my $dx_attout = '/home/user1/dx_attout/';
 
-# dx merge folder [dxf file for metadata replacement ]
-my $dx_merge = '/home/user1/dx_merge/';
+# dx merge folder [dxf file for metadata replacement ], moving this to dxmagic_insert.  Also required dx_attin (attin.txt or attin.xlsx, dxf_out)
+# my $dx_merge = '/home/user1/dx_merge/';
 
 # dx Excel folder [Excel, .xlxs format version of the attout file]
 my $dx_xlsx = '/home/user1/dx_xlsx/';
@@ -55,7 +56,7 @@ my %cadvintage = (
 # print Dumper (\%cadvintage);
 
 my @folders =
-  ( $dx_watch, $dx_pass, $dx_fail, $dx_attout, $dx_merge, $dx_xlsx );
+  ( $dx_watch, $dx_pass, $dx_fail, $dx_attout, $dx_xlsx );
 
 # atto variable will hold the output attout file name also used to create an excel version
 my $atto;
@@ -536,7 +537,7 @@ sub excelout {
 
 ### The Program ###
 my $dx_state =
-  0;     # set to non-zero if at any point dx_file is considered invalid
+  2;     # set to non-zero if at any point dx_file is considered invalid or not present.  1 for invalid, 2 for not present yet ...
 
 # loop forever with a 1 second pause between runs
 while ( sleep 1 ) {
@@ -549,7 +550,7 @@ while ( sleep 1 ) {
     # check candidate files are static and have expected header
 
     foreach (@dx_files) {
-        $dx_state = 0;
+    #   $dx_state = 0;
         my $dx = $_;
         print "  Checking $dx is static ...";
         my $stat1 = statnseek($dx);
@@ -626,7 +627,8 @@ while ( sleep 1 ) {
                  # takes attout filename and ref to array of values as arguments
                         attout( $atto, \@values );
 
-                        # DEBUG foreach  print "\n";
+                        # set dx file state to valid (0)
+                        $dx_state = 0;
                     }    # end of for each HANDLE
                 }    # end of if $line header looks OK
                 else {
@@ -638,6 +640,7 @@ while ( sleep 1 ) {
                     # Take filename and change the path to the fail directory
                     my $failed = $dx_fail . basename($_);
                     move( $_, $failed ) or croak "move of $_ failed";
+                   # set dx state to invalid
                     $dx_state = 1;
                 }
 
@@ -653,12 +656,13 @@ while ( sleep 1 ) {
             excelout( $atto, $dx_xlsx );
             print " Attout file for excel creation is $atto \n";
         }
-        else { print " dx file was invalid so skipping excel creation\n"; }
+        else { print " dx file was invalid or missing (state is $dx_state) so skipping excel creation\n"; }
 
     }    # end of foreach dx_file
 
     print " \nEnd of processing, lets check the watchfolders again...\n";
-
+    #reset dx state to not found
+    $dx_state = '2'; 
 }    # end of while (sleep 1)
 
 # attout sub takes 'attout filename with path' and 'array of elements reference'
