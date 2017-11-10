@@ -57,8 +57,10 @@ my %cadvintage = (
 my @folders = ( $dx_watch, $dx_pass, $dx_fail, $dx_attout, $dx_merge, $dx_xlsx );
 
 # atto variable will hold the output attout file name also used to create an excel version
+my $atto; 
 
-our $atto; 
+# hash to hold status for debug
+my %status;
 
 # Print welcome message & check folders exist
 
@@ -78,8 +80,26 @@ foreach (@folders) {
         print "\n  failed to open $readme\n";
     }
     else {
-        print $README
-"   ## dx_magic watch folder ##\n\n   Valid dxx & dxf files found in here will be processed to create attout.txt metadata files\n   in $dx_attout, with the same file name & a new .txt extension\n   The original file is then moved to $dx_pass or $dx_fail folder as appropriate\n";
+
+my $readme = << "NOTE";
+
+      ## dx_magic $VERSION watch folder ##   
+
+dx_magic pulls attribute data out of dxx and dxf files,
+then creates a tab deliminated attout.txt file, matching the format of ACADs ATTOUT tool.
+
+Valid dxx & dxf files found in this folder will be processed to create attout.txt metadata files.
+These are written to $dx_attout, with the same file name but given a new .txt extension.
+attout.txt files can be imported back into the originating drawing with the ATTIN command.
+The original file is then moved to $dx_pass or $dx_fail folder as appropriate.
+An Excel version of the attout.txt is also created in $dx_xlsx.
+Files without dxx and dxf extensions will be ignored (including this one).
+
+ATTIN is part of the Express Tools found in Full ACAD (or via the menu, Express > Blocks > Import Attribute Information).
+
+      ## If you are irritated by every rub, how will you be polished? - Rumi ##
+NOTE
+print $README "$readme";
     }
 }    # End of creating folders sub
 
@@ -236,6 +256,7 @@ sub xparser {
     my $tagvalue;     # Holds tag value onece identified
     my $tagkey;       # Holds tag (key) name
     my $version = 'DXX of unknown version';
+    my $title   = '(none)';
     my $state   = 'X'
       ; # State is X unless sequence in progress, H_xxxx if handle found, then current process state
     my $attrib5_count =
@@ -251,12 +272,25 @@ sub xparser {
 
             # Check for $ACADVER, if this is present its a DXF, not a DXX
             if    ( $line =~ /\$ACADVER/ ) { $state = 'ACADVER'; }
+            # next line is skipped regardless of the content but should be a double space 1
             elsif ( $state eq 'ACADVER' )  { $state = 'ACADVER1'; }
             elsif ( $state eq 'ACADVER1' ) {
                 $state = 'DXF';
                 $line =~ s/\r?\n$//;
                 $version = "$line";
             }
+
+            # Check for $TITLE, probably not present in a DXX 
+            if    ( $line =~ /\$TITLE/ ) { $state = 'TITLE'; }
+            # next line is skipped regardless of the content but should be a double space 1
+            elsif ( $state eq 'TITLE' )  { $state = 'TITLE1';}
+            elsif ( $state eq 'TITLE1')  {
+                  $state = 'DXF';
+                  $line =~ s/\r?\n$//;
+                  $title = "$line";
+                 # print "  Title is $title\n";
+            }
+
 
             # print " Current line is $line";
             # Look for group 5 INSERT and then extract attribute metadata
@@ -329,13 +363,6 @@ sub xparser {
             }
 
 
-# TODO TEST AGAIN with dxf may need setting back to BLOCKNAME not ATTRIBUTE
-# Once looking for attributes there may be AcDbFields if next line is (DS) 1, which need to be ignored
-# until next INSERT sequence, so setting state to FIELD if AcDBField found
-#  elsif ( $state eq 'ATTRIBUTE' && $line =~ /^AcDbField/ ) {
-#    $state = 'FIELD';
-#  }
-
             elsif ( $state eq 'TAGVALUE' && $line =~ /^[ ]{2}2\r?\n/ )
             {
                 $state = 'TAG';
@@ -362,22 +389,29 @@ sub xparser {
     # At end of file parsing, print name and version if found
     if ( exists( $cadvintage{$version} ) ) {
         print
-"\n Finished parsing $xfile\n (DXF file from $cadvintage{$version})\n";
-    }
+"\n Finished parsing $xfile (dxf file from $cadvintage{$version})\n";
+    $status{'FileType'}= "dxf file from $cadvintage{$version}";
+         }
     else {
         print
-"\n Finished parsing $xfile \n (DXX file or DXF of unknown version)\n";
+"\n Finished parsing $xfile (dxx file or dxf of unknown version)\n";
+    $status{'FileType'} = "dxx file or dxf of unknown version";
     }
+    print "  Document title: $title";
+    $status{'DocTitle'} = $title;    
 
     # move parsed file to passed directory
 
     my $passed = $dx_pass . basename($xfile);
-    print " Moving to $dx_pass ... \n\n";
+    print ", Moving to $dx_pass ... \n";
     move( $xfile, $passed ) or croak "move of $xfile failed";
 
     print
 "\n ATTRIB,  5 count: $attrib5_count \n SEQEND count: $seqend_count, AcDbSequenceEnd count: $acdbend_count\n";
 
+    $status{'Attrib5'} = $attrib5_count;
+    $status{'Seqend'} = $acdbend_count;
+   
 # Clear tagcheck & orphan, seqend, acdbsequenceend counts before next run of xparser
     %tagcheck            = ();
     $attrib5_count = 0;
@@ -445,7 +479,17 @@ $worksheet_rm->write( 'B6',
    );
 
    $worksheet_rm->write( 'B11',
-'The attout tab show data from a CAD attout file in spread sheet form.  Blank fields simply contain no data, i.e. they are empty.  Fields containing <> are not valid for that column.'
+'The attout tab shows data from a CAD attout file in spread sheet form.  Blank fields simply contain no data, i.e. they are empty.  Fields containing <> are not valid for that column.'
+   );
+
+
+$worksheet_rm->write( 'B15', 
+ 'DEBUG INFO:');
+$worksheet_rm->write(  'B16',
+"This sheet was created from $attout_basename a $status{'FileType'}, Title: $status{'DocTitle'}"
+  );
+$worksheet_rm->write( 'B17',
+ "ATTIRB,5 count $status{'Attrib5'}; SEQEND count $status{'Seqend'}"
    );
 
 
@@ -557,10 +601,9 @@ while ( sleep 1 ) {
                     my %hofblocks = %$hofblocksref;
                     my @tagnames  = @$tagnameref;
 
-                     print "  Hash of blocks contains:\n";
+                     print "  Hash of blocks TAGs: @tagnames\n";
                      # print Dumper (\%hofblocks);
-                    print " Tag names: @tagnames\n";
-
+                  
                     #  attout file name with path will be $atto
                     $atto = $dx_attout . basename($dx);
                     $atto =~ s/\.dx.$/\.txt/;
@@ -628,9 +671,9 @@ while ( sleep 1 ) {
      
     if ( $dx_state  eq 0) {   
          excelout ($atto, $dx_xlsx);
-       print " Attout file for excel creation is $atto state of file is $dx_state\n";
+       print "  Attout file for excel creation is $atto \n";
         }
-    else { print " State was $dx_state, dx file was invalid so skipping excel creation\n";}
+    else { print " dx file was invalid so skipping excel creation\n";}
 
     }    # end of foreach dx_file
 
