@@ -484,6 +484,8 @@ name: 7ef5dd18>) (5 . "12BFE") (100 . "AcDbEntity") (67 . 0) (410 . "Model") (8
 To find the handle associated with an ename, use the DXF 5 group of the ename's association list:  
 Command: `(setq handle-circle (cdr (assoc 5 (entget ename-circle))))`  
 
+Express tools also provides the command `BLOCK?` to show the dxf data, and the `GATTE` to globally change data for a selected attribute (handy for testing).   
+
 When exported from AutoKAD, the block above would have   
 key HANDLE, value `'12BFE`    
 The Entity handle is a text string of up to 16 hexadecimal digits.  For [more information of group codes] (http://www.autodesk.com/techpubs/autocad/acad20/
