@@ -17,7 +17,7 @@ use Excel::Writer::XLSX;
 
 our $VERSION = '0.0.14';    # version of this script
 
-##  Custom variables go here:
+##  Custom variables go here ##
 
 # dx extract folder [files for parsing]
 my $dx_extract = '/home/user1/dx_extract/';
@@ -60,8 +60,9 @@ my $atto;
 # hash to hold status for debug
 my %status;
 
-# var to hold state of current dx file.  0 is OK, non-zero is invalid or not present
-my $dx_state = 0;
+# dx_state is just used for debug and can be removed later ...
+# var to hold state of current dx file.  0 is OK, 1 initial state, 2 move failde, 3 no candidate, 4 end of parsing
+my $dx_state = 1;
 
 # Print welcome message & check folders exist
 
@@ -104,7 +105,9 @@ print $README "$read_me";
     }
 }    # End of creating folders sub
 
-# Sub to read watch folder passed as argument to read_dx_atch
+## read_dx_extract sub to read dx files folder ##
+
+# Sub to read watch folder passed as argument to read_dx_watch
 
 sub read_dx_extract {
     my ($watch_folder) = @_;
@@ -125,7 +128,7 @@ sub read_dx_extract {
     #  print "  Candidate file name:>$_< found with grep $watch_folder$match\n";
     #  }
     if ( !@candidates ) { print "  No candidate files found\n"; }
-    $dx_state = 2;
+    $dx_state = 3;
     return @candidates_withpath;
 }
 
@@ -186,6 +189,8 @@ sub statnseek {
 
 }    # End of statnseek
 
+## xparser sub ##
+
 # xparser sub routine, take filename with path as argurment, return ref to hash of blocks (hashes)
 
 # Takes approved candidate filename + path as argument  where a comma is a new line
@@ -243,15 +248,17 @@ sub xparser {
 
     print "  Going to parse $xfile\n";
 
-# sub to add new tag if its not been seen before.  Array order preserves original attribute order
+## addnewtag anonymous sub ##
+
+# nested sub to add new tag if its not been seen before.  Array order preserves original attribute order
 # original order is not needed but makes debugging from CAD so much easier
-    sub addnewtag {
+ my $addnewtag =   sub {
         my ($newtag) = @_;
         if ( exists $tagcheck{$newtag} ) { return 1; }
         else { $tagcheck{$newtag} = 1; push @tags, $newtag; return 0; }
-    }
+    };
 
-    # End of addnewtag sub
+    # End of addnewtag anonymous sub
 
     my $handle;       # Handle entity found when sequence 0INSERT5 found
     my $blockname;    # Holds Blockname once identified
@@ -288,7 +295,7 @@ sub xparser {
             elsif ( $state eq 'TITLE' )  { $state = 'TITLE1';}
             elsif ( $state eq 'TITLE1')  {
                   $state = 'DXF';
-                  $line =~ s/\r?\n$//;
+                  $line =~ s/\r?\n$//x;
                   $title = "$line";
                  # print "  Title is $title\n";
             }
@@ -312,7 +319,7 @@ sub xparser {
 
                 # _HANDLE_ underscors make the handle easier to read and parse
             }
-            elsif ( $state =~ /^H_.*_/ && $line =~ /^AcDbBlockReference/x ) {
+            elsif ( $state =~ /^H_.*_/x && $line =~ /^AcDbBlockReference/x ) {
                 $state = $state . 'AcDbBlock';
             }
             elsif ( $state =~ /^H_.*AcDbBlock/x && $line =~ /^[ ]{2}2\r?\n/x ) {
@@ -358,7 +365,7 @@ sub xparser {
             }
             elsif ( $state eq 'VALUE' ) {
                 $state = 'TAGVALUE';
-                $line =~ s/\r?\n$//;
+                $line =~ s/\r?\n$//x;
                 $tagvalue = $line;
 
 # print " TAGVALUE: blockname for $handle is $blockname, state is $state, line is $line\n"
@@ -380,8 +387,8 @@ sub xparser {
                 $hof_blocks{"$handle"}{"$tagkey"} = "$tagvalue";
 
            # print "Handle is $handle, Key is >$line<, Value is >$tagvalue< \n";
-
-                addnewtag($line);
+                # call sub routine to add new tag
+                $addnewtag->($line);
             }
 
         }
@@ -424,7 +431,7 @@ sub xparser {
     return ( \%hof_blocks, \@tags, $passed );
 }    # End of xparser
 
-## Sub to create Excel version of attout file
+## excelout sub to create Excel version of attout file ##
 
 # Take attout filename with and excel file path as arguments
 sub excelout {
@@ -432,7 +439,7 @@ sub excelout {
 # 52 columns (AZ) was not enough ...
 # This becomes A to AZ, created range in an @alph
    my ( $attout, $excelpath ) = @_;
-   print "  File name to base xlsx on is $attout\n";
+   # print "  File name to base xlsx on is $attout\n";
 my @alph = ( 'A' .. 'Z', 'AA' .. 'AZ', 'BA' .. 'BZ' );
     # $row is the first row number for attribute data
     my $row = '3';
@@ -555,7 +562,23 @@ my $format =
 return 0;
 }
 
+## attout sub ##
+# attout sub takes 'attout filename with path' and 'array of elements reference'# as the next line to write  (append)
+# the attout file should have the same name as the dx but with a txt extensions
+sub attout {
+    my @attout_elements    = @_;
+    my $attout_nameandpath = $attout_elements[0];
+    my $elements           = $attout_elements[1];
 
+#  print "\n Attout filename will be, $attout_nameandpath,\n tags values are @$elements\n";
+    open( my $ATTOUT, '>>', $attout_nameandpath )
+      or croak "$attout_nameandpath would not open";
+
+    # elements need to be tab deliminated
+    print $ATTOUT join( "\t", @$elements ), "\r\n";
+    close($ATTOUT) or carp "Cannot close $attout_nameandpath\n";
+    return 0;
+}    # End of attout sub
 
 
 ### The Program ###
@@ -659,7 +682,7 @@ while ( sleep 1 ) {
                     # Take filename and change the path to the fail directory
                     my $failed = $dx_fail . basename($_);
                     move( $_, $failed ) or croak "move of $_ failed";
-                    $dx_state = 1;
+                    $dx_state = 2;
                 }
 
             }    # end of <$XFILE> processing
@@ -668,12 +691,13 @@ while ( sleep 1 ) {
 
        # Create .xlsx version of attout.txt file
        # Ideally needs to be a separate script with watch folder but handy in here for now ...
-       # excelout takes attout filename and path from passed directory and required xlsx filename and path as arguments 
+       # excelout takes attout filename and path from passed directory and required xlsx filename and path as arguments
+       # Occasionally excelout was called when the file was uninitialised, the defined check and $state variable is used track this ..
      
-    if ( $dx_state == 0) {   
+    if ( defined $atto && length $atto > 0 ) { 
+    print "  Attout file for excel creation is $atto, state is $dx_state \n";  
          excelout ($atto, $dx_xlsx);
-       print "  Attout file for excel creation is $atto \n";
-        }
+               }
     else { print " dx file was invalid so skipping excel creation\n";}
 
     }    # end of foreach dx_file
@@ -681,29 +705,12 @@ while ( sleep 1 ) {
     print
 " \nEnd of processing, lets check the watchfolders again...\n";
    # set dx_state to invalid until more files found
-   $dx_state = 3;
+   $dx_state = 4;
 
 
 
 }    # end of while (sleep 1)
 
-# attout sub takes 'attout filename with path' and 'array of elements reference'
-# as the next line to write  (append)
-# the attout file should have the same name as the dx but with a txt extensions
-sub attout {
-    my @attout_elements    = @_;
-    my $attout_nameandpath = $attout_elements[0];
-    my $elements           = $attout_elements[1];
-
-#  print "\n Attout filename will be, $attout_nameandpath,\n tags values are @$elements\n";
-    open( my $ATTOUT, '>>', $attout_nameandpath )
-      or die "$attout_nameandpath would not open";
-
-    # elements need to be tab deliminated
-    print $ATTOUT join( "\t", @$elements ), "\r\n";
-    close($ATTOUT) or carp "Cannot close $attout_nameandpath\n";
-
-}    # End of attout sub
 exit 0;
 
 __END__
